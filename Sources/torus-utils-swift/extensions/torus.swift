@@ -21,8 +21,30 @@ extension Torus {
         return rq
     }
     
-    public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String){
+    public func keyLookupCallback(array: Array<Any>){
+        var filteredArray = array.map{$0 as! String != "nil"}
+    }
+    
+    public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) {
+        var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
+        for el in endpoints {
+            let rq = try! self.makeUrlRequest(url: el);
+            let encoder = JSONEncoder()
+            let rpcdata = try! encoder.encode(JSONRPCrequest(method: "VerifierLookupRequest", params: ["verifier":verifier, "verifierId":verifierId]))
+             // print(rpcdata)
+            promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+        }
         
+        for pr in promisesArray {
+            var el = try! pr
+            print(el)
+            firstly{
+                el
+            }.done{ data, response in
+                print(type(of: data), data)
+            }
+        }
+        // self.torusUtils.Some(promisesArray: promisesArray, callback: keyLookupCallback)
     }
     
     public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub> , lastPoint : Int?, firstPoint : Int?, verifier : String, verifierId : String) throws -> Promise<String> {

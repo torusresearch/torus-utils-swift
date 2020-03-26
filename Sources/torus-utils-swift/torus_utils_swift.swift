@@ -10,6 +10,8 @@ import PromiseKit
 import PMKFoundation
 
 public class Torus{
+    public var torusUtils : utils = utils()
+    
     init(){
         
     }
