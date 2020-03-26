@@ -6,21 +6,21 @@ import PackageDescription
 let package = Package(
     name: "torus-utils-swift",
     products: [
-        // Products define the executables and libraries produced by a package, and make them visible to other packages.
         .library(
             name: "torus-utils-swift",
             targets: ["torus-utils-swift"]),
     ],
     dependencies: [
-        // Dependencies declare other packages that this package depends on.
-        // .package(url: /* package url */, from: "1.0.0"),
+        .package(url: "https://github.com/rathishubham7/web3swift", from:"2.2.2"),
+        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from:"0.0.3"),
+        .package(url: "https://github.com/PromiseKit/Foundation.git", from: "3.0.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "torus-utils-swift",
-            dependencies: []),
+            dependencies: ["fetch-node-details", "web3swift", "PMKFoundation"]),
         .testTarget(
             name: "torus-utils-swiftTests",
             dependencies: ["torus-utils-swift"]),

@@ -1,3 +1,17 @@
-struct torus_utils_swift {
-    var text = "Hello, World!"
+/**
+ torus utils class
+ Author: Shubham Rathi
+ */
+
+import Foundation
+import fetch_node_details
+import web3swift
+import PromiseKit
+import PMKFoundation
+
+public class Torus{
+    init(){
+        
+    }
+    
 }
