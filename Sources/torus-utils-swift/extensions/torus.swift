@@ -30,18 +30,20 @@ extension Torus {
         for el in endpoints {
             let rq = try! self.makeUrlRequest(url: el);
             let encoder = JSONEncoder()
-            let rpcdata = try! encoder.encode(JSONRPCrequest(method: "VerifierLookupRequest", params: ["verifier":verifier, "verifierId":verifierId]))
-             // print(rpcdata)
+            let rpcdata = try! encoder.encode(JSONRPCrequest(method: "VerifierLookupRequest", params: ["verifier":verifier, "verifier_id":verifierId]))
+            // print( String(data: rpcdata, encoding: .utf8)!)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
         for pr in promisesArray {
-            var el = try! pr
-            print(el)
             firstly{
-                el
+                pr
             }.done{ data, response in
-                print(type(of: data), data)
+                var decoder = try! JSONSerialization.jsonObject(with: data, options: .mutableContainers) as! [String:Any]
+                print(decoder)
+                var result = decoder["result"] as! [String:Any]
+                var singleArrayObject = result["keys"] as! [Any]
+                print(singleArrayObject)
             }
         }
         // self.torusUtils.Some(promisesArray: promisesArray, callback: keyLookupCallback)
