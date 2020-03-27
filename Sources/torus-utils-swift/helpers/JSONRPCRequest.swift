@@ -32,10 +32,10 @@ public struct JSONRPCrequest: Encodable {
     }
 }
 
-public struct JSONRPCresponse: Decodable{
+public struct JSONRPCresponse: Codable{
     public var id: Int
     public var jsonrpc = "2.0"
-    public var result: Any?
+    public var result: Any
     public var error: ErrorMessage?
     public var message: String?
     
@@ -44,6 +44,13 @@ public struct JSONRPCresponse: Decodable{
         case jsonrpc = "jsonrpc"
         case result = "result"
         case error = "error"
+        case errorMessage
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: JSONRPCresponseKeys.self)
+        try container.encode(result as? [String: [[String: String]]], forKey: .result)
+        try container.encode(error, forKey: .error)
     }
     
     public init(id: Int, jsonrpc: String, result: Any?, error: ErrorMessage?) {
@@ -53,22 +60,10 @@ public struct JSONRPCresponse: Decodable{
         self.error = error
     }
     
-    public struct ErrorMessage: Decodable {
-        public var code: Int
-        public var message: String
-    }
-    
-    internal var decodableTypes: [Decodable.Type] = [
-                                  [Block].self,
-                                  [String].self,
-                                  [Int].self,
-                                  [Bool].self,
-                                  String.self,
-                                  Int.self,
-                                  Bool.self,
-                                  [String:String].self,
-                                  [String:Int].self,
-                                  [String:[String:[String:[String]]]].self]
+//    public struct ErrorMessage: Decodable {
+//        public var code: Int
+//        public var message: String
+//    }
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: JSONRPCresponseKeys.self)
@@ -94,73 +89,37 @@ public struct JSONRPCresponse: Decodable{
             result = rawValue
         } else if let rawValue = try? container.decodeIfPresent([String: String].self, forKey: .result) {
             result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String: [[String: String]]].self, forKey: .result) {
+            result = rawValue
         } else if let rawValue = try? container.decodeIfPresent([String: Int].self, forKey: .result) {
             result = rawValue
         } else if let rawValue = try? container.decodeIfPresent([String:[String:[String:String]]].self, forKey: .result) {
             result = rawValue
         } else if let rawValue = try? container.decodeIfPresent([String:[String:[String:[String:String?]]]].self, forKey: .result) {
             result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String: Any].self, forKey: .result) {
+            result = rawValue
         }
         self.init(id: id, jsonrpc: jsonrpc, result: result, error: nil)
     }
+}
+
+public struct ErrorMessage: Codable {
+    public var code: Int
+    public var message: String
     
-    /// Get the JSON RCP reponse value by deserializing it into some native <T> class.
-    ///
-    /// Returns nil if serialization fails
-    public func getValue<T>() -> T? {
-        let slf = T.self
-        if slf == BigUInt.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = BigUInt(string.stripHexPrefix(), radix: 16) else {return nil}
-            return value as? T
-        } else if slf == BigInt.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = BigInt(string.stripHexPrefix(), radix: 16) else {return nil}
-            return value as? T
-        } else if slf == Data.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = Data.fromHex(string) else {return nil}
-            return value as? T
-        } else if slf == EthereumAddress.self {
-            guard let string = self.result as? String else {return nil}
-            guard let value = EthereumAddress(string, ignoreChecksum: true) else {return nil}
-            return value as? T
-        }
-//        else if slf == String.self {
-//            guard let value = self.result as? T else {return nil}
-//            return value
-//        } else if slf == Int.self {
-//            guard let value = self.result as? T else {return nil}
-//            return value
-//        }
-        else if slf == [BigUInt].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> BigUInt? in
-                return BigUInt(str.stripHexPrefix(), radix: 16)
-            }
-            return values as? T
-        } else if slf == [BigInt].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> BigInt? in
-                return BigInt(str.stripHexPrefix(), radix: 16)
-            }
-            return values as? T
-        } else if slf == [Data].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> Data? in
-                return Data.fromHex(str)
-            }
-            return values as? T
-        } else if slf == [EthereumAddress].self {
-            guard let string = self.result as? [String] else {return nil}
-            let values = string.compactMap { (str) -> EthereumAddress? in
-                return EthereumAddress(str, ignoreChecksum: true)
-            }
-            return values as? T
-        }
-        guard let value = self.result as? T  else {return nil}
-        return value
+    
+    enum ErrorMessageKeys: String, CodingKey {
+        case code
+        case message
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: ErrorMessageKeys.self)
+        try container.encode(message, forKey: .message)
+        try container.encode(code, forKey: .code)
     }
 }
+
 
 

@@ -21,11 +21,23 @@ extension Torus {
         return rq
     }
     
-    public func keyLookupCallback(array: Array<Any>){
-        var filteredArray = array.map{$0 as! String != "nil"}
+    func thresholdSame(arr: Array<String>, threshold: Int) -> String?{
+        // uprint(threshold)
+        var hashmap = [String:Int]()
+        for (i, value) in arr.enumerated(){
+            if((hashmap[value]) != nil) {hashmap[value]! += 1}
+            else { hashmap[value] = 1 }
+            if (hashmap[value] == threshold){
+                return value
+            }
+//            print(hashmap)
+        }
+        return nil
     }
     
-    public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) {
+    public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<String>{
+        
+        // Create Array of Promises
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
             let rq = try! self.makeUrlRequest(url: el);
@@ -35,18 +47,38 @@ extension Torus {
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
-        for pr in promisesArray {
-            firstly{
-                pr
-            }.done{ data, response in
-                var decoder = try! JSONSerialization.jsonObject(with: data, options: .mutableContainers) as! [String:Any]
-                print(decoder)
-                var result = decoder["result"] as! [String:Any]
-                var singleArrayObject = result["keys"] as! [Any]
-                print(singleArrayObject)
+        var resultArray = Array<Any>.init(repeating: "nil", count: promisesArray.count)
+        
+        let returnPromise = Promise<String>{ seal in
+            for (i, pr) in promisesArray.enumerated() {
+                print(pr)
+                let el = try pr
+                el.done{ data, response in
+                    let decoder = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    let encoder = JSONEncoder()
+                    
+                    if #available(OSX 10.13, iOS 11.0, watchOS 4.0, tvOS 11.0, *) {
+                        encoder.outputFormatting = .sortedKeys
+                    } else {
+                        // Fallback on earlier versions
+                        seal.reject("sorting keys unavailable")
+                    }
+                    
+                    // Check if 5 responses are in
+                    resultArray[i] = String(data: try encoder.encode(decoder), encoding: .utf8)! // Encode the result and error into string and push to array
+                    // print(resultArray[i])
+                    let lookupShares = resultArray.filter{ $0 as? String != "nil" } // Nonnil elements
+                    let keyResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
+                    // let errorResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/2)+1)
+                    print("threshold result", keyResult)
+                    if(keyResult != nil)  { seal.fulfill(keyResult!) }
+                }.catch{error in
+                    seal.reject(error)
+                }
             }
+            seal.reject("invalid")
         }
-        // self.torusUtils.Some(promisesArray: promisesArray, callback: keyLookupCallback)
+        return returnPromise
     }
     
     public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub> , lastPoint : Int?, firstPoint : Int?, verifier : String, verifierId : String) throws -> Promise<String> {
