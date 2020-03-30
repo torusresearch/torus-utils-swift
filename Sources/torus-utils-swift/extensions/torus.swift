@@ -78,26 +78,25 @@ extension Torus {
         }
     }
     
-    public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub> , lastPoint : Int?, firstPoint : Int?, verifier : String, verifierId : String) throws -> Promise<String> {
-        
-        // Handle Recursion params
-        var nodeNum : Int, initialPoint : Int
-        if (lastPoint == nil) {
-            nodeNum = Int((Float.random(in: 0 ..< 1) * Float(endpoints.count)).rounded(.down))
-            initialPoint = nodeNum
-        } else {
-            nodeNum = lastPoint! % endpoints.count
-        }
-        // if (nodeNum == firstPoint) { throw "Looped through all" }
-        if (firstPoint == nil) { initialPoint = 0 }
-        nodeNum = 0;
-        
-        let returnPromise = Promise<String>{ seal in
+    public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub> , lastPoint : Int?, firstPoint : Int?, verifier : String, verifierId : String) throws -> Promise<JSONRPCresponse> {
+        let returnPromise = Promise<JSONRPCresponse>{ seal in
+            // Handle Recursion params
+            var nodeNum : Int = Int()
+            var initialPoint : Int = Int()
+            if (lastPoint == nil) {
+                nodeNum = Int((Float.random(in: 0 ..< 1) * Float(endpoints.count)).rounded(.down))
+                initialPoint = nodeNum
+            } else {
+                nodeNum = lastPoint! % endpoints.count
+            }
+            // if (nodeNum == firstPoint) { throw "Looped through all" }
+            if (firstPoint == nil) { initialPoint = 0 }
+            
             let encoder = JSONEncoder()
-            let SignerObject = JSONRPCrequest(method: "keyAssign", params: ["verifier":verifier, "verifierId":verifierId])
-//            print(SignerObject)
+            let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier":verifier, "verifier_id":verifierId])
+            // print(SignerObject)
             let rpcdata = try encoder.encode(SignerObject)
-            print("rpcdata", String(data: rpcdata, encoding: .utf8))
+            // print("rpcdata", String(data: rpcdata, encoding: .utf8))
             var request = try makeUrlRequest(url:  "https://signer.tor.us/api/sign")
             //request.httpMethod = "POST"
             request.addValue(torusNodePubs[nodeNum].getX(), forHTTPHeaderField: "pubKeyX")
@@ -107,31 +106,28 @@ extension Torus {
             firstly {
                 URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
             }.then{ data, response -> Promise<(data: Data, response: URLResponse)> in
-                
                 // Combine jsonData and rpcData
-                var jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-                //print(jsonData)
-                var jsonDataSignerObject = try JSONSerialization.jsonObject(with: rpcdata) as! [String : Any]
-                jsonDataSignerObject.merge(jsonData){ (_, new) in new }
-                // print(jsonDataSignerObject)
-                let tempJSONDATA = try JSONSerialization.data(withJSONObject: jsonDataSignerObject)
-                print(String(data: tempJSONDATA, encoding: .utf8))
-                
+                let jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
                 var request = try self.makeUrlRequest(url: endpoints[nodeNum])
+                
                 // request.httpMethod = "POST"
                 request.addValue(jsonData["torus-timestamp"] as! String, forHTTPHeaderField: "torus-timestamp")
                 request.addValue(jsonData["torus-nonce"] as! String, forHTTPHeaderField: "torus-nonce")
                 request.addValue(jsonData["torus-signature"] as! String, forHTTPHeaderField: "torus-signature")
                 request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-                print(request.allHTTPHeaderFields)
+                // print(request.allHTTPHeaderFields)
                 return URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
             }.done{ data, response in
-                print(response)
+                // print(response)
+                let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                 print(String(data: data, encoding: .utf8))
-                seal.fulfill("ASDF")
+                seal.fulfill(decodedData)
             }.catch{ err in
-                seal.reject(err)
-                //                try self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, lastPoint: nodeNum+1, firstPoint: initialPoint, verifier: verifier, verifierId: verifierId)
+                do{
+                    try? self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, lastPoint: nodeNum+1, firstPoint: initialPoint, verifier: verifier, verifierId: verifierId)
+                }catch{
+                    seal.reject(err)
+                }
             }
         }
         return returnPromise
