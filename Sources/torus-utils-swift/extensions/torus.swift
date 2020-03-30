@@ -15,8 +15,8 @@ extension Torus {
     func makeUrlRequest(url: String) throws -> URLRequest {
         var rq = URLRequest(url: URL(string: url)!)
         rq.httpMethod = "POST"
-        rq.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        rq.addValue("application/json", forHTTPHeaderField: "Accept")
+        //        rq.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        //        rq.addValue("application/json", forHTTPHeaderField: "Accept")
         // rq.httpBody = try JSONEncoder().encode(obj)
         return rq
     }
@@ -30,7 +30,7 @@ extension Torus {
             if (hashmap[value] == threshold){
                 return value
             }
-//            print(hashmap)
+            //            print(hashmap)
         }
         return nil
     }
@@ -49,11 +49,9 @@ extension Torus {
         
         var resultArray = Array<Any>.init(repeating: "nil", count: promisesArray.count)
         
-        let returnPromise = Promise<String>{ seal in
+        return Promise<String>() { seal in
             for (i, pr) in promisesArray.enumerated() {
-                print(pr)
-                let el = try pr
-                el.done{ data, response in
+                pr.done{ data, response in
                     let decoder = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                     let encoder = JSONEncoder()
                     
@@ -76,9 +74,8 @@ extension Torus {
                     seal.reject(error)
                 }
             }
-            seal.reject("invalid")
+            //seal.reject("invalid")
         }
-        return returnPromise
     }
     
     public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub> , lastPoint : Int?, firstPoint : Int?, verifier : String, verifierId : String) throws -> Promise<String> {
@@ -91,15 +88,18 @@ extension Torus {
         } else {
             nodeNum = lastPoint! % endpoints.count
         }
-        if (nodeNum == firstPoint!) { throw "Looped through all" }
-        if (firstPoint == nil) { initialPoint = firstPoint! }
+        // if (nodeNum == firstPoint) { throw "Looped through all" }
+        if (firstPoint == nil) { initialPoint = 0 }
+        nodeNum = 0;
         
         let returnPromise = Promise<String>{ seal in
             let encoder = JSONEncoder()
-            let rpcdata = try encoder.encode(JSONRPCrequest(method: "keyAssign", params: ["verifier":verifier, "verifierId":verifierId]))
-            
+            let SignerObject = JSONRPCrequest(method: "keyAssign", params: ["verifier":verifier, "verifierId":verifierId])
+//            print(SignerObject)
+            let rpcdata = try encoder.encode(SignerObject)
+            print("rpcdata", String(data: rpcdata, encoding: .utf8))
             var request = try makeUrlRequest(url:  "https://signer.tor.us/api/sign")
-            request.httpMethod = "POST"
+            //request.httpMethod = "POST"
             request.addValue(torusNodePubs[nodeNum].getX(), forHTTPHeaderField: "pubKeyX")
             request.addValue(torusNodePubs[nodeNum].getY(), forHTTPHeaderField: "pubKeyY")
             
@@ -108,17 +108,30 @@ extension Torus {
                 URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
             }.then{ data, response -> Promise<(data: Data, response: URLResponse)> in
                 
-                print(data, response)
-                
-                var jsonData = try JSONSerialization.jsonObject(with: data)
-                var request = try self.makeUrlRequest(url:  endpoints[nodeNum])
-                request.httpMethod = "POST"
                 // Combine jsonData and rpcData
+                var jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+                //print(jsonData)
+                var jsonDataSignerObject = try JSONSerialization.jsonObject(with: rpcdata) as! [String : Any]
+                jsonDataSignerObject.merge(jsonData){ (_, new) in new }
+                // print(jsonDataSignerObject)
+                let tempJSONDATA = try JSONSerialization.data(withJSONObject: jsonDataSignerObject)
+                print(String(data: tempJSONDATA, encoding: .utf8))
+                
+                var request = try self.makeUrlRequest(url: endpoints[nodeNum])
+                // request.httpMethod = "POST"
+                request.addValue(jsonData["torus-timestamp"] as! String, forHTTPHeaderField: "torus-timestamp")
+                request.addValue(jsonData["torus-nonce"] as! String, forHTTPHeaderField: "torus-nonce")
+                request.addValue(jsonData["torus-signature"] as! String, forHTTPHeaderField: "torus-signature")
+                request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+                print(request.allHTTPHeaderFields)
                 return URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
             }.done{ data, response in
+                print(response)
+                print(String(data: data, encoding: .utf8))
                 seal.fulfill("ASDF")
             }.catch{ err in
                 seal.reject(err)
+                //                try self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, lastPoint: nodeNum+1, firstPoint: initialPoint, verifier: verifier, verifierId: verifierId)
             }
         }
         return returnPromise
