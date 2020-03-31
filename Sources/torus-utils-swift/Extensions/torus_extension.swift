@@ -37,6 +37,7 @@ extension Torus {
     
     public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<String>{
         
+        //let (tempPromise, seal) = Promise<String>.pending()
         // Create Array of Promises
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
@@ -69,7 +70,7 @@ extension Torus {
                     let lookupShares = resultArray.filter{ $0 as? String != "nil" } // Nonnil elements
                     let keyResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
                     // let errorResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/2)+1)
-                    print("threshold result", keyResult)
+                    // print("threshold result", keyResult)
                     if(keyResult != nil)  { seal.fulfill(keyResult!) }
                 }.catch{error in
                     if(i+1 == promisesArray.count){
@@ -77,13 +78,11 @@ extension Torus {
                     }
                 }
             }
-            //seal.reject("invalid")
         }
     }
     
-    public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub> , lastPoint : Int?, firstPoint : Int?, verifier : String, verifierId : String) throws -> Promise<JSONRPCresponse> {
+    public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String) throws -> Promise<JSONRPCresponse> {
         return Promise<JSONRPCresponse>{ resolver in
-            // var resultArray = Array<Bool>.init(repeating: false, count: endpoints.count)
             var newEndpoints = endpoints
             newEndpoints.shuffle()
             print("newEndpoints", newEndpoints)
@@ -114,7 +113,6 @@ extension Torus {
                         let jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
                         var request = try self.makeUrlRequest(url: endpoint)
                         
-                        // request.httpMethod = "POST"
                         request.addValue(jsonData["torus-timestamp"] as! String, forHTTPHeaderField: "torus-timestamp")
                         request.addValue(jsonData["torus-nonce"] as! String, forHTTPHeaderField: "torus-nonce")
                         request.addValue(jsonData["torus-signature"] as! String, forHTTPHeaderField: "torus-signature")
