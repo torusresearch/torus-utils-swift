@@ -79,61 +79,66 @@ extension Torus {
     }
     
     public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub> , lastPoint : Int?, firstPoint : Int?, verifier : String, verifierId : String) throws -> Promise<JSONRPCresponse> {
-        let returnPromise = Promise<JSONRPCresponse>{ seal in
-            // Handle Recursion params
-            var nodeNum : Int = Int()
-            var initialPoint : Int = Int()
-            if (lastPoint == nil) {
-                nodeNum = Int((Float.random(in: 0 ..< 1) * Float(endpoints.count)).rounded(.down))
-                initialPoint = nodeNum
-            } else {
-                nodeNum = lastPoint! % endpoints.count
-            }
-            // if (nodeNum == firstPoint) { throw "Looped through all" }
-            if (firstPoint == nil) { initialPoint = 0 }
+        return Promise<JSONRPCresponse>{ resolver in
+            // var resultArray = Array<Bool>.init(repeating: false, count: endpoints.count)
+            var newEndpoints = endpoints
+            newEndpoints.shuffle()
+            print("newEndpoints", newEndpoints)
             
-            let encoder = JSONEncoder()
-            let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier":verifier, "verifier_id":verifierId])
-            // print(SignerObject)
-            let rpcdata = try encoder.encode(SignerObject)
-            // print("rpcdata", String(data: rpcdata, encoding: .utf8))
-            var request = try makeUrlRequest(url:  "https://signer.tor.us/api/sign")
-            //request.httpMethod = "POST"
-            request.addValue(torusNodePubs[nodeNum].getX(), forHTTPHeaderField: "pubKeyX")
-            request.addValue(torusNodePubs[nodeNum].getY(), forHTTPHeaderField: "pubKeyY")
+            let serialQueue = DispatchQueue(label: "keyassign.serial.queue")
+            let semaphore = DispatchSemaphore(value: 1)
             
-            
-            firstly {
-                URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
-            }.then{ data, response -> Promise<(data: Data, response: URLResponse)> in
-                // Combine jsonData and rpcData
-                let jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-                var request = try self.makeUrlRequest(url: endpoints[nodeNum])
-                
-                // request.httpMethod = "POST"
-                request.addValue(jsonData["torus-timestamp"] as! String, forHTTPHeaderField: "torus-timestamp")
-                request.addValue(jsonData["torus-nonce"] as! String, forHTTPHeaderField: "torus-nonce")
-                request.addValue(jsonData["torus-signature"] as! String, forHTTPHeaderField: "torus-signature")
-                request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
-                // print(request.allHTTPHeaderFields)
-                return URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
-            }.done{ data, response in
-                // print(response)
-                let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                print(String(data: data, encoding: .utf8))
-                seal.fulfill(decodedData)
-            }.catch{ err in
-                do{
-                    try? self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, lastPoint: nodeNum+1, firstPoint: initialPoint, verifier: verifier, verifierId: verifierId)
-                }catch{
-                    seal.reject(err)
+            for (i, endpoint) in endpoints.enumerated() {
+                serialQueue.async {
+                    
+                    // Wait for the signal
+                    semaphore.wait()
+                    
+                    let encoder = JSONEncoder()
+                    let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier":verifier, "verifier_id":verifierId])
+                    // print(SignerObject)
+                    let rpcdata = try! encoder.encode(SignerObject)
+                    // print("rpcdata", String(data: rpcdata, encoding: .utf8))
+                    var request = try! self.makeUrlRequest(url:  "https://signer.tor.us/api/sign")
+                    request.addValue(torusNodePubs[i].getX(), forHTTPHeaderField: "pubKeyX")
+                    request.addValue(torusNodePubs[i].getY(), forHTTPHeaderField: "pubKeyY")
+                    
+                    firstly {
+                        URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
+                    }.then{ data, response -> Promise<(data: Data, response: URLResponse)> in
+                        // print("repsonse from signer", String(data: data, encoding: .utf8))
+                        // Combine jsonData and rpcData
+                        let jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
+                        var request = try self.makeUrlRequest(url: endpoint)
+                        
+                        // request.httpMethod = "POST"
+                        request.addValue(jsonData["torus-timestamp"] as! String, forHTTPHeaderField: "torus-timestamp")
+                        request.addValue(jsonData["torus-nonce"] as! String, forHTTPHeaderField: "torus-nonce")
+                        request.addValue(jsonData["torus-signature"] as! String, forHTTPHeaderField: "torus-signature")
+                        request.addValue("application/json; charset=utf-8", forHTTPHeaderField: "Content-Type")
+                        // print(request.allHTTPHeaderFields)
+                        return URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
+                    }.done{ data, response in
+                        let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                        // print("response from node", String(data: data, encoding: .utf8))
+                        // print(String(data: data, encoding: .utf8))
+                        resolver.fulfill(decodedData)
+                        
+                        // Signal to start again
+                        semaphore.signal()
+                    }.catch{ err in
+                        // Reject only if reached the last point
+                        if(i+1==endpoint.count) {
+                            resolver.reject(err)
+                        }
+                        // Signal to start again
+                        semaphore.signal()
+                    }
+                    
                 }
             }
         }
-        return returnPromise
-        
     }
-    
 }
 
 
