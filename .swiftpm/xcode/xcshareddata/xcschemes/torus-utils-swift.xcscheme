@@ -55,6 +55,9 @@
                <Test
                   Identifier = "torus_utils_swiftTests/testExample()">
                </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testKeyAssign()">
+               </Test>
             </SkippedTests>
          </TestableReference>
       </Testables>

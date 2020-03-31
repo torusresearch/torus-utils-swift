@@ -12,7 +12,19 @@ import PMKFoundation
 public class Torus{
     public var torusUtils : utils = utils()
     
-    init(){
+    public init(){
+        
+    }
+    
+    public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String) -> Promise<Void>{
+        
+        return Promise<Void>{ seal in
+            self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId).done{ data in
+                let data = try JSONSerialization.jsonObject(with: Data(data.utf8), options: .mutableContainers)
+                print(data)
+                seal.fulfill(())
+            }
+        }
         
     }
     

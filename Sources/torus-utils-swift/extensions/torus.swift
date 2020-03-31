@@ -15,8 +15,8 @@ extension Torus {
     func makeUrlRequest(url: String) throws -> URLRequest {
         var rq = URLRequest(url: URL(string: url)!)
         rq.httpMethod = "POST"
-        //        rq.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        //        rq.addValue("application/json", forHTTPHeaderField: "Accept")
+        rq.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        rq.addValue("application/json", forHTTPHeaderField: "Accept")
         // rq.httpBody = try JSONEncoder().encode(obj)
         return rq
     }
@@ -30,7 +30,7 @@ extension Torus {
             if (hashmap[value] == threshold){
                 return value
             }
-            //            print(hashmap)
+            // print(hashmap)
         }
         return nil
     }
@@ -43,16 +43,17 @@ extension Torus {
             let rq = try! self.makeUrlRequest(url: el);
             let encoder = JSONEncoder()
             let rpcdata = try! encoder.encode(JSONRPCrequest(method: "VerifierLookupRequest", params: ["verifier":verifier, "verifier_id":verifierId]))
-            // print( String(data: rpcdata, encoding: .utf8)!)
+            //print( String(data: rpcdata, encoding: .utf8)!)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
         var resultArray = Array<Any>.init(repeating: "nil", count: promisesArray.count)
         
-        return Promise<String>() { seal in
+        return Promise<String> { seal in
             for (i, pr) in promisesArray.enumerated() {
                 pr.done{ data, response in
-                    let decoder = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    // print("keyLookup", String(data: data, encoding: .utf8))
+                    let decoder = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                     let encoder = JSONEncoder()
                     
                     if #available(OSX 10.13, iOS 11.0, watchOS 4.0, tvOS 11.0, *) {
@@ -71,7 +72,9 @@ extension Torus {
                     print("threshold result", keyResult)
                     if(keyResult != nil)  { seal.fulfill(keyResult!) }
                 }.catch{error in
-                    seal.reject(error)
+                    if(i+1 == promisesArray.count){
+                        seal.reject(error)
+                    }
                 }
             }
             //seal.reject("invalid")
