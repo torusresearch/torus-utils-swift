@@ -58,6 +58,12 @@
                <Test
                   Identifier = "torus_utils_swiftTests/testKeyAssign()">
                </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testKeyLookup()">
+               </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testingPromise()">
+               </Test>
             </SkippedTests>
          </TestableReference>
       </Testables>
