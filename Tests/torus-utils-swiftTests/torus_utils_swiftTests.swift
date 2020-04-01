@@ -5,7 +5,7 @@ import fetch_node_details
 
 final class torus_utils_swiftTests: XCTestCase {
     
-    var tempVerifierId = "new1@m.com"
+    var tempVerifierId = "new7@m.com"
     
     func testKeyLookup() {
         
@@ -76,7 +76,7 @@ final class torus_utils_swiftTests: XCTestCase {
         }.catch{ err in
             print("getpublicaddress failed", err)
         }
-        waitForExpectations(timeout: 20)
+        waitForExpectations(timeout: 10)
     }
     
     static var allTests = [

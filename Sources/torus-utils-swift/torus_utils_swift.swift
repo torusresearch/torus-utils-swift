@@ -26,30 +26,33 @@ public class Torus{
             try JSONSerialization.jsonObject(with: Data(tempData.utf8)) as! [String : Any]
         }.then{ lookupData -> Promise<Any> in
             // print(lookupData)
-            let error = lookupData["error"] as? NSObject
+            
+            // let error = lookupData["error"] as? NSObject
             let result = lookupData["result"] as? NSObject
             // print("error is", error is NSNull, result is NSNull)
             
             if(result is NSNull){
-                var (newpp, newppseal) = Promise<Any>.pending()
-                self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<String> in
+                //var (newKeyAssign, newKeyAssignSeal) = Promise<Any>.pending()
+                
+                // Assign key to the user and return (wraped in a promise)
+                return self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<String> in
                     print("keyAssign", data)
+                    // Do keylookup again
                     return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-                }.done{ data in
-                    // print(data)
+                }.then{ data -> Promise<Any> in
+                    print("keylookup", data)
                     let jsonlookupData = try JSONSerialization.jsonObject(with: Data(data.utf8)) as! [String : Any]
-                    newppseal.fulfill(Promise<Any>.value(jsonlookupData["result"]))
+                    return Promise<Any>.value(jsonlookupData["result"] as Any)
                 }
-                return newpp
             }else{
-                return Promise<Any>.value(lookupData["result"])
+                return Promise<Any>.value(lookupData["result"] as Any)
             }
         }.done{ data in
             // Convert the reponse to Promise<T>
             
-            // print("done", data as? [String: [[String:String]]])
+            // print("done", data)
             guard let keys = data as? [String: [[String:String]]] else {throw "type casting for keys failed"}
-            guard let currentKey = keys["keys"]![0] as? [String:String] else {throw "type casting for currentkey failed"}
+            let currentKey = keys["keys"]![0]
             if(!isExtended){
                 seal.fulfill(["address": currentKey["address"]!])
             }else{
