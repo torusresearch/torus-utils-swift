@@ -16,40 +16,51 @@ public class Torus{
         
     }
     
-    public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String){
+    public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
         
-        //let (tempPromise, seal) = Promise<Void>.pending()
+        let (tempPromise, seal) = Promise<[String:String]>.pending()
         let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
         
-        keyLookup.map{ lookupData in
-            try JSONSerialization.jsonObject(with: Data(lookupData.utf8)) as! [String : Any]
+        keyLookup.map{ tempData in
+            //print(tempData)
+            try JSONSerialization.jsonObject(with: Data(tempData.utf8)) as! [String : Any]
         }.then{ lookupData -> Promise<Any> in
-            //print(lookupData)
-            let error = lookupData["error"] as? String
-            print(error)
+            // print(lookupData)
+            let error = lookupData["error"] as? NSObject
+            let result = lookupData["result"] as? NSObject
+            print("error is", error is NSNull, result is NSNull)
             
-            if(error != nil){
-                // return Promise<Any>.value(lookupData["result"])
-                print("error ain't nil")
-                
-                return self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<String> in
+            if(result is NSNull){
+                var (newpp, newppseal) = Promise<Any>.pending()
+                self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<String> in
                     print("keyAssign", data)
                     return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-                }.then{ data -> Promise<Any> in
+                }.done{ data in
                     // print(data)
                     let jsonlookupData = try JSONSerialization.jsonObject(with: Data(data.utf8)) as! [String : Any]
-                    return Promise<Any>.value(jsonlookupData["result"])
+                    newppseal.fulfill(Promise<Any>.value(jsonlookupData["result"]))
                 }
+                return newpp
             }else{
                 return Promise<Any>.value(lookupData["result"])
             }
-        }.done{ data in
-            print(data as? [String: [[String: String]]])
+        }.then{ data -> Promise<[String:String]> in
+            // Convert the reponse to Promise<T>
+            
+            print("done", data as? [String: [[String:String]]])
+            guard let keys = data as? [String: [[String:String]]] else {throw "type casting for keys failed"}
+            guard let currentKey = keys["keys"]![0] as? [String:String] else {throw "type casting for currentkey failed"}
+            if(isExtended){
+                return Promise<[String:String]>.value(["address": currentKey["address"]!])
+            }else{
+                return Promise<[String:String]>.value(currentKey)
+            }
+        }.catch{err in
+            print("err", err)
         }
-        
-        
+        return tempPromise
+
     }
-    
 }
 
 //self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
