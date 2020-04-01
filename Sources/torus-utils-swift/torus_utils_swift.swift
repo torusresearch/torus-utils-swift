@@ -28,7 +28,7 @@ public class Torus{
             // print(lookupData)
             let error = lookupData["error"] as? NSObject
             let result = lookupData["result"] as? NSObject
-            print("error is", error is NSNull, result is NSNull)
+            // print("error is", error is NSNull, result is NSNull)
             
             if(result is NSNull){
                 var (newpp, newppseal) = Promise<Any>.pending()
@@ -44,20 +44,21 @@ public class Torus{
             }else{
                 return Promise<Any>.value(lookupData["result"])
             }
-        }.then{ data -> Promise<[String:String]> in
+        }.done{ data in
             // Convert the reponse to Promise<T>
             
-            print("done", data as? [String: [[String:String]]])
+            // print("done", data as? [String: [[String:String]]])
             guard let keys = data as? [String: [[String:String]]] else {throw "type casting for keys failed"}
             guard let currentKey = keys["keys"]![0] as? [String:String] else {throw "type casting for currentkey failed"}
-            if(isExtended){
-                return Promise<[String:String]>.value(["address": currentKey["address"]!])
+            if(!isExtended){
+                seal.fulfill(["address": currentKey["address"]!])
             }else{
-                return Promise<[String:String]>.value(currentKey)
+                seal.fulfill(currentKey)
             }
         }.catch{err in
             print("err", err)
         }
+        
         return tempPromise
 
     }

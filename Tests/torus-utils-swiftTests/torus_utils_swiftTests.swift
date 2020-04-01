@@ -69,13 +69,13 @@ final class torus_utils_swiftTests: XCTestCase {
 
         let getpublicaddress = fd.getPublicAddress(endpoints: ["https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"], torusNodePubs: nodePubKeys, verifier: "google", verifierId: tempVerifierId, isExtended: true)
 
-//        print(getpublicaddress)
-//        getpublicaddress.done{ data in
-//            print("data", data)
-//            expectations.fulfill()
-//        }.catch{ err in
-//            print("getpublicaddress failed", err)
-//        }
+        print(getpublicaddress)
+        getpublicaddress.done{ data in
+            print("data", data)
+            expectations.fulfill()
+        }.catch{ err in
+            print("getpublicaddress failed", err)
+        }
         waitForExpectations(timeout: 20)
     }
     
