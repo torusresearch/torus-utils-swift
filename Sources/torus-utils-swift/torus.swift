@@ -8,6 +8,7 @@ import fetch_node_details
 import web3swift
 import PromiseKit
 import PMKFoundation
+import CryptorECC
 
 public class Torus{
     public var torusUtils : utils = utils()
@@ -65,34 +66,49 @@ public class Torus{
         return tempPromise
 
     }
-}
+    
+    func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: Any]?, idToken:String){
+        // Generate pubkey-privatekey
+        let privateKey = SECP256K1.generatePrivateKey()
+        let publicKey = SECP256K1.privateToPublic(privateKey: privateKey!, compressed: false)?.suffix(64) // take last 64
+        
+        // Split key in 2 parts, X and Y
+        let publicKeyHex = publicKey?.toHexString()
+        let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
+        let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
+        
+        // Hash the token from OAuth login
+        let tokenCommitment = idToken.sha3(.keccak256)
+        let timestamp = String(Int(Date().timeIntervalSince1970))
 
-//self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-//           .map{ lookupData in
-//               try JSONSerialization.jsonObject(with: Data(lookupData.utf8)) as! [String : Any]
-//       }.then{ lookupData in
-//           let error = lookupData["error"] as? String
-//           print(error)
-//           if(error != nil){
-//               return Promise<[String: Any]>.value(lookupData)
-//               //                    self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<String> in
-//               //                        print("keyAssign", data)
-//               //                        return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-//               //                    }.done{ data -> Void in
-//               //                        print(data)
-//               //                        let jsonlookupData = try JSONSerialization.jsonObject(with: Data(data.utf8)) as! [String : Any]
-//               //                        return Promise<[String: Any]>.value(jsonlookupData)
-//               //
-//               //                        // seal.fulfill(data)
-//               //                    }.catch{err in
-//               //                        seal.reject(err)
-//               //                    }
-//           }else{
-//               return Promise<[String: Any]>.value(lookupData)
-//           }
-//       }.done{ data in
-//           print(data)
-//           seal.fulfill("asdf")
-//       }.catch{ err in
-//           seal.reject(err)
-//       }
+        print(publicKey, publicKeyHex, pubKeyX, pubKeyY, tokenCommitment)
+        
+        var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
+        for el in endpoints {
+            let rq = try! self.makeUrlRequest(url: el);
+            let encoder = JSONEncoder()
+            let rpcdata = try! encoder.encode(JSONRPCrequest(
+                    method: "CommitmentRequest",
+                    params: ["messageprefix": "mug00",
+                             "tokencommitment": tokenCommitment,
+                             "temppubx": pubKeyX!,
+                             "temppuby": pubKeyY!,
+                             "verifieridentifier":verifier,
+                             "timestamp": timestamp]
+            ))
+            
+            print( String(data: rpcdata, encoding: .utf8)!)
+            promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+        }
+        
+        
+//
+//        messageprefix: 'mug00',
+//        tokencommitment: tokenCommitment.slice(2),
+//        temppubx: pubKeyX,
+//        temppuby: pubKeyY,
+//        timestamp: (Date.now() - 2000).toString().slice(0, 10),
+//        verifieridentifier: verifier,
+        
+    }
+}

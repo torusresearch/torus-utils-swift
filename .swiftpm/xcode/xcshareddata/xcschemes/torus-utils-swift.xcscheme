@@ -56,10 +56,16 @@
                   Identifier = "torus_utils_swiftTests/testExample()">
                </Test>
                <Test
+                  Identifier = "torus_utils_swiftTests/testGetPublicAddress()">
+               </Test>
+               <Test
                   Identifier = "torus_utils_swiftTests/testKeyAssign()">
                </Test>
                <Test
                   Identifier = "torus_utils_swiftTests/testKeyLookup()">
+               </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testSecp()">
                </Test>
                <Test
                   Identifier = "torus_utils_swiftTests/testingPromise()">
