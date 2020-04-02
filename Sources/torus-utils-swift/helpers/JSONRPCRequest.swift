@@ -49,7 +49,8 @@ public struct JSONRPCresponse: Codable{
     
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: JSONRPCresponseKeys.self)
-        try container.encode(result as? [String: [[String: String]]], forKey: .result)
+        try? container.encode(result as? [String: [[String: String]]], forKey: .result)
+        try? container.encode(result as? [String: String], forKey: .result)
         try container.encode(error, forKey: .error)
     }
     

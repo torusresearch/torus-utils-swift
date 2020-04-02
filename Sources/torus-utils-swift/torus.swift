@@ -67,7 +67,7 @@ public class Torus{
 
     }
     
-    func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: Any]?, idToken:String){
+    func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
         // Generate pubkey-privatekey
         let privateKey = SECP256K1.generatePrivateKey()
         let publicKey = SECP256K1.privateToPublic(privateKey: privateKey!, compressed: false)?.suffix(64) // take last 64
@@ -81,7 +81,7 @@ public class Torus{
         let tokenCommitment = idToken.sha3(.keccak256)
         let timestamp = String(Int(Date().timeIntervalSince1970))
 
-        print(publicKey, publicKeyHex, pubKeyX, pubKeyY, tokenCommitment)
+        // print(publicKey, publicKeyHex, pubKeyX, pubKeyY, tokenCommitment)
         
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
@@ -97,8 +97,36 @@ public class Torus{
                              "timestamp": timestamp]
             ))
             
-            print( String(data: rpcdata, encoding: .utf8)!)
+            // print( String(data: rpcdata, encoding: .utf8)!)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+        }
+        
+        // Array to store intermediate results
+        var resultArray = Array<Any>.init(repeating: "nil", count: promisesArray.count)
+
+        for (i, pr) in promisesArray.enumerated(){
+            pr.then{ data, response -> Promise<JSONRPCresponse> in
+                let encoder = JSONEncoder()
+                let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                // print("response", decoded)
+                if(decoded.error != nil) {throw "decoding error"}
+                
+                // check if k+t responses are back
+                resultArray[i] = String(data: try encoder.encode(decoded), encoding: .utf8)
+                let lookupShares = resultArray.filter{ $0 as? String != "nil" } // Nonnil elements
+                if(lookupShares.count >= Int(endpoints.count/4)*3+1){
+                    return Promise<JSONRPCresponse>.value(decoded)
+                }
+                else{
+                    let errorJSONRPCResponse = JSONRPCresponse(id: 1, jsonrpc: "2.0", result: nil, error: nil)
+                    return Promise<JSONRPCresponse>.value(errorJSONRPCResponse)
+                }
+                //let keyResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/4)*3+1) // Check if threshold is satisfied
+                //print(keyResult)
+                
+            }.catch{
+                err in print(err)
+            }
         }
         
         

@@ -30,7 +30,7 @@ extension Torus {
             if (hashmap[value] == threshold){
                 return value
             }
-            // print(hashmap)
+            print(hashmap)
         }
         return nil
     }
