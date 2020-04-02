@@ -19,5 +19,7 @@ extension TorusError: CustomDebugStringConvertible{
             return "API request failed or No response from the node"
         case .errInResponse(let str):
             return "API resopnse error \(str)"
+        }
+        
     }
 }

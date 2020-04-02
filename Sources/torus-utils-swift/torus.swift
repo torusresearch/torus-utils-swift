@@ -103,10 +103,10 @@ public class Torus{
         
         // Array to store intermediate results
         var resultArrayStrings = Array<Any?>.init(repeating: nil, count: promisesArray.count)
-        var resultArrayObjects = Array<Any?>.init(repeating: nil, count: promisesArray.count)
+        var resultArrayObjects = Array<JSONRPCresponse?>.init(repeating: nil, count: promisesArray.count)
 
         for (i, pr) in promisesArray.enumerated(){
-            pr.then{ data, response -> Promise<[Any?]> in
+            pr.then{ data, response -> Promise<[JSONRPCresponse?]> in
                 let encoder = JSONEncoder()
                 let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                 // print("response", decoded)
@@ -117,28 +117,36 @@ public class Torus{
                 resultArrayObjects[i] = decoded
                 let lookupShares = resultArrayStrings.filter{ $0 as? String != "nil" } // Nonnil elements
                 if(lookupShares.count >= Int(endpoints.count/4)*3+1){
-                    return Promise<[Any?]>.value(resultArrayObjects)
+                    return Promise<[JSONRPCresponse?]>.value(resultArrayObjects)
                 }
                 else{
                     let errorJSONRPCResponse = JSONRPCresponse(id: 1, jsonrpc: "2.0", result: nil, error: nil)
                     return Promise.init(error: "Commitment didn't succeed with at \(i)")
                 }
             }.done{ data in
+                print("array of JSONRPCResponses", data )
+                
+                var nodeSignatures: [[String:String]]
+                for el in data{
+                    if(el != nil){
+                        nodeSignatures.append(el?.result as! [String:String])
+                    }
+                }
+                print("nodesignatures", nodeSignatures)
+                
                 var promisesArrayReq = Array<Promise<(data: Data, response: URLResponse)> >()
                 for el in endpoints {
                     let rq = try! self.makeUrlRequest(url: el);
                     let encoder = JSONEncoder()
+                    var item:[String]
                     let rpcdata = try! encoder.encode(JSONRPCrequest(
                             method: "ShareRequest",
-                            params: ["messageprefix": "mug00",
-                                     "tokencommitment": tokenCommitment,
-                                     "temppubx": pubKeyX!,
-                                     "temppuby": pubKeyY!,
-                                     "verifieridentifier":verifier,
-                                     "timestamp": timestamp]
+                            params: ["encrypted": "yes",
+                                     "item": ["verifieridentifier":verifier, "verifierparams": verifierParams, "idtoken": idToken, "nodesignatures": nodeSignatures]
+                                ]
                     ))
                     
-                    // print( String(data: rpcdata, encoding: .utf8)!)
+                     print( String(data: rpcdata, encoding: .utf8)!)
                     promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
                 }
                 
