@@ -12,7 +12,7 @@ import BigInt
 public struct JSONRPCrequest: Encodable {
     public var jsonrpc: String = "2.0"
     public var method: String
-    public var params: [String: String]
+    public var params: Any
     public var id: Int = Int.random(in: 0 ... 10)
     
     enum CodingKeys: String, CodingKey {
@@ -26,9 +26,15 @@ public struct JSONRPCrequest: Encodable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(jsonrpc, forKey: .jsonrpc)
         try container.encode(method, forKey: .method)
-        try container.encode(params, forKey: .params)
-        try container.encode(id, forKey: .id)
         
+        if let newParams = params as? [String:String] {
+            try container.encode(params as! [String:String], forKey: .params)
+        }
+        if let newParams = params as? [String: [String:[String:String]]] {
+            try container.encode(params as! [String: [String:[String:String]]], forKey: .params)
+        }
+        
+        try container.encode(id, forKey: .id)
     }
 }
 
