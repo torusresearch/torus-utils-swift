@@ -21,9 +21,9 @@ extension Torus {
         return rq
     }
     
-    func thresholdSame(arr: Array<String>, threshold: Int) -> String?{
+    func thresholdSame<T:Hashable>(arr: Array<T>, threshold: Int) -> T?{
         // uprint(threshold)
-        var hashmap = [String:Int]()
+        var hashmap = [T:Int]()
         for (i, value) in arr.enumerated(){
             if((hashmap[value]) != nil) {hashmap[value]! += 1}
             else { hashmap[value] = 1 }
@@ -147,31 +147,3 @@ extension Torus {
         
     }
 }
-
-
-//export const keyLookup = (endpoints, verifier, verifierId) => {
-//  const lookupPromises = endpoints.map((x) =>
-//    post(
-//      x,
-//      generateJsonRPCObject('VerifierLookupRequest', {
-//        verifier,
-//        verifier_id: verifierId.toString().toLowerCase(),
-//      })
-//    ).catch((_) => undefined)
-//  )
-//  return Some(lookupPromises, (lookupResults) => {
-//    const lookupShares = lookupResults.filter((x) => x)
-//    const errorResult = thresholdSame(
-//      lookupShares.map((x) => x && x.error),
-//      ~~(endpoints.length / 2) + 1
-//    )
-//    const keyResult = thresholdSame(
-//      lookupShares.map((x) => x && x.result),
-//      ~~(endpoints.length / 2) + 1
-//    )
-//    if (keyResult || errorResult) {
-//      return Promise.resolve({ keyResult, errorResult })
-//    }
-//    return Promise.reject(new Error('invalid'))
-//  }).catch((_) => undefined)
-//}

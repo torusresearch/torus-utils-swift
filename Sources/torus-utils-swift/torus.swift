@@ -64,7 +64,7 @@ public class Torus{
         }
         
         return tempPromise
-
+        
     }
     
     func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
@@ -80,7 +80,7 @@ public class Torus{
         // Hash the token from OAuth login
         let tokenCommitment = idToken.sha3(.keccak256)
         let timestamp = String(Int(Date().timeIntervalSince1970))
-
+        
         // print(publicKey, publicKeyHex, pubKeyX, pubKeyY, tokenCommitment)
         
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
@@ -88,13 +88,13 @@ public class Torus{
             let rq = try! self.makeUrlRequest(url: el);
             let encoder = JSONEncoder()
             let rpcdata = try! encoder.encode(JSONRPCrequest(
-                    method: "CommitmentRequest",
-                    params: ["messageprefix": "mug00",
-                             "tokencommitment": tokenCommitment,
-                             "temppubx": pubKeyX!,
-                             "temppuby": pubKeyY!,
-                             "verifieridentifier":verifier,
-                             "timestamp": timestamp]
+                method: "CommitmentRequest",
+                params: ["messageprefix": "mug00",
+                         "tokencommitment": tokenCommitment,
+                         "temppubx": pubKeyX!,
+                         "temppuby": pubKeyY!,
+                         "verifieridentifier":verifier,
+                         "timestamp": timestamp]
             ))
             
             // print( String(data: rpcdata, encoding: .utf8)!)
@@ -122,12 +122,12 @@ public class Torus{
                 
                 let lookupShares = resultArrayStrings.filter{ $0 as? String != nil } // Nonnil elements
                 if(lookupShares.count >= Int(endpoints.count/4)*3+1 && !isTokenCommitmentDone){
-                    print("resolving some promise")
+                    // print("resolving some promise")
                     isTokenCommitmentDone = true
                     return Promise<[JSONRPCresponse?]>.value(resultArrayObjects)
                 }
                 else{
-                   //  let errorJSONRPCResponse = JSONRPCresponse(id: 1, jsonrpc: "2.0", result: nil, error: nil)
+                    //  let errorJSONRPCResponse = JSONRPCresponse(id: 1, jsonrpc: "2.0", result: nil, error: nil)
                     return Promise.init(error: "Commitment didn't succeed with at \(i)")
                 }
             }.done{ data in
@@ -148,21 +148,38 @@ public class Torus{
                     // todo : look into hetrogeneous array encoding
                     let dataForRequest = ["jsonrpc": "2.0",
                                           "id":10,
-                                        "method": "ShareRequest",
-                                "params": ["encrypted": "yes",
-                                           "item": [["verifieridentifier":verifier, "verifier_id": verifierParams["verifier_id"], "idtoken": idToken, "nodesignatures": nodeSignatures]]
-                                        ]
+                                          "method": "ShareRequest",
+                                          "params": ["encrypted": "yes",
+                                                     "item": [["verifieridentifier":verifier, "verifier_id": verifierParams["verifier_id"]!, "idtoken": idToken, "nodesignatures": nodeSignatures]]
+                        ]
                         ] as [String : Any]
                     
                     let rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
-                    print( String(data: rpcdata, encoding: .utf8)!)
+                    // print( String(data: rpcdata, encoding: .utf8)!)
                     promisesArrayReq.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
                 }
                 
-                var ShareResponses = Array<Any?>.init(repeating: nil, count: promisesArray.count)
+                var ShareResponses = Array<[String:String]?>.init(repeating: nil, count: promisesArray.count)
                 for (i, pr) in promisesArrayReq.enumerated(){
-                    pr.done{ data, response in
-                        print("share responses", String(data: data, encoding: .utf8))
+                    pr.then{ data, response -> Promise<JSONRPCresponse> in
+                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+//                        print("share responses", decoded)
+                        
+                        let decodedResult = decoded.result as? [String:Any]
+                        let keyObj = decodedResult!["keys"] as? [[String:Any]]
+                        let publicKey = keyObj?[0]["PublicKey"] as! [String : String]
+                        ShareResponses[i] = publicKey
+                        
+                        // let publicKeyString = String(data: try JSONSerialization.data(withJSONObject: publicKey), encoding: .utf8)
+                        let lookupShares = ShareResponses.filter{ $0 != nil } // Nonnil elements
+                        let keyResult = self.thresholdSame(arr: lookupShares.map{$0}, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
+                        if(keyResult != nil){
+                            return Promise<JSONRPCresponse>.value(decoded)
+                        }else{
+                            return Promise.init(error: "All public keys ain't matchin \(i)")
+                        }
+                    }.done{ data in
+                        
                     }
                 }
                 
@@ -172,13 +189,13 @@ public class Torus{
         }
         
         
-//
-//        messageprefix: 'mug00',
-//        tokencommitment: tokenCommitment.slice(2),
-//        temppubx: pubKeyX,
-//        temppuby: pubKeyY,
-//        timestamp: (Date.now() - 2000).toString().slice(0, 10),
-//        verifieridentifier: verifier,
+        //
+        //        messageprefix: 'mug00',
+        //        tokencommitment: tokenCommitment.slice(2),
+        //        temppubx: pubKeyX,
+        //        temppuby: pubKeyY,
+        //        timestamp: (Date.now() - 2000).toString().slice(0, 10),
+        //        verifieridentifier: verifier,
         
     }
 }
