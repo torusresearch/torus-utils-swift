@@ -67,6 +67,10 @@ public class Torus{
         
     }
     
+//    func commitmentRequest(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String) -> Promise<String>{
+//        
+//    }
+    
     func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
         // Generate pubkey-privatekey
         let privateKey = SECP256K1.generatePrivateKey()
@@ -81,7 +85,7 @@ public class Torus{
         let tokenCommitment = idToken.sha3(.keccak256)
         let timestamp = String(Int(Date().timeIntervalSince1970))
         
-        // print(publicKey, publicKeyHex, pubKeyX, pubKeyY, tokenCommitment)
+        print(privateKey?.toHexString(), publicKeyHex, pubKeyX, pubKeyY, tokenCommitment)
         
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
@@ -131,7 +135,7 @@ public class Torus{
                     return Promise.init(error: "Commitment didn't succeed with at \(i)")
                 }
             }.done{ data in
-                //print("array of JSONRPCResponses", data )
+                print("array of JSONRPCResponses", data )
                 
                 var nodeSignatures: [[String:String]] = []
                 for el in data{
@@ -163,7 +167,7 @@ public class Torus{
                 for (i, pr) in promisesArrayReq.enumerated(){
                     pr.then{ data, response -> Promise<JSONRPCresponse> in
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
-//                        print("share responses", decoded)
+                        //print("share responses", decoded)
                         
                         let decodedResult = decoded.result as? [String:Any]
                         let keyObj = decodedResult!["keys"] as? [[String:Any]]
@@ -179,7 +183,7 @@ public class Torus{
                             return Promise.init(error: "All public keys ain't matchin \(i)")
                         }
                     }.done{ data in
-                        
+                        print(data)
                     }
                 }
                 

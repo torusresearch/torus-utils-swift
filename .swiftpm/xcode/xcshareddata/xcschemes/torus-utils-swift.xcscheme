@@ -68,7 +68,13 @@
                   Identifier = "torus_utils_swiftTests/testSecp()">
                </Test>
                <Test
+                  Identifier = "torus_utils_swiftTests/testdecodeShares()">
+               </Test>
+               <Test
                   Identifier = "torus_utils_swiftTests/testingPromise()">
+               </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testretreiveShares()">
                </Test>
             </SkippedTests>
          </TestableReference>
