@@ -2,6 +2,7 @@ import XCTest
 import PromiseKit
 import fetch_node_details
 import CryptoSwift
+import BigInt
 import web3swift
 import secp256k1
 
@@ -219,6 +220,7 @@ final class torus_utils_swiftTests: XCTestCase {
         }catch CryptoSwift.AES.Error.dataPaddingRequired{
             print("padding error")
         }
+        print(BigUInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16))
         // print(sharedSecret, tupleToArray(sharedSecretData).hexa)
     }
     
@@ -227,9 +229,39 @@ final class torus_utils_swiftTests: XCTestCase {
         // Share2 9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1
         // Share3 ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579
         
-        let shareList = [1:"0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", 2:"9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1", 3:"ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579"]
+        print("ASDF")
+        //print(BigInt("0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", radix: 16))
         
+        let shareList = [BigInt(1): BigInt("0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", radix: 16), BigInt(2): BigInt("9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1", radix: 16), BigInt(3): BigInt("ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579", radix: 16)]
+        //print(shareList)
         
+        let secp256k1N = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16);
+        var secret = BigInt("0");
+        //print(secret)
+
+        for (i, share) in shareList {
+            print(i, share)
+            var upper = BigInt("1");
+            var lower = BigInt("1");
+            for (j, share) in shareList {
+                if (i != j) {
+                    var negateJ = j
+                    negateJ*BigInt(-1)
+                    upper = upper*negateJ
+
+                    upper = upper.power(BigInt(1), modulus: secp256k1N!)
+                    var tempi = i
+                    tempi-j;
+                    var temp = tempi
+                    temp = temp.power(BigInt(1), modulus:secp256k1N!);
+                    lower = lower*temp.power(BigInt(1), modulus: secp256k1N!);
+                }
+            }
+            var delta = upper*lower.power(BigInt(-1), modulus: secp256k1N!).power(BigInt(1), modulus: secp256k1N!);
+            delta = delta*share!.power(BigInt(1), modulus: secp256k1N!);
+            secret = secret+delta
+        }
+        print("secret is", secret)
     }
     
     func tupleToArray(_ tuple: Any) -> [UInt8] {
@@ -243,11 +275,12 @@ final class torus_utils_swiftTests: XCTestCase {
         return (arr[0] as UInt8, arr[1] as UInt8, arr[2] as UInt8, arr[3] as UInt8, arr[4] as UInt8, arr[5] as UInt8, arr[6] as UInt8, arr[7] as UInt8, arr[8] as UInt8, arr[9] as UInt8, arr[10] as UInt8, arr[11] as UInt8, arr[12] as UInt8, arr[13] as UInt8, arr[14] as UInt8, arr[15] as UInt8, arr[16] as UInt8, arr[17] as UInt8, arr[18] as UInt8, arr[19] as UInt8, arr[20] as UInt8, arr[21] as UInt8, arr[22] as UInt8, arr[23] as UInt8, arr[24] as UInt8, arr[25] as UInt8, arr[26] as UInt8, arr[27] as UInt8, arr[28] as UInt8, arr[29] as UInt8, arr[30] as UInt8, arr[31] as UInt8, arr[32] as UInt8, arr[33] as UInt8, arr[34] as UInt8, arr[35] as UInt8, arr[36] as UInt8, arr[37] as UInt8, arr[38] as UInt8, arr[39] as UInt8, arr[40] as UInt8, arr[41] as UInt8, arr[42] as UInt8, arr[43] as UInt8, arr[44] as UInt8, arr[45] as UInt8, arr[46] as UInt8, arr[47] as UInt8, arr[48] as UInt8, arr[49] as UInt8, arr[50] as UInt8, arr[51] as UInt8, arr[52] as UInt8, arr[53] as UInt8, arr[54] as UInt8, arr[55] as UInt8, arr[56] as UInt8, arr[57] as UInt8, arr[58] as UInt8, arr[59] as UInt8, arr[60] as UInt8, arr[61] as UInt8, arr[62] as UInt8, arr[63] as UInt8)
     }
     
-    static var allTests = [
+        var allTests = [
         ("testretreiveShares", testretreiveShares),
         ("testingPromise", testingPromise),
         ("testECDH", testECDH),
         ("testdecodeShares", testdecodeShares),
+        ("testLagrangeInterpolation", testLagrangeInterpolation),
         //        ("testKeyLookup", testKeyLookup),
         //        ("testKeyAssign", testKeyAssign),
         ("testGetPublicAddress", testGetPublicAddress)

@@ -53,6 +53,9 @@
             </BuildableReference>
             <SkippedTests>
                <Test
+                  Identifier = "torus_utils_swiftTests/testECDH()">
+               </Test>
+               <Test
                   Identifier = "torus_utils_swiftTests/testExample()">
                </Test>
                <Test
