@@ -8,6 +8,7 @@
 import Foundation
 import fetch_node_details
 import PromiseKit
+import secp256k1
 import PMKFoundation
 
 extension Torus {
@@ -33,6 +34,24 @@ extension Torus {
             // print(hashmap)
         }
         return nil
+    }
+    
+    func ecdh(pubKey: secp256k1_pubkey, privateKey: Data) -> secp256k1_pubkey? {
+        var pubKey2 = pubKey // Pointer takes variable
+        if (privateKey.count != 32) {return nil}
+        let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
+            if let pkRawPointer = a.baseAddress, a.count > 0 {
+                let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
+                let res = secp256k1_ec_pubkey_tweak_mul(Torus.context!, UnsafeMutablePointer<secp256k1_pubkey>(&pubKey2), privateKeyPointer)
+                return res
+            } else {
+                return nil
+            }
+        }
+        guard let res = result, res != 0 else {
+            return nil
+        }
+        return pubKey2
     }
     
     public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<String>{
@@ -146,4 +165,54 @@ extension Torus {
         return tempPromise
         
     }
+}
+
+// Necessary for decryption
+
+extension StringProtocol {
+    var hexa: [UInt8] {
+        var startIndex = self.startIndex
+        //print(startIndex, count)
+        return (0..<count/2).compactMap { _ in
+            let endIndex = index(after: startIndex)
+            defer { startIndex = index(after: endIndex) }
+            // print(startIndex, endIndex)
+            return UInt8(self[startIndex...endIndex], radix: 16)
+        }
+    }
+}
+
+extension Sequence where Element == UInt8 {
+    var data: Data { .init(self) }
+    var hexa: String { map { .init(format: "%02x", $0) }.joined() }
+}
+
+extension Data {
+    init?(hexString: String) {
+        let length = hexString.count / 2
+        var data = Data(capacity: length)
+        for i in 0 ..< length {
+            let j = hexString.index(hexString.startIndex, offsetBy: i * 2)
+            let k = hexString.index(j, offsetBy: 2)
+            let bytes = hexString[j..<k]
+            if var byte = UInt8(bytes, radix: 16) {
+                data.append(&byte, count: 1)
+            } else {
+                return nil
+            }
+        }
+        self = data
+    }
+}
+
+extension String {
+        func fromBase64() -> String? {
+                guard let data = Data(base64Encoded: self) else {
+                        return nil
+                }
+                return String(data: data, encoding: .utf8)
+        }
+        func toBase64() -> String {
+                return Data(self.utf8).base64EncodedString()
+        }
 }

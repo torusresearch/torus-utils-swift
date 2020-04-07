@@ -85,35 +85,6 @@ final class torus_utils_swiftTests: XCTestCase {
         waitForExpectations(timeout: 10)
     }
     
-    func testSecp(){
-        //        let key = SECP256K1.generatePrivateKey()
-        //        let publicKey = SECP256K1.privateToPublic(privateKey: key!, compressed: false)
-        //        let publicKeyHex = publicKey?.toHexString()
-        //
-        //        let cleanKey = publicKey!.suffix(publicKey!.count - 1)
-        //        let pubKeyUnHashed = cleanKey.suffix(cleanKey.count - 2)
-        //        let pubData = Data.init(hex: pubKeyUnHashed)
-        //        print(cleanKey)
-        //        print(key?.toHexString(), cleanKey.sha3(SHA3.Variant.keccak256).bytes.toHexString())
-        //
-        //        let publicAddress = Web3.Utils.publicToAddress(publicKey!)
-        //        print(publicAddress?.address)
-        
-//        
-//        let privateKey = SECP256K1.generatePrivateKey()
-//        let tempPubKey = SECP256K1.privateToPublic(privateKey: privateKey!, compressed: false)
-//        
-//        let publicKey = tempPubKey!.suffix(tempPubKey!.count - 1)
-//        let publicKeyHex = publicKey.toHexString()
-//        let pubKeyX = publicKey.prefix(publicKey.count/2)
-//        let pubKeyY = publicKey.suffix(publicKey.count/2)
-//        
-//        print(publicKey, publicKeyHex, pubKeyX.toHexString(), pubKeyY.toHexString())
-//        
-//        let publicAddress = Web3.Utils.publicToAddress(publicKey)
-//        print(publicAddress?.address)
-    }
-    
     func testretreiveShares(){
         let expectations = self.expectation(description: "testing get public address")
         let fd = Torus()
@@ -311,7 +282,6 @@ final class torus_utils_swiftTests: XCTestCase {
     static var allTests = [
         ("testretreiveShares", testretreiveShares),
         ("testingPromise", testingPromise),
-        ("testSecp", testSecp),
         ("testECDH", testECDH),
         ("testdecodeShares", testdecodeShares),
         //        ("testKeyLookup", testKeyLookup),
@@ -354,4 +324,16 @@ extension Data {
         }
         self = data
     }
+}
+
+extension String {
+        func fromBase64() -> String? {
+                guard let data = Data(base64Encoded: self) else {
+                        return nil
+                }
+                return String(data: data, encoding: .utf8)
+        }
+        func toBase64() -> String {
+                return Data(self.utf8).base64EncodedString()
+        }
 }

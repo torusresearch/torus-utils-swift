@@ -7,12 +7,14 @@ import Foundation
 import fetch_node_details
 import web3swift
 import PromiseKit
+import secp256k1
 import PMKFoundation
 import CryptorECC
 
 public class Torus{
     public var torusUtils : utils = utils()
-    
+    static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
+
     public init(){
         
     }
