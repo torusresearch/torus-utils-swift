@@ -161,7 +161,6 @@ final class torus_utils_swiftTests: XCTestCase {
             if let pkRawPointer = a.baseAddress, a.count > 0 {
                 let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
                 let res = secp256k1_ec_pubkey_tweak_mul(torus_utils_swiftTests.context!, UnsafeMutablePointer<secp256k1_pubkey>(&pubKey2), privateKeyPointer)
-                print("res", res)
                 return res
             } else {
                 return nil
@@ -173,77 +172,40 @@ final class torus_utils_swiftTests: XCTestCase {
         return pubKey2
     }
     
-    func Testecdh(pubKey: secp256k1_pubkey) {
-        var pubKey2 = pubKey
-       
-        let privateTestKey = [30 as UInt8, 117 as UInt8, 224 as UInt8, 68 as UInt8, 175 as UInt8, 218 as UInt8, 244 as UInt8, 80 as UInt8, 158 as UInt8, 70 as UInt8, 216 as UInt8, 217 as UInt8, 144 as UInt8, 116 as UInt8, 57 as UInt8, 215 as UInt8, 94 as UInt8, 38 as UInt8, 63 as UInt8, 194 as UInt8, 186 as UInt8, 255 as UInt8, 229 as UInt8, 151 as UInt8, 167 as UInt8, 243 as UInt8, 30 as UInt8, 148 as UInt8, 192 as UInt8, 252 as UInt8, 126 as UInt8, 5]
-
-        let res = secp256k1_ec_pubkey_tweak_mul(torus_utils_swiftTests.context!, UnsafeMutablePointer<secp256k1_pubkey>(&pubKey2), UnsafeMutablePointer<UInt8>(mutating: privateTestKey))
-        print("Res", res, pubKey2, privateTestKey)
-    }
-//
     func testECDH() {
-        // print([16 as UInt8])
         
-        var ephemPubKey = secp256k1_pubkey.init(data: (13 as UInt8, 242 as UInt8, 61 as UInt8, 101 as UInt8, 72 as UInt8, 199 as UInt8, 76 as UInt8, 50 as UInt8, 64 as UInt8, 16 as UInt8, 78 as UInt8, 56 as UInt8, 152 as UInt8, 84 as UInt8, 237 as UInt8, 169 as UInt8, 222 as UInt8, 137 as UInt8, 153 as UInt8, 5 as UInt8, 40 as UInt8, 195 as UInt8, 78 as UInt8, 68 as UInt8, 29 as UInt8, 36 as UInt8, 223 as UInt8, 42 as UInt8, 30 as UInt8, 220 as UInt8, 171 as UInt8, 164 as UInt8, 122 as UInt8, 99 as UInt8, 151 as UInt8, 9 as UInt8, 7 as UInt8, 59 as UInt8, 55 as UInt8, 200 as UInt8, 178 as UInt8, 160 as UInt8, 118 as UInt8, 108 as UInt8, 70 as UInt8, 102 as UInt8, 151 as UInt8, 155 as UInt8, 22 as UInt8, 203 as UInt8, 102 as UInt8, 38 as UInt8, 229 as UInt8, 241 as UInt8, 163 as UInt8, 28 as UInt8, 11 as UInt8, 253 as UInt8, 123 as UInt8, 96 as UInt8, 212 as UInt8, 52 as UInt8, 218 as UInt8, 179 as UInt8))
-//
-//        var newEcdh = ecdh(pubKey: ephemPubKey, privateKey: Data.init(hex: "1e75e044afdaf4509e46d8d9907439d75e263fc2baffe597a7f31e94c0fc7e05"))
-//        print(newEcdh)
-//
-//        print(newEcdh.data)
-//
-//        var hash = SHA2(variant: .sha512).calculate(for: [224 as UInt8, 89 as UInt8, 82 as UInt8, 102 as UInt8, 223 as UInt8, 140 as UInt8, 168 as UInt8, 94 as UInt8, 184 as UInt8, 184 as UInt8, 101 as UInt8, 9 as UInt8, 58 as UInt8, 45 as UInt8, 30 as UInt8, 145 as UInt8, 226 as UInt8, 102 as UInt8, 124 as UInt8, 42 as UInt8, 253 as UInt8, 157 as UInt8, 223 as UInt8, 65 as UInt8, 187 as UInt8, 11 as UInt8, 234 as UInt8, 186 as UInt8, 99 as UInt8, 147 as UInt8, 121 as UInt8, 189 as UInt8, 202 as UInt8, 74 as UInt8, 27 as UInt8, 68 as UInt8, 148 as UInt8, 153 as UInt8, 3 as UInt8, 15 as UInt8, 198 as UInt8, 8 as UInt8, 229 as UInt8, 141 as UInt8, 67 as UInt8, 172 as UInt8, 247 as UInt8, 159 as UInt8, 177 as UInt8, 234 as UInt8, 194 as UInt8, 44 as UInt8, 167 as UInt8, 225 as UInt8, 252 as UInt8, 237 as UInt8, 115 as UInt8, 195 as UInt8, 6 as UInt8, 74 as UInt8, 63 as UInt8, 246 as UInt8, 102 as UInt8, 74 as UInt8]).hexa
-//
-//        let AesEncryptionKey = hash.prefix(64)
-//
-//        let iv1 = "d0940684def51afbfeea3b1892d6e8a6".hexa
-//        let share1 = "fc933106fc13ad9c5e9d2c3678d8170bbf2ae90948ef5979cf0e42b1a24ffa5326bb86a35a2c2d4b391f19fba30644e8".hexa
-//        print("hash", hash)
-//
-//        do{
-//            let aes = try! AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv1), padding: .pkcs7)
-//              //let encrypt = try! aes.encrypt(share1)
-//              // print("encrypt", encrypt.hexa)
-//
-//
-//            let decrypt = try! aes.decrypt(share1)
-//            print("decrypt", decrypt.hexa)
-//
-//        }catch CryptoSwift.AES.Error.dataPaddingRequired{
-//            print("padding error")
-//        }
-//
+        // print(array32toTuple("a4abdc1e2adf241d444ec328059989dea9ed5498384e1040324cc748653df20db3da34d4607bfd0b1ca3f1e52666cb169b9766466c76a0b2c8373b070997637a".hexa))
         
-        print(Data.init(hex: "1e75e044afdaf4509e46d8d9907439d75e263fc2baffe597a7f31e94c0fc7e05"))
-        
-//        var ephemPubKey = privateKeyToPublicKey4(privateKey: Data.init(hex: "1e75e044afdaf4509e46d8d9907439d75e263fc2baffe597a7f31e94c0fc7e05"))!
-        
-//        var epherm = secp256k1_pubkey(data: "a4abdc1e2adf241d444ec328059989dea9ed5498384e1040324cc748653df20d")
+        var testArr = "a300f00e443049608e364a84a313b1d97d48bb60feff11f5e6026d174b11ec12a936f5c8ad08f16a7d748c942240b863077e6d261b683dc15064c7c73db9e7ad".hexa
+        var newtest = testArr.prefix(32)
+        newtest.reverse()
+//        print(newtest)
 
-        
-//        var ephemPubKey = secp256k1_pubkey.init(data: (94 as UInt8, 198 as UInt8, 233 as UInt8, 144 as UInt8, 224 as UInt8, 220 as UInt8, 236 as UInt8, 19 as UInt8, 77 as UInt8, 5 as UInt8, 110 as UInt8, 54 as UInt8, 98 as UInt8, 102 as UInt8, 233 as UInt8, 217 as UInt8, 104 as UInt8, 211 as UInt8, 102 as UInt8, 100 as UInt8, 167 as UInt8, 143 as UInt8, 197 as UInt8, 56 as UInt8, 208 as UInt8, 191 as UInt8, 222 as UInt8, 6 as UInt8, 43 as UInt8, 44 as UInt8, 91 as UInt8, 205 as UInt8, 176 as UInt8, 79 as UInt8, 188 as UInt8, 166 as UInt8, 18 as UInt8, 227 as UInt8, 50 as UInt8, 76 as UInt8, 2 as UInt8, 8 as UInt8, 114 as UInt8, 28 as UInt8, 25 as UInt8, 42 as UInt8, 183 as UInt8, 149 as UInt8, 123 as UInt8, 145 as UInt8, 153 as UInt8, 160 as UInt8, 20 as UInt8, 195 as UInt8, 114 as UInt8, 34 as UInt8, 184 as UInt8, 36 as UInt8, 251 as UInt8, 84 as UInt8, 120 as UInt8, 59 as UInt8, 213 as UInt8, 37 as UInt8))
-        //print(ephemPubKey)
-        
-//        var sharedSecretTest = privateKeyToPublicKey4(privateKey: Data.init(hex: "79d78112bf6bd142791b636641d0e75d7898ff0aebff965e9fcc7a5303f1f814"))
+        var newTest2 = testArr.suffix(32)
+        newTest2.reverse()
 
+        newtest.append(contentsOf: newTest2)
+        //print(newtest)
+        
+        
+        var ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(newtest)))
         var sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: Data.init(hexString: "1e75e044afdaf4509e46d8d9907439d75e263fc2baffe597a7f31e94c0fc7e05")!)
         var sharedSecretData = sharedSecret!.data
-        
-        // Reverse this
-        
+        var sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
+        var reversedSharedSecret = sharedSecretPrefix.reversed()
+        print(reversedSharedSecret.hexa)
+//        print(tupleToArray(sharedSecretData).)
         
         // let prefix = sharedSecretData.prefix(32)
 //        print("sharedSecretData", sharedSecretData)
-        var newXValue = "20a94a6592ae6128ffc5fc519c113790789afe4f35c0a0772176a1909a205a88"
+        var newXValue = reversedSharedSecret.hexa
         
         
         var hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
-
         let AesEncryptionKey = hash.prefix(64)
-
-        let iv1 = "d0940684def51afbfeea3b1892d6e8a6".hexa
-        let share1 = "fc933106fc13ad9c5e9d2c3678d8170bbf2ae90948ef5979cf0e42b1a24ffa5326bb86a35a2c2d4b391f19fba30644e8".hexa
-        print("hash", hash)
+        let iv1 = "2956ef4b3d8a497ca2b6bf8af4d242f5".hexa
+        let share1 = "ODQ3ZDRkMmJlMGViMzYyZjdhYTZhYjYyMTAzYWUwMzkyMzYzZTgxZDQzZTdlMTUxY2ViM2ZkZWQzZDI1NWE4Njc0ZjI2ODYyODE5YmVlMWQzNjEwMTE5OTI2NGE0Njc4".fromBase64()!.hexa
+        // print("hash", hash)
 
         do{
             let aes = try! AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv1), padding: .pkcs7)
@@ -257,17 +219,16 @@ final class torus_utils_swiftTests: XCTestCase {
         }catch CryptoSwift.AES.Error.dataPaddingRequired{
             print("padding error")
         }
+        // print(sharedSecret, tupleToArray(sharedSecretData).hexa)
+    }
+    
+    func testLagrangeInterpolation(){
+        // Share1 0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652
+        // Share2 9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1
+        // Share3 ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579
         
+        let shareList = [1:"0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", 2:"9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1", 3:"ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579"]
         
-        //var anoherSharedSecret = Testecdh(pubKey: ephemPubKey)
-        
-        
-//        var sharedSecret2 = ecdh(pubKey: sharedSecret!, privateKey: Data.init(hex: "0000000000000000000000000000000000000000000000000000000000000002"))
-        
-//        print(sharedSecretTest)
-        
-        
-        print(sharedSecret, tupleToArray(sharedSecretData).hexa)
         
     }
     
@@ -278,6 +239,9 @@ final class torus_utils_swiftTests: XCTestCase {
         return tupleElements
     }
     
+    func array32toTuple(_ arr: Array<UInt8>) -> (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8){
+        return (arr[0] as UInt8, arr[1] as UInt8, arr[2] as UInt8, arr[3] as UInt8, arr[4] as UInt8, arr[5] as UInt8, arr[6] as UInt8, arr[7] as UInt8, arr[8] as UInt8, arr[9] as UInt8, arr[10] as UInt8, arr[11] as UInt8, arr[12] as UInt8, arr[13] as UInt8, arr[14] as UInt8, arr[15] as UInt8, arr[16] as UInt8, arr[17] as UInt8, arr[18] as UInt8, arr[19] as UInt8, arr[20] as UInt8, arr[21] as UInt8, arr[22] as UInt8, arr[23] as UInt8, arr[24] as UInt8, arr[25] as UInt8, arr[26] as UInt8, arr[27] as UInt8, arr[28] as UInt8, arr[29] as UInt8, arr[30] as UInt8, arr[31] as UInt8, arr[32] as UInt8, arr[33] as UInt8, arr[34] as UInt8, arr[35] as UInt8, arr[36] as UInt8, arr[37] as UInt8, arr[38] as UInt8, arr[39] as UInt8, arr[40] as UInt8, arr[41] as UInt8, arr[42] as UInt8, arr[43] as UInt8, arr[44] as UInt8, arr[45] as UInt8, arr[46] as UInt8, arr[47] as UInt8, arr[48] as UInt8, arr[49] as UInt8, arr[50] as UInt8, arr[51] as UInt8, arr[52] as UInt8, arr[53] as UInt8, arr[54] as UInt8, arr[55] as UInt8, arr[56] as UInt8, arr[57] as UInt8, arr[58] as UInt8, arr[59] as UInt8, arr[60] as UInt8, arr[61] as UInt8, arr[62] as UInt8, arr[63] as UInt8)
+    }
     
     static var allTests = [
         ("testretreiveShares", testretreiveShares),
