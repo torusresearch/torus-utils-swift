@@ -11,7 +11,7 @@ import secp256k1
 final class torus_utils_swiftTests: XCTestCase {
     
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
-
+    
     var tempVerifierId = "shubham@tor.us"
     
     func testKeyLookup() {
@@ -112,7 +112,9 @@ final class torus_utils_swiftTests: XCTestCase {
         // privatekey 1e75e044afdaf4509e46d8d9907439d75e263fc2baffe597a7f31e94c0fc7e05
         //
         //        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Index": "5", "Threshold": 1, "Share": "ZmM5MzMxMDZmYzEzYWQ5YzVlOWQyYzM2NzhkODE3MGJiZjJhZTkwOTQ4ZWY1OTc5Y2YwZTQyYjFhMjRmZmE1MzI2YmI4NmEzNWEyYzJkNGIzOTFmMTlmYmEzMDY0NGU4", "Verifiers": ["google": ["shubham@tor.us"]], "Metadata": ["ephemPublicKey": "04a4abdc1e2adf241d444ec328059989dea9ed5498384e1040324cc748653df20db3da34d4607bfd0b1ca3f1e52666cb169b9766466c76a0b2c8373b070997637a", "mac": "7fbb4ee8902f87d5029260eea0d133c0e86998e3c5218236d23557fdfc6eaa30", "mode": "AES256", "iv": "d0940684def51afbfeea3b1892d6e8a6"]]]]), error: nil, message: nil)
+        
         //        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Share": "NTg4MTQ0ZjA4MjBlYjVmNzMzZWViYzE0NjZjOGRlOTA3YTNmZjk3OTgzYTVmOGNhMjQ5OGZhNTIyYWY1NmY3NDlkNWMxOWViODU1ZmQzNGJkNzZmMTE4MGVlNTY5YWMz", "Verifiers": ["google": ["shubham@tor.us"]], "Index": "5", "Threshold": 1, "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Metadata": ["iv": "9ceb3a578077a9cbaf4e0746d495b643", "mode": "AES256", "mac": "a5cc337209d4ee6a884e512f18c7a493bbbac23a7a21e45ab264f3b140fc9635", "ephemPublicKey": "04de153e0a02153f3d8e9d36d17915261b96e7763de254ede5e03868f1ac1cbc394f30f2f7ba5bd266c6c6f925bcfe3b3fe7fa6571de29ae402bd77cfbe9ec9fc7"]]]]), error: nil, message: nil)
+        
         //        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Share": "ODQ3ZDRkMmJlMGViMzYyZjdhYTZhYjYyMTAzYWUwMzkyMzYzZTgxZDQzZTdlMTUxY2ViM2ZkZWQzZDI1NWE4Njc0ZjI2ODYyODE5YmVlMWQzNjEwMTE5OTI2NGE0Njc4", "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Metadata": ["mode": "AES256", "iv": "2956ef4b3d8a497ca2b6bf8af4d242f5", "mac": "65d5904eab0b3cad436c48aa908bbfa6ff49439fc545f93782047729b3aa272f", "ephemPublicKey": "04a300f00e443049608e364a84a313b1d97d48bb60feff11f5e6026d174b11ec12a936f5c8ad08f16a7d748c942240b863077e6d261b683dc15064c7c73db9e7ad"], "Index": "5", "Verifiers": ["google": ["shubham@tor.us"]], "Threshold": 1]]]), error: nil, message: nil)
         
         let iv1 = "d0940684def51afbfeea3b1892d6e8a6".hexa
@@ -123,15 +125,15 @@ final class torus_utils_swiftTests: XCTestCase {
         // print(share1)
         
         do{
-
+            
             let aes = try! AES(key: key1, blockMode: CBC(iv: iv1), padding: .pkcs7)
             let encrypt = try! aes.encrypt(share1)
             print("encrypt", encrypt.hexa)
-
-
+            
+            
             let decrypt = try! aes.decrypt(share1)
             print("decrypt", decrypt)
-
+            
         }catch CryptoSwift.AES.Error.dataPaddingRequired{
             print("padding error")
         }
@@ -180,11 +182,11 @@ final class torus_utils_swiftTests: XCTestCase {
         var testArr = "a300f00e443049608e364a84a313b1d97d48bb60feff11f5e6026d174b11ec12a936f5c8ad08f16a7d748c942240b863077e6d261b683dc15064c7c73db9e7ad".hexa
         var newtest = testArr.prefix(32)
         newtest.reverse()
-//        print(newtest)
-
+        //        print(newtest)
+        
         var newTest2 = testArr.suffix(32)
         newTest2.reverse()
-
+        
         newtest.append(contentsOf: newTest2)
         //print(newtest)
         
@@ -195,10 +197,10 @@ final class torus_utils_swiftTests: XCTestCase {
         var sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
         var reversedSharedSecret = sharedSecretPrefix.reversed()
         print(reversedSharedSecret.hexa)
-//        print(tupleToArray(sharedSecretData).)
+        //        print(tupleToArray(sharedSecretData).)
         
         // let prefix = sharedSecretData.prefix(32)
-//        print("sharedSecretData", sharedSecretData)
+        //        print("sharedSecretData", sharedSecretData)
         var newXValue = reversedSharedSecret.hexa
         
         
@@ -207,16 +209,16 @@ final class torus_utils_swiftTests: XCTestCase {
         let iv1 = "2956ef4b3d8a497ca2b6bf8af4d242f5".hexa
         let share1 = "ODQ3ZDRkMmJlMGViMzYyZjdhYTZhYjYyMTAzYWUwMzkyMzYzZTgxZDQzZTdlMTUxY2ViM2ZkZWQzZDI1NWE4Njc0ZjI2ODYyODE5YmVlMWQzNjEwMTE5OTI2NGE0Njc4".fromBase64()!.hexa
         // print("hash", hash)
-
+        
         do{
             let aes = try! AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv1), padding: .pkcs7)
-              //let encrypt = try! aes.encrypt(share1)
-              // print("encrypt", encrypt.hexa)
-
-
+            //let encrypt = try! aes.encrypt(share1)
+            // print("encrypt", encrypt.hexa)
+            
+            
             let decrypt = try! aes.decrypt(share1)
             print("decrypt", decrypt.hexa)
-
+            
         }catch CryptoSwift.AES.Error.dataPaddingRequired{
             print("padding error")
         }
@@ -229,8 +231,11 @@ final class torus_utils_swiftTests: XCTestCase {
         // Share2 9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1
         // Share3 ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579
         
-        print("ASDF")
+        // print(BigInt(8).inverse(BigInt(21)))
+        // print(BigInt("10").power(BigInt(1), modulus: BigInt(7)))
         //print(BigInt("0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", radix: 16))
+        
+        let expectations = self.expectation(description: "testing get public address")
         
         let shareList = [BigInt(1): BigInt("0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", radix: 16), BigInt(2): BigInt("9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1", radix: 16), BigInt(3): BigInt("ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579", radix: 16)]
         //print(shareList)
@@ -238,30 +243,47 @@ final class torus_utils_swiftTests: XCTestCase {
         let secp256k1N = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16);
         var secret = BigInt("0");
         //print(secret)
-
+        let serialQueue = DispatchQueue(label: "lagrange.serial.queue")
+        let semaphore = DispatchSemaphore(value: 1)
+        
         for (i, share) in shareList {
-            print(i, share)
-            var upper = BigInt("1");
-            var lower = BigInt("1");
-            for (j, share) in shareList {
-                if (i != j) {
-                    var negateJ = j
-                    negateJ*BigInt(-1)
-                    upper = upper*negateJ
-
-                    upper = upper.power(BigInt(1), modulus: secp256k1N!)
-                    var tempi = i
-                    tempi-j;
-                    var temp = tempi
-                    temp = temp.power(BigInt(1), modulus:secp256k1N!);
-                    lower = lower*temp.power(BigInt(1), modulus: secp256k1N!);
+            serialQueue.async{
+                
+                semaphore.wait()
+                //print(i, share)
+                var upper = BigInt(1);
+                var lower = BigInt(1);
+                for (j, share) in shareList {
+                    if (i != j) {
+                        // print(j, i)
+                        var negateJ = j
+                        negateJ = negateJ*BigInt(-1)
+                        upper = upper*negateJ
+                        
+                        upper = upper.modulus(secp256k1N!)
+                        
+                        var tempi = i
+                        tempi = tempi-j;
+                        var temp = tempi
+                        
+                        temp = temp.modulus(secp256k1N!);
+                        lower = (lower*temp).modulus(secp256k1N!);
+                        
+                        print("i \(i) j \(j) tempi \(tempi) upper \(upper) lower \(lower)")
+                    }
                 }
+                var delta = (upper*(lower.inverse(secp256k1N!)!)).modulus(secp256k1N!);
+                print("delta", delta, "inverse of lower", lower.inverse(secp256k1N!)!, "\n")
+                delta = (delta*share!).modulus(secp256k1N!)
+                secret = (secret+delta).modulus(secp256k1N!)
+                
+                print("secret is", secret)
+                semaphore.signal()
             }
-            var delta = upper*lower.power(BigInt(-1), modulus: secp256k1N!).power(BigInt(1), modulus: secp256k1N!);
-            delta = delta*share!.power(BigInt(1), modulus: secp256k1N!);
-            secret = secret+delta
         }
-        print("secret is", secret)
+        
+        waitForExpectations(timeout: 15)
+        
     }
     
     func tupleToArray(_ tuple: Any) -> [UInt8] {
@@ -275,7 +297,7 @@ final class torus_utils_swiftTests: XCTestCase {
         return (arr[0] as UInt8, arr[1] as UInt8, arr[2] as UInt8, arr[3] as UInt8, arr[4] as UInt8, arr[5] as UInt8, arr[6] as UInt8, arr[7] as UInt8, arr[8] as UInt8, arr[9] as UInt8, arr[10] as UInt8, arr[11] as UInt8, arr[12] as UInt8, arr[13] as UInt8, arr[14] as UInt8, arr[15] as UInt8, arr[16] as UInt8, arr[17] as UInt8, arr[18] as UInt8, arr[19] as UInt8, arr[20] as UInt8, arr[21] as UInt8, arr[22] as UInt8, arr[23] as UInt8, arr[24] as UInt8, arr[25] as UInt8, arr[26] as UInt8, arr[27] as UInt8, arr[28] as UInt8, arr[29] as UInt8, arr[30] as UInt8, arr[31] as UInt8, arr[32] as UInt8, arr[33] as UInt8, arr[34] as UInt8, arr[35] as UInt8, arr[36] as UInt8, arr[37] as UInt8, arr[38] as UInt8, arr[39] as UInt8, arr[40] as UInt8, arr[41] as UInt8, arr[42] as UInt8, arr[43] as UInt8, arr[44] as UInt8, arr[45] as UInt8, arr[46] as UInt8, arr[47] as UInt8, arr[48] as UInt8, arr[49] as UInt8, arr[50] as UInt8, arr[51] as UInt8, arr[52] as UInt8, arr[53] as UInt8, arr[54] as UInt8, arr[55] as UInt8, arr[56] as UInt8, arr[57] as UInt8, arr[58] as UInt8, arr[59] as UInt8, arr[60] as UInt8, arr[61] as UInt8, arr[62] as UInt8, arr[63] as UInt8)
     }
     
-        var allTests = [
+    var allTests = [
         ("testretreiveShares", testretreiveShares),
         ("testingPromise", testingPromise),
         ("testECDH", testECDH),
@@ -324,13 +346,13 @@ extension Data {
 }
 
 extension String {
-        func fromBase64() -> String? {
-                guard let data = Data(base64Encoded: self) else {
-                        return nil
-                }
-                return String(data: data, encoding: .utf8)
+    func fromBase64() -> String? {
+        guard let data = Data(base64Encoded: self) else {
+            return nil
         }
-        func toBase64() -> String {
-                return Data(self.utf8).base64EncodedString()
-        }
+        return String(data: data, encoding: .utf8)
+    }
+    func toBase64() -> String {
+        return Data(self.utf8).base64EncodedString()
+    }
 }
