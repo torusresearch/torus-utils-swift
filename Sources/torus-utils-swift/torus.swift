@@ -69,9 +69,73 @@ public class Torus{
         
     }
     
-//    func commitmentRequest(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String) -> Promise<String>{
-//        
-//    }
+    func commitmentRequest(endpoints : Array<String>, verifier: String, pubKeyX: String, pubKeyY: String, temppuby: String, timestamp: String, tokenCommitment: String) -> Promise<[[String:String]]>{
+        
+        let (tempPromise, seal) = Promise<[[String:String]]>.pending()
+
+        var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
+        for el in endpoints {
+            let rq = try! self.makeUrlRequest(url: el);
+            let encoder = JSONEncoder()
+            let rpcdata = try! encoder.encode(JSONRPCrequest(
+                method: "CommitmentRequest",
+                params: ["messageprefix": "mug00",
+                         "tokencommitment": tokenCommitment,
+                         "temppubx": pubKeyX,
+                         "temppuby": pubKeyY,
+                         "verifieridentifier":verifier,
+                         "timestamp": timestamp]
+            ))
+            // print( String(data: rpcdata, encoding: .utf8)!)
+            promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+        }
+        
+        // Array to store intermediate results
+        var resultArrayStrings = Array<Any?>.init(repeating: nil, count: promisesArray.count)
+        var resultArrayObjects = Array<JSONRPCresponse?>.init(repeating: nil, count: promisesArray.count)
+        var isTokenCommitmentDone = false
+        
+        for (i, pr) in promisesArray.enumerated(){
+            pr.then{ data, response -> Promise<[JSONRPCresponse?]> in
+                // print(String(data: data, encoding: .utf8))
+                
+                let encoder = JSONEncoder()
+                let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                // print("response", decoded)
+                
+                if(decoded.error != nil) {throw "decoding error"}
+                
+                // check if k+t responses are back
+                resultArrayStrings[i] = String(data: try encoder.encode(decoded), encoding: .utf8)
+                resultArrayObjects[i] = decoded
+                
+                let lookupShares = resultArrayStrings.filter{ $0 as? String != nil } // Nonnil elements
+                if(lookupShares.count >= Int(endpoints.count/4)*3+1 && !isTokenCommitmentDone){
+                    // print("resolving some promise")
+                    isTokenCommitmentDone = true
+                    return Promise<[JSONRPCresponse?]>.value(resultArrayObjects)
+                }
+                else{
+                    //  let errorJSONRPCResponse = JSONRPCresponse(id: 1, jsonrpc: "2.0", result: nil, error: nil)
+                    return Promise.init(error: "Commitment didn't succeed with at \(i)")
+                }
+            }.then{ data -> Promise<[[String:String]]>in
+                print("After token commitment: array of JSONRPCResponses", data )
+                
+                var nodeSignatures: [[String:String]] = []
+                for el in data{
+                    if(el != nil){
+                        nodeSignatures.append(el?.result as! [String:String])
+                    }
+                }
+                seal.fulfill(nodeSignatures)
+                return Promise<[[String:String]]>.value(nodeSignatures)
+            }.catch{ err in
+                seal.reject(err)
+            }
+        }
+        return tempPromise
+    }
     
     func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
         // Generate pubkey-privatekey
@@ -137,7 +201,7 @@ public class Torus{
                     return Promise.init(error: "Commitment didn't succeed with at \(i)")
                 }
             }.done{ data in
-                print("array of JSONRPCResponses", data )
+                print("After token commitment: array of JSONRPCResponses", data )
                 
                 var nodeSignatures: [[String:String]] = []
                 for el in data{
@@ -185,7 +249,7 @@ public class Torus{
                             return Promise.init(error: "All public keys ain't matchin \(i)")
                         }
                     }.done{ data in
-                        print(data)
+                        print(data, i)
                     }
                 }
                 

@@ -90,7 +90,7 @@ final class torus_utils_swiftTests: XCTestCase {
         let expectations = self.expectation(description: "testing get public address")
         let fd = Torus()
         let verifierParams = ["verifier_id": tempVerifierId]
-        let token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjI1N2Y2YTU4MjhkMWU0YTNhNmEwM2ZjZDFhMjQ2MWRiOTU5M2U2MjQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4NzY3MzMxMDUxMTYtaTBoajNzNTNxaWlvNWs5NXBycGZtajBocDBnbWd0b3IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4NzY3MzMxMDUxMTYtaTBoajNzNTNxaWlvNWs5NXBycGZtajBocDBnbWd0b3IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDk1ODQzNTA5MTA3Mjc0NzAzNDkiLCJoZCI6InRvci51cyIsImVtYWlsIjoic2h1YmhhbUB0b3IudXMiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6InZYZnFYLVd6ZW8tdURBV19EUTNoYnciLCJub25jZSI6IlVJMHplalpvb1BhZDZHc1dOM0VGV2dsS1RRZWZjeiIsIm5hbWUiOiJTaHViaGFtIFJhdGhpIiwicGljdHVyZSI6Imh0dHBzOi8vbGg0Lmdvb2dsZXVzZXJjb250ZW50LmNvbS8tT19SUi1aYlQwZVUvQUFBQUFBQUFBQUkvQUFBQUFBQUFBQUEvQUFLV0pKTmVleHhiRHozcjFVVnBrWjVGbzdsYTNhMXZRZy9zOTYtYy9waG90by5qcGciLCJnaXZlbl9uYW1lIjoiU2h1YmhhbSIsImZhbWlseV9uYW1lIjoiUmF0aGkiLCJsb2NhbGUiOiJlbiIsImlhdCI6MTU4NTg5ODc5NiwiZXhwIjoxNTg1OTAyMzk2LCJqdGkiOiI0ODJkNmYxZTk1MzhhMmMzZjdjNjc3MTM2ZTI5MjNhM2I4YzM1OWJkIn0.XrX14yae1qJunwp8pDSGrdkkTuXKV539XSQYFNT9_DWd0GchXEZsO81Az-P1m88GzMHzw9wo6AbIti8phUNa2MwEqUrS5WYxt1QrPgoAVv6HI56aMbK04HX92yO5uh36y8S_gmxjTW5O9rYsAJv0UEP3uNrcq_TmL9Y3TAaHEnk2qcipNxMT9kjaQwU0B6jIjnOKqZenF06y-QOjzyt4TwRH0T9oEymit-iq_83Alks8FirTpsKNhTHSnLIOdlxHGYYGv1EyWPNiA6lNz5f_OVxsisTOknzfUthma6BVJV4yIfBj2gbmxGK5pMJsjKcI4ELmRlzhO8aCCKvNwwQMlQ"
+        let token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjI1N2Y2YTU4MjhkMWU0YTNhNmEwM2ZjZDFhMjQ2MWRiOTU5M2U2MjQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4NzY3MzMxMDUxMTYtaTBoajNzNTNxaWlvNWs5NXBycGZtajBocDBnbWd0b3IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4NzY3MzMxMDUxMTYtaTBoajNzNTNxaWlvNWs5NXBycGZtajBocDBnbWd0b3IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDk1ODQzNTA5MTA3Mjc0NzAzNDkiLCJoZCI6InRvci51cyIsImVtYWlsIjoic2h1YmhhbUB0b3IudXMiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6IkRxeFB5UjlCSldfWnB4ZzBjVktkQ2ciLCJub25jZSI6Im9VaVdhd1JrT0xlcWgzRndWdEx5cFVNUlpGWmhycCIsIm5hbWUiOiJTaHViaGFtIFJhdGhpIiwicGljdHVyZSI6Imh0dHBzOi8vbGg0Lmdvb2dsZXVzZXJjb250ZW50LmNvbS8tT19SUi1aYlQwZVUvQUFBQUFBQUFBQUkvQUFBQUFBQUFBQUEvQUFLV0pKTmVleHhiRHozcjFVVnBrWjVGbzdsYTNhMXZRZy9zOTYtYy9waG90by5qcGciLCJnaXZlbl9uYW1lIjoiU2h1YmhhbSIsImZhbWlseV9uYW1lIjoiUmF0aGkiLCJsb2NhbGUiOiJlbiIsImlhdCI6MTU4NjI1NTQxMSwiZXhwIjoxNTg2MjU5MDExLCJqdGkiOiI3OWY5ZjBjZTIxNGUxOTE2ODQ4YzI2ODUxMmFmNGE1MDI1ZmY2NzA5In0.kTkM58lp5k6JjZJy8ZaZq8OdKz2RuHT966XizOrbJ8RG-teW9bH1vnZQlLVZU8m-Hlh5zNUdAyJXJ6w1IjgXCVTQ2bBB_6Zb-cM3jzjU7qxtaBg3OCHudOkMVkHRwwkub4NFjrqklzVoh43Umuinu16LYZO0_3Zl_wtHrcS3-1-qWvoC01jxis-Kfc2hpbq9BflflGrPwPn6xC1uAlh-zRawu3u7GidB_jx7jANXrEIvL_Y85ApQCYMsuEP2zx3NiGLzy3GW_FomulPuSKJb8LsGuRH4tLTsUT_ez4rjtZYJbwLPvl1MwitX8d6HMgaA8KGsRc4J4xRlXeShk4hgQA"
         
         let nodePubKeys : Array<TorusNodePub> = [TorusNodePub(_X: "4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", _Y: "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),TorusNodePub(_X: "1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", _Y: "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),TorusNodePub(_X: "fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", _Y: "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),TorusNodePub(_X: "e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", _Y: "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),TorusNodePub(_X: "a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", _Y: "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96")
         ]
@@ -109,13 +109,13 @@ final class torus_utils_swiftTests: XCTestCase {
     
     func testdecodeShares(){
         
-        // privatekey 1e75e044afdaf4509e46d8d9907439d75e263fc2baffe597a7f31e94c0fc7e05
+        // privatekey a615f79a8a1fc577bfb04ae7a7c2a381a3b081ec2fecf3df56e40893f4c5c7fd
         //
-        //        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Index": "5", "Threshold": 1, "Share": "ZmM5MzMxMDZmYzEzYWQ5YzVlOWQyYzM2NzhkODE3MGJiZjJhZTkwOTQ4ZWY1OTc5Y2YwZTQyYjFhMjRmZmE1MzI2YmI4NmEzNWEyYzJkNGIzOTFmMTlmYmEzMDY0NGU4", "Verifiers": ["google": ["shubham@tor.us"]], "Metadata": ["ephemPublicKey": "04a4abdc1e2adf241d444ec328059989dea9ed5498384e1040324cc748653df20db3da34d4607bfd0b1ca3f1e52666cb169b9766466c76a0b2c8373b070997637a", "mac": "7fbb4ee8902f87d5029260eea0d133c0e86998e3c5218236d23557fdfc6eaa30", "mode": "AES256", "iv": "d0940684def51afbfeea3b1892d6e8a6"]]]]), error: nil, message: nil)
+//        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Metadata": ["mode": "AES256", "iv": "9622119b0055207f0b761220d1c26e19", "mac": "5a32452eb60370575247c229e552c882b06c016523ae5c992d1dc57aa5779875", "ephemPublicKey": "041dc8c20a131b632c8ec82dd593c9bfa12b5b521ca5176067bbd731025d3db5669b995434e90a7999b945c2c558584478b2133cfa170b48ea5f738f218f02a1a6"], "Verifiers": ["google": ["shubham@tor.us"]], "Index": "5", "Share": "YzU0MTE1ZDUwMTFjNGJjMGQ5MDQ0MjcyMDY2NTQwODU0OTgzNjllYzI5OWJhYWZkNWYyOTNiYWU0MDZhNTQ3NDU5YTUwOTg1MDI2ZjY4NDBhZWNlZDFiODI4NGZiODUz", "Threshold": 1, "PublicKey": ["Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768", "X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f"]]]]), error: nil, message: nil) 0
         
-        //        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Share": "NTg4MTQ0ZjA4MjBlYjVmNzMzZWViYzE0NjZjOGRlOTA3YTNmZjk3OTgzYTVmOGNhMjQ5OGZhNTIyYWY1NmY3NDlkNWMxOWViODU1ZmQzNGJkNzZmMTE4MGVlNTY5YWMz", "Verifiers": ["google": ["shubham@tor.us"]], "Index": "5", "Threshold": 1, "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Metadata": ["iv": "9ceb3a578077a9cbaf4e0746d495b643", "mode": "AES256", "mac": "a5cc337209d4ee6a884e512f18c7a493bbbac23a7a21e45ab264f3b140fc9635", "ephemPublicKey": "04de153e0a02153f3d8e9d36d17915261b96e7763de254ede5e03868f1ac1cbc394f30f2f7ba5bd266c6c6f925bcfe3b3fe7fa6571de29ae402bd77cfbe9ec9fc7"]]]]), error: nil, message: nil)
+//        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Threshold": 1, "Verifiers": ["google": ["shubham@tor.us"]], "Index": "5", "Share": "ZDU4ZmNiMTc1MTBkYzIxNDU4NjQ5NmFlZDM0ZTAwZDE0MjBkYWU1N2NiMjc2ZDBjMzAzZmQyMTFmNGZhOGU2ODYxOTlmMjc4ODA2ZTdiZWU5MjRmZjJjNjczNmI2MjE3", "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Metadata": ["ephemPublicKey": "046c00a4f0e3df4a49ada329190aac32efe0441b3e1383bbafcac2b00bc62c08b3728cf54895926dbc1088dd3927b58de91e8a7e4c6b17abaea1aeb853e9b6119d", "iv": "62d9f5ebe4a954ac090b427c0082e35f", "mac": "e45404bf988248186f03bebc95a928231d4a302f8154e5138f76a974b899c19e", "mode": "AES256"]]]]), error: nil, message: nil) 2
         
-        //        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Share": "ODQ3ZDRkMmJlMGViMzYyZjdhYTZhYjYyMTAzYWUwMzkyMzYzZTgxZDQzZTdlMTUxY2ViM2ZkZWQzZDI1NWE4Njc0ZjI2ODYyODE5YmVlMWQzNjEwMTE5OTI2NGE0Njc4", "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Metadata": ["mode": "AES256", "iv": "2956ef4b3d8a497ca2b6bf8af4d242f5", "mac": "65d5904eab0b3cad436c48aa908bbfa6ff49439fc545f93782047729b3aa272f", "ephemPublicKey": "04a300f00e443049608e364a84a313b1d97d48bb60feff11f5e6026d174b11ec12a936f5c8ad08f16a7d748c942240b863077e6d261b683dc15064c7c73db9e7ad"], "Index": "5", "Verifiers": ["google": ["shubham@tor.us"]], "Threshold": 1]]]), error: nil, message: nil)
+//        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Metadata": ["mode": "AES256", "mac": "09469f91a61148e4cc8a13d3023890e3a2039bed4ef0d24311f8441eb1bfd261", "iv": "0a041a50c1950c7a3268fff1b70c32ca", "ephemPublicKey": "04b5e2bb9a2c5025445dad60ff64f4bc4ea2217e92bb406e14077e7fb2b7d98c6256e32a39bf5215340240df018059abee0503716c972bedd868d5c366e3a409d3"], "Share": "ZTE1OTkyN2E0MjgxZTY4NzQ0MWYyZTBmZjU5ZjNmM2YxZDIxMjEwZjhhYWIwYzQ0MWZiYjkxOGFhMjg3NGVmODY2MTAxZGM0ZTVjYTVhYzhlMDg0NzQyNzBkYzA0OTU4", "Index": "5", "Threshold": 1, "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Verifiers": ["google": ["shubham@tor.us"]]]]]), error: nil, message: nil) 4
         
         let iv1 = "d0940684def51afbfeea3b1892d6e8a6".hexa
         let share1 = "fc933106fc13ad9c5e9d2c3678d8170bbf2ae90948ef5979cf0e42b1a24ffa5326bb86a35a2c2d4b391f19fba30644e8".hexa
@@ -179,7 +179,7 @@ final class torus_utils_swiftTests: XCTestCase {
         
         // print(array32toTuple("a4abdc1e2adf241d444ec328059989dea9ed5498384e1040324cc748653df20db3da34d4607bfd0b1ca3f1e52666cb169b9766466c76a0b2c8373b070997637a".hexa))
         
-        var testArr = "a300f00e443049608e364a84a313b1d97d48bb60feff11f5e6026d174b11ec12a936f5c8ad08f16a7d748c942240b863077e6d261b683dc15064c7c73db9e7ad".hexa
+        var testArr = "b5e2bb9a2c5025445dad60ff64f4bc4ea2217e92bb406e14077e7fb2b7d98c6256e32a39bf5215340240df018059abee0503716c972bedd868d5c366e3a409d3".hexa
         var newtest = testArr.prefix(32)
         newtest.reverse()
         //        print(newtest)
@@ -192,7 +192,7 @@ final class torus_utils_swiftTests: XCTestCase {
         
         
         var ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(newtest)))
-        var sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: Data.init(hexString: "1e75e044afdaf4509e46d8d9907439d75e263fc2baffe597a7f31e94c0fc7e05")!)
+        var sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: Data.init(hexString: "a615f79a8a1fc577bfb04ae7a7c2a381a3b081ec2fecf3df56e40893f4c5c7fd")!)
         var sharedSecretData = sharedSecret!.data
         var sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
         var reversedSharedSecret = sharedSecretPrefix.reversed()
@@ -206,8 +206,8 @@ final class torus_utils_swiftTests: XCTestCase {
         
         var hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
         let AesEncryptionKey = hash.prefix(64)
-        let iv1 = "2956ef4b3d8a497ca2b6bf8af4d242f5".hexa
-        let share1 = "ODQ3ZDRkMmJlMGViMzYyZjdhYTZhYjYyMTAzYWUwMzkyMzYzZTgxZDQzZTdlMTUxY2ViM2ZkZWQzZDI1NWE4Njc0ZjI2ODYyODE5YmVlMWQzNjEwMTE5OTI2NGE0Njc4".fromBase64()!.hexa
+        let iv1 = "0a041a50c1950c7a3268fff1b70c32ca".hexa
+        let share1 = "ZTE1OTkyN2E0MjgxZTY4NzQ0MWYyZTBmZjU5ZjNmM2YxZDIxMjEwZjhhYWIwYzQ0MWZiYjkxOGFhMjg3NGVmODY2MTAxZGM0ZTVjYTVhYzhlMDg0NzQyNzBkYzA0OTU4".fromBase64()!.hexa
         // print("hash", hash)
         
         do{
@@ -227,9 +227,9 @@ final class torus_utils_swiftTests: XCTestCase {
     }
     
     func testLagrangeInterpolation(){
-        // Share1 0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652
-        // Share2 9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1
-        // Share3 ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579
+        // Share1 0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652 1
+        // Share2 9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1 3
+        // Share3 c0fdab1afc6ec93551dea560950525c892dc978469b34ae90658fd7996c0d7f9 5
         
         // print(BigInt(8).inverse(BigInt(21)))
         // print(BigInt("10").power(BigInt(1), modulus: BigInt(7)))
@@ -237,7 +237,7 @@ final class torus_utils_swiftTests: XCTestCase {
         
         let expectations = self.expectation(description: "testing get public address")
         
-        let shareList = [BigInt(1): BigInt("0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", radix: 16), BigInt(2): BigInt("9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1", radix: 16), BigInt(3): BigInt("ff040f695709486ac6d1db488e26e53a59596670ecf349f86f8170eb9ef43579", radix: 16)]
+        let shareList = [BigInt(1): BigInt("0b2334aa653297de5ec3e3ff404861f8b495da6daeb82a3f471323acf016c652", radix: 16), BigInt(3): BigInt("9948c1666b858b7d675af89be0e5dc494469fc8ae41eff20a7ad35829cd7d1c1", radix: 16), BigInt(5): BigInt("c0fdab1afc6ec93551dea560950525c892dc978469b34ae90658fd7996c0d7f9", radix: 16)]
         //print(shareList)
         
         let secp256k1N = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16);
@@ -247,13 +247,14 @@ final class torus_utils_swiftTests: XCTestCase {
         let semaphore = DispatchSemaphore(value: 1)
         
         for (i, share) in shareList {
+            semaphore.wait()
+
             serialQueue.async{
                 
-                semaphore.wait()
                 //print(i, share)
                 var upper = BigInt(1);
                 var lower = BigInt(1);
-                for (j, share) in shareList {
+                for (j, _) in shareList {
                     if (i != j) {
                         // print(j, i)
                         var negateJ = j
@@ -273,15 +274,24 @@ final class torus_utils_swiftTests: XCTestCase {
                     }
                 }
                 var delta = (upper*(lower.inverse(secp256k1N!)!)).modulus(secp256k1N!);
-                print("delta", delta, "inverse of lower", lower.inverse(secp256k1N!)!, "\n")
+                print("delta", delta, "inverse of lower", lower.inverse(secp256k1N!)!)
                 delta = (delta*share!).modulus(secp256k1N!)
                 secret = (secret+delta).modulus(secp256k1N!)
                 
-                print("secret is", secret)
+                print("secret is", secret.serialize().hexa.suffix(64), "\n")
+                let publicKey = SECP256K1.privateToPublic(privateKey: secret.serialize().suffix(32), compressed: false)?.suffix(64) // take last 64
+                
+                // Split key in 2 parts, X and Y
+                let publicKeyHex = publicKey?.toHexString()
+                let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
+                let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
+                
+                print("publicKey", pubKeyX, pubKeyY)
                 semaphore.signal()
             }
+            
         }
-        
+
         waitForExpectations(timeout: 15)
         
     }
