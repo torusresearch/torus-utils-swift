@@ -132,14 +132,14 @@ public class Torus{
                 }
                 seal.fulfill(nodeSignatures)
             }.catch{ err in
-                print(err)
+                // print(err)
                 // seal.reject(err)
             }
         }
         return tempPromise
     }
     
-    func retreiveNodeShare(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String, nodeSignatures: [[String:String]]) -> Promise<[Int:[String:String]]>{
+    func retreiveIndividualNodeShare(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String, nodeSignatures: [[String:String]]) -> Promise<[Int:[String:String]]>{
         let (tempPromise, seal) = Promise<[Int:[String:String]]>.pending()
         
         var promisesArrayReq = Array<Promise<(data: Data, response: URLResponse)> >()
@@ -197,6 +197,57 @@ public class Torus{
         return tempPromise
     }
     
+    func decryptIndividualShares(shares: [Int:[String:String]], privateKey: String) -> Promise<[Int:String]>{
+        let (tempPromise, seal) = Promise<[Int:String]>.pending()
+        
+        for(i, el) in shares.enumerated(){
+            // let nodeIndex = el.key
+            
+            let ephermalPublicKey = el.value["ephermalPublicKey"]?.strip04Prefix()
+            let ephermalPublicKeyBytes = ephermalPublicKey?.hexa
+            var ephermOne = ephermalPublicKeyBytes?.prefix(32)
+            var ephermTwo = ephermalPublicKeyBytes?.suffix(32)
+            // Reverse because of C endian array storage
+            ephermOne?.reverse(); ephermTwo?.reverse();
+            ephermOne?.append(contentsOf: ephermTwo!)
+            let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne!)))
+            
+            // Calculate g^a^b, i.e., Shared Key
+            let sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: Data.init(hexString: privateKey)!)
+            let sharedSecretData = sharedSecret!.data
+            let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
+            let reversedSharedSecret = sharedSecretPrefix.reversed()
+            print(reversedSharedSecret.hexa)
+            
+            let share = el.value["share"]!.fromBase64()!.hexa
+            let iv = el.value["iv"]?.hexa
+            
+            //var ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(newtest)))
+            //var sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: Data.init(hexString: privateKey)!)
+            //var sharedSecretData = sharedSecret!.data
+            //var sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(
+            
+            let newXValue = reversedSharedSecret.hexa
+            let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
+            let AesEncryptionKey = hash.prefix(64)
+            
+            var result = [Int:String].init()
+
+            do{
+                let aes = try! AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv!), padding: .pkcs7)
+                let decrypt = try! aes.decrypt(share)
+                result[i] = decrypt.hexa
+                
+                if(i+1==result.count) { seal.fulfill(result) }
+                print("decrypt", decrypt.hexa)
+            }catch CryptoSwift.AES.Error.dataPaddingRequired{
+                print("padding error")
+            }
+        }
+        return tempPromise
+    }
+    
+    
     func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
         // Generate pubkey-privatekey
         let privateKey = SECP256K1.generatePrivateKey()
@@ -215,9 +266,13 @@ public class Torus{
         
         commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
         .then{ data -> Promise<[Int:[String:String]]> in
-            return self.retreiveNodeShare(endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, nodeSignatures: data)
-        }.done{ data in
+            return self.retreiveIndividualNodeShare(endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, nodeSignatures: data)
+        }.then{ data -> Promise<[Int:String]> in
             print("data after retrieve shares", data)
+            return self.decryptIndividualShares(shares: data, privateKey: privateKey!.toHexString())
+        }.done{ data in
+            print("individual shares array", data)
+            return
         }.catch{
             err in print(err)
         }
