@@ -55,7 +55,6 @@ extension Torus {
     }
     
     public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<[String:String]>{
-        
         let (tempPromise, seal) = Promise<[String:String]>.pending()
         
         // Create Array of URLRequest Promises
@@ -71,37 +70,27 @@ extension Torus {
         var resultArray = Array<[String:String]?>.init(repeating: nil, count: promisesArray.count)
         for (i, pr) in promisesArray.enumerated() {
             pr.done{ data, response in
-                //print("keyLookup", String(data: data, encoding: .utf8))
+                // print("keyLookup", String(data: data, encoding: .utf8))
                 let decoder = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                 //print(decoder)
-                let result = decoder!.result
-                var decodedResult = result as! [String:[[String:String]]]
-                let keys = decodedResult["keys"]![0] as [String:String]
-                // print(keys)
-//                let encoder = JSONEncoder()
-//
-//                if #available(OSX 10.13, iOS 11.0, watchOS 4.0, tvOS 11.0, *) {
-//                    encoder.outputFormatting = .sortedKeys
-//                } else {
-//                    // Fallback on earlier versions
-//                    seal.reject("sorting keys unavailable")
-//                }
-//
-                // Check if 5 responses are in
-                resultArray[i] = keys // Encode the result and error into string and push to array
-                // print(resultArray[i])
+                let result = decoder?.result
+                let error = decoder?.error
+                if(error == nil){
+                    let decodedResult = result as! [String:[[String:String]]]
+                    let keys = decodedResult["keys"]![0] as [String:String]
+                    resultArray[i] = keys // Encode the result and error into string and push to array
+                }else{
+                    resultArray[i] = ["err": "keyLookupfailed"]
+                }
                 
+                // print(resultArray[i])
                 let lookupShares = resultArray.filter{ $0 != nil } // Nonnil elements
                 let keyResult = self.thresholdSame(arr: lookupShares, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
-                // let errorResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/2)+1)
-                print("threshold result", keyResult)
-                
+                // print("threshold result", keyResult)
                 if(keyResult != nil)  { seal.fulfill(keyResult!!) }
             }.catch{error in
+                // Node returned error handling is done above
                 print(error)
-//                if(i+1 == promisesArray.count){
-//                    seal.reject(error)
-//                }
             }
         }
         return tempPromise
@@ -109,10 +98,10 @@ extension Torus {
     
     public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String) -> Promise<JSONRPCresponse> {
         
-        let (tempPromise, resolver) = Promise<JSONRPCresponse>.pending()
+        let (tempPromise, seal) = Promise<JSONRPCresponse>.pending()
         
         var newEndpoints = endpoints
-        newEndpoints.shuffle()
+        newEndpoints.shuffle() // To avoid overloading a single node
         print("newEndpoints", newEndpoints)
         
         let serialQueue = DispatchQueue(label: "keyassign.serial.queue")
@@ -151,14 +140,14 @@ extension Torus {
                     let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                     // print("response from node", String(data: data, encoding: .utf8))
                     // print(String(data: data, encoding: .utf8))
-                    resolver.fulfill(decodedData)
+                    seal.fulfill(decodedData)
                     
                     // Signal to start again
                     semaphore.signal()
                 }.catch{ err in
                     // Reject only if reached the last point
                     if(i+1==endpoint.count) {
-                        resolver.reject(err)
+                        seal.reject(err)
                     }
                     // Signal to start again
                     semaphore.signal()
