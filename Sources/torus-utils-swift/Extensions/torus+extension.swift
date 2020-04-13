@@ -25,13 +25,13 @@ extension Torus {
     func thresholdSame<T:Hashable>(arr: Array<T>, threshold: Int) -> T?{
         // uprint(threshold)
         var hashmap = [T:Int]()
-        for (i, value) in arr.enumerated(){
+        for (_, value) in arr.enumerated(){
             if((hashmap[value]) != nil) {hashmap[value]! += 1}
             else { hashmap[value] = 1 }
             if (hashmap[value] == threshold){
                 return value
             }
-            // print(hashmap)
+            //print(hashmap)
         }
         return nil
     }
@@ -54,9 +54,9 @@ extension Torus {
         return pubKey2
     }
     
-    public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<String>{
+    public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<[String:String]>{
         
-        let (tempPromise, seal) = Promise<String>.pending()
+        let (tempPromise, seal) = Promise<[String:String]>.pending()
         
         // Create Array of URLRequest Promises
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
@@ -68,34 +68,40 @@ extension Torus {
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
-        var resultArray = Array<Any>.init(repeating: "nil", count: promisesArray.count)
+        var resultArray = Array<[String:String]?>.init(repeating: nil, count: promisesArray.count)
         for (i, pr) in promisesArray.enumerated() {
             pr.done{ data, response in
-                // print("keyLookup", String(data: data, encoding: .utf8))
+                //print("keyLookup", String(data: data, encoding: .utf8))
                 let decoder = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                let encoder = JSONEncoder()
-                
-                if #available(OSX 10.13, iOS 11.0, watchOS 4.0, tvOS 11.0, *) {
-                    encoder.outputFormatting = .sortedKeys
-                } else {
-                    // Fallback on earlier versions
-                    seal.reject("sorting keys unavailable")
-                }
-                
+                //print(decoder)
+                let result = decoder!.result
+                var decodedResult = result as! [String:[[String:String]]]
+                let keys = decodedResult["keys"]![0] as [String:String]
+                // print(keys)
+//                let encoder = JSONEncoder()
+//
+//                if #available(OSX 10.13, iOS 11.0, watchOS 4.0, tvOS 11.0, *) {
+//                    encoder.outputFormatting = .sortedKeys
+//                } else {
+//                    // Fallback on earlier versions
+//                    seal.reject("sorting keys unavailable")
+//                }
+//
                 // Check if 5 responses are in
-                resultArray[i] = String(data: try encoder.encode(decoder), encoding: .utf8)! // Encode the result and error into string and push to array
+                resultArray[i] = keys // Encode the result and error into string and push to array
                 // print(resultArray[i])
                 
-                let lookupShares = resultArray.filter{ $0 as? String != "nil" } // Nonnil elements
-                let keyResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
+                let lookupShares = resultArray.filter{ $0 != nil } // Nonnil elements
+                let keyResult = self.thresholdSame(arr: lookupShares, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
                 // let errorResult = self.thresholdSame(arr: lookupShares.map{$0 as! String}, threshold: Int(endpoints.count/2)+1)
-                // print("threshold result", keyResult)
+                print("threshold result", keyResult)
                 
-                if(keyResult != nil)  { seal.fulfill(keyResult!) }
+                if(keyResult != nil)  { seal.fulfill(keyResult!!) }
             }.catch{error in
-                if(i+1 == promisesArray.count){
-                    seal.reject(error)
-                }
+                print(error)
+//                if(i+1 == promisesArray.count){
+//                    seal.reject(error)
+//                }
             }
         }
         return tempPromise

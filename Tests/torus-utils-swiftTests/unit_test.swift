@@ -20,23 +20,24 @@ import secp256k1
 
 final class torus_utils_swiftTests: XCTestCase {
     
-    static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
+    let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
+    let nodeList = ["https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"]
+    let verifierId = "shubham@tor.us"
+    let verifier = "google"
     
-    var tempVerifierId = "shubham@tor.us"
     
     func testKeyLookup() {
         
-        let expectation = self.expectation(description: "getting node details")
+        let expectation = XCTestExpectation(description: "Do keylookup")
         
         let fd = Torus()
-        let arr = ["https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"]
-        let key = fd.keyLookup(endpoints: arr, verifier: "google", verifierId: "somethinsdfgTest@g.com")
+        let key = fd.keyLookup(endpoints: nodeList, verifier: self.verifier, verifierId: self.verifierId)
         key.done { data in
-            print(data)
+            XCTAssert(data["address"]=="0x5533572d0b2b69Ae31bfDeA351B67B1C05F724Bc", "key verified")
             expectation.fulfill()
         }
         
-        waitForExpectations(timeout: 6)
+        wait(for: [expectation], timeout: 6)
     }
     
     func testKeyAssign(){
@@ -46,7 +47,7 @@ final class torus_utils_swiftTests: XCTestCase {
         let nodePubKeys : Array<TorusNodePub> = [TorusNodePub(_X: "4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", _Y: "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),TorusNodePub(_X: "1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", _Y: "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),TorusNodePub(_X: "fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", _Y: "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),TorusNodePub(_X: "e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", _Y: "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),TorusNodePub(_X: "a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", _Y: "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96")
         ]
         
-        let keyAssign = fd.keyAssign(endpoints: ["https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"], torusNodePubs: nodePubKeys, verifier: "google", verifierId: self.tempVerifierId)
+        let keyAssign = fd.keyAssign(endpoints: ["https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"], torusNodePubs: nodePubKeys, verifier: "google", verifierId: self.verifierId)
         
         print(keyAssign)
         keyAssign.done{ data in
@@ -78,28 +79,28 @@ final class torus_utils_swiftTests: XCTestCase {
     }
     
     func testGetPublicAddress(){
-        let expectations = self.expectation(description: "testing get public address")
-        let fd = Torus()
-        
-        let nodePubKeys : Array<TorusNodePub> = [TorusNodePub(_X: "4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", _Y: "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),TorusNodePub(_X: "1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", _Y: "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),TorusNodePub(_X: "fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", _Y: "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),TorusNodePub(_X: "e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", _Y: "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),TorusNodePub(_X: "a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", _Y: "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96")
-        ]
-        
-        let getpublicaddress = fd.getPublicAddress(endpoints: ["https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"], torusNodePubs: nodePubKeys, verifier: "google", verifierId: tempVerifierId, isExtended: true)
-        
-        print(getpublicaddress)
-        getpublicaddress.done{ data in
-            print("data", data)
-            expectations.fulfill()
-        }.catch{ err in
-            print("getpublicaddress failed", err)
-        }
-        waitForExpectations(timeout: 10)
+//        let expectations = self.expectation(description: "testing get public address")
+//        let fd = Torus()
+//
+//        let nodePubKeys : Array<TorusNodePub> = [TorusNodePub(_X: "4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", _Y: "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),TorusNodePub(_X: "1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", _Y: "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),TorusNodePub(_X: "fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", _Y: "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),TorusNodePub(_X: "e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", _Y: "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),TorusNodePub(_X: "a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", _Y: "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96")
+//        ]
+//
+//        let getpublicaddress = fd.getPublicAddress(endpoints: ["https://lrc-test-13-a.torusnode.com/jrpc", "https://lrc-test-13-b.torusnode.com/jrpc", "https://lrc-test-13-c.torusnode.com/jrpc", "https://lrc-test-13-d.torusnode.com/jrpc", "https://lrc-test-13-e.torusnode.com/jrpc"], torusNodePubs: nodePubKeys, verifier: "google", verifierId: self.verifierId, isExtended: true)
+//
+//        print(getpublicaddress)
+//        getpublicaddress.done{ data in
+//            print("data", data)
+//            expectations.fulfill()
+//        }.catch{ err in
+//            print("getpublicaddress failed", err)
+//        }
+//        waitForExpectations(timeout: 10)
     }
     
     func testretreiveShares(){
         let expectations = self.expectation(description: "testing get public address")
         let fd = Torus()
-        let verifierParams = ["verifier_id": tempVerifierId]
+        let verifierParams = ["verifier_id": self.verifierId]
         let token = "eyJhbGciOiJSUzI1NiIsImtpZCI6IjI1N2Y2YTU4MjhkMWU0YTNhNmEwM2ZjZDFhMjQ2MWRiOTU5M2U2MjQiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI4NzY3MzMxMDUxMTYtaTBoajNzNTNxaWlvNWs5NXBycGZtajBocDBnbWd0b3IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI4NzY3MzMxMDUxMTYtaTBoajNzNTNxaWlvNWs5NXBycGZtajBocDBnbWd0b3IuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDk1ODQzNTA5MTA3Mjc0NzAzNDkiLCJoZCI6InRvci51cyIsImVtYWlsIjoic2h1YmhhbUB0b3IudXMiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYXRfaGFzaCI6IkppMUN5RG90Z1FGUWJRcG80aGxSeUEiLCJub25jZSI6Ik9CWEZsaGw5SnJKMjJvOVRpUG5mUW91WUVTcHp6dyIsIm5hbWUiOiJTaHViaGFtIFJhdGhpIiwicGljdHVyZSI6Imh0dHBzOi8vbGg0Lmdvb2dsZXVzZXJjb250ZW50LmNvbS8tT19SUi1aYlQwZVUvQUFBQUFBQUFBQUkvQUFBQUFBQUFBQUEvQUFLV0pKTmVleHhiRHozcjFVVnBrWjVGbzdsYTNhMXZRZy9zOTYtYy9waG90by5qcGciLCJnaXZlbl9uYW1lIjoiU2h1YmhhbSIsImZhbWlseV9uYW1lIjoiUmF0aGkiLCJsb2NhbGUiOiJlbiIsImlhdCI6MTU4NjQyMTg1NSwiZXhwIjoxNTg2NDI1NDU1LCJqdGkiOiI1YWViMGIyNjM2NjUzNGYxNDFhMDM2ZGEyN2FjYTYzOTcyNzY1ZGI4In0.ST--Qo4Q8SKQjaE0PD6WGJWA97l1SklPa4v7dWg0ScU8nvkCZokh0qCnJfMSijExemn0OiExXzw7QNhzUsR04y39dSh32ZE3GT6JddmSkyte9ez3dNcXEv0KqdxfX_kjz6ePwKkbwWvTKumCir0vQR_kW-o2vfUwr5VXIGReRfdYDIeaCqtZovEf7sm5PvL7VyS7tGVk2CIYAyivU7RH2CKtyRGedyR3gz68aTGyB5zHYpblu2g9FKfk18t2uDzzKVkDk1uYjRu04wVqwFlXt4YLypzbl8cTuEjtaw6PqH8PggSR9zw00LsGf21F66f8xk5HTEi4vBAb9OC8HrdOoA"
         
         let nodePubKeys : Array<TorusNodePub> = [TorusNodePub(_X: "4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", _Y: "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),TorusNodePub(_X: "1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", _Y: "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),TorusNodePub(_X: "fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", _Y: "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),TorusNodePub(_X: "e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", _Y: "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),TorusNodePub(_X: "a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", _Y: "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96")
@@ -118,15 +119,6 @@ final class torus_utils_swiftTests: XCTestCase {
     }
     
     func testdecodeShares(){
-        
-        // privatekey a615f79a8a1fc577bfb04ae7a7c2a381a3b081ec2fecf3df56e40893f4c5c7fd
-        //
-//        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Metadata": ["mode": "AES256", "iv": "9622119b0055207f0b761220d1c26e19", "mac": "5a32452eb60370575247c229e552c882b06c016523ae5c992d1dc57aa5779875", "ephemPublicKey": "041dc8c20a131b632c8ec82dd593c9bfa12b5b521ca5176067bbd731025d3db5669b995434e90a7999b945c2c558584478b2133cfa170b48ea5f738f218f02a1a6"], "Verifiers": ["google": ["shubham@tor.us"]], "Index": "5", "Share": "YzU0MTE1ZDUwMTFjNGJjMGQ5MDQ0MjcyMDY2NTQwODU0OTgzNjllYzI5OWJhYWZkNWYyOTNiYWU0MDZhNTQ3NDU5YTUwOTg1MDI2ZjY4NDBhZWNlZDFiODI4NGZiODUz", "Threshold": 1, "PublicKey": ["Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768", "X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f"]]]]), error: nil, message: nil) 0
-        
-//        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Threshold": 1, "Verifiers": ["google": ["shubham@tor.us"]], "Index": "5", "Share": "ZDU4ZmNiMTc1MTBkYzIxNDU4NjQ5NmFlZDM0ZTAwZDE0MjBkYWU1N2NiMjc2ZDBjMzAzZmQyMTFmNGZhOGU2ODYxOTlmMjc4ODA2ZTdiZWU5MjRmZjJjNjczNmI2MjE3", "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Metadata": ["ephemPublicKey": "046c00a4f0e3df4a49ada329190aac32efe0441b3e1383bbafcac2b00bc62c08b3728cf54895926dbc1088dd3927b58de91e8a7e4c6b17abaea1aeb853e9b6119d", "iv": "62d9f5ebe4a954ac090b427c0082e35f", "mac": "e45404bf988248186f03bebc95a928231d4a302f8154e5138f76a974b899c19e", "mode": "AES256"]]]]), error: nil, message: nil) 2
-        
-//        JSONRPCresponse(id: 10, jsonrpc: "2.0", result: Optional(["keys": [["Metadata": ["mode": "AES256", "mac": "09469f91a61148e4cc8a13d3023890e3a2039bed4ef0d24311f8441eb1bfd261", "iv": "0a041a50c1950c7a3268fff1b70c32ca", "ephemPublicKey": "04b5e2bb9a2c5025445dad60ff64f4bc4ea2217e92bb406e14077e7fb2b7d98c6256e32a39bf5215340240df018059abee0503716c972bedd868d5c366e3a409d3"], "Share": "ZTE1OTkyN2E0MjgxZTY4NzQ0MWYyZTBmZjU5ZjNmM2YxZDIxMjEwZjhhYWIwYzQ0MWZiYjkxOGFhMjg3NGVmODY2MTAxZGM0ZTVjYTVhYzhlMDg0NzQyNzBkYzA0OTU4", "Index": "5", "Threshold": 1, "PublicKey": ["X": "bc5b761516115b97c9fde7d763e8f78694bcaca245020db064adfaca79a2281f", "Y": "59f673821f9885e1cc53b6c3e80e802900dd4cbdd663dc97f9e3f83f55bbd768"], "Verifiers": ["google": ["shubham@tor.us"]]]]]), error: nil, message: nil) 4
-        
         let iv1 = "d0940684def51afbfeea3b1892d6e8a6".hexa
         let share1 = "fc933106fc13ad9c5e9d2c3678d8170bbf2ae90948ef5979cf0e42b1a24ffa5326bb86a35a2c2d4b391f19fba30644e8".hexa
         
@@ -155,7 +147,7 @@ final class torus_utils_swiftTests: XCTestCase {
         let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
             if let pkRawPointer = a.baseAddress, a.count > 0 {
                 let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
-                let res = secp256k1_ec_pubkey_create(torus_utils_swiftTests.context!, UnsafeMutablePointer<secp256k1_pubkey>(&publicKey), privateKeyPointer)
+                let res = secp256k1_ec_pubkey_create(self.context!, UnsafeMutablePointer<secp256k1_pubkey>(&publicKey), privateKeyPointer)
                 return res
             } else {
                 return nil
@@ -173,7 +165,7 @@ final class torus_utils_swiftTests: XCTestCase {
         let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
             if let pkRawPointer = a.baseAddress, a.count > 0 {
                 let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
-                let res = secp256k1_ec_pubkey_tweak_mul(torus_utils_swiftTests.context!, UnsafeMutablePointer<secp256k1_pubkey>(&pubKey2), privateKeyPointer)
+                let res = secp256k1_ec_pubkey_tweak_mul(self.context!, UnsafeMutablePointer<secp256k1_pubkey>(&pubKey2), privateKeyPointer)
                 return res
             } else {
                 return nil

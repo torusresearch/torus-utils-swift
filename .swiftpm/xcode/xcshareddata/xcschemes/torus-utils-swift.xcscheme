@@ -65,9 +65,6 @@
                   Identifier = "torus_utils_swiftTests/testKeyAssign()">
                </Test>
                <Test
-                  Identifier = "torus_utils_swiftTests/testKeyLookup()">
-               </Test>
-               <Test
                   Identifier = "torus_utils_swiftTests/testLagrangeInterpolation()">
                </Test>
                <Test
@@ -78,6 +75,9 @@
                </Test>
                <Test
                   Identifier = "torus_utils_swiftTests/testingPromise()">
+               </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testretreiveShares()">
                </Test>
             </SkippedTests>
          </TestableReference>
