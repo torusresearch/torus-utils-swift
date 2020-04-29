@@ -155,7 +155,6 @@ public class Torus{
         }
         
         var ShareResponses = Array<[String:String]?>.init(repeating: nil, count: promisesArrayReq.count)
-        var resultArrayObjects = Array<JSONRPCresponse?>.init(repeating: nil, count: promisesArrayReq.count)
         var resultArray = [Int:[String:String]]()
         
         var receivedRequiredShares = false
@@ -228,8 +227,8 @@ public class Torus{
             
             do{
                 // AES-CBCblock-256
-                let aes = try! AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv!), padding: .pkcs7)
-                let decrypt = try! aes.decrypt(share)
+                let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv!), padding: .pkcs7)
+                let decrypt = try aes.decrypt(share)
                 result[nodeIndex] = decrypt.hexa
                 // print(result)
                 
@@ -238,7 +237,7 @@ public class Torus{
                     seal.fulfill(result)
                 }
                 // print("decrypt", decrypt.hexa)
-            }catch CryptoSwift.AES.Error.dataPaddingRequired{
+            }catch{
                 print("padding error")
                 seal.reject("Padding error")
             }
@@ -335,7 +334,7 @@ public class Torus{
                 let publicKey = SECP256K1.privateToPublic(privateKey: Data.init(hex: data) , compressed: false)?.suffix(64) // take last 64
                 
                 // Split key in 2 parts, X and Y
-                let publicKeyHex = publicKey?.toHexString()
+                // let publicKeyHex = publicKey?.toHexString()
                 let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
                 let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
                 
