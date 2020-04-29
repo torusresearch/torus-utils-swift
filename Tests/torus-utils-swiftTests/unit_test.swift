@@ -34,7 +34,7 @@ final class torus_utils_swiftTests: XCTestCase {
     }
     
     func testKeyLookup() {
-        let obj = Torus()
+        let obj = TorusUtils()
         
         let exp1 = XCTestExpectation(description: "Do keylookup with success")
         let keyLookupSuccess = obj.keyLookup(endpoints: nodeList, verifier: self.verifier, verifierId: self.verifierId)
@@ -59,7 +59,7 @@ final class torus_utils_swiftTests: XCTestCase {
     
     func testKeyAssign(){
         let exp1 = XCTestExpectation(description: "Do keyAssign success")
-        let obj = Torus()
+        let obj = TorusUtils()
         let keyAssign = obj.keyAssign(endpoints: self.nodeList, torusNodePubs: nodePubKeys, verifier: verifier, verifierId: self.verifierId)
         keyAssign.done{ data in
             XCTAssertNotNil(data)
@@ -72,7 +72,7 @@ final class torus_utils_swiftTests: XCTestCase {
     
     func testGetPublicAddress(){
         let exp1 = XCTestExpectation(description: "testing get public address")
-        let obj = Torus()
+        let obj = TorusUtils()
         let getpublicaddress = obj.getPublicAddress(endpoints: self.nodeList, torusNodePubs: nodePubKeys, verifier: "google", verifierId: self.verifierId, isExtended: true)
         getpublicaddress.done{ data in
             print("data", data)

@@ -13,7 +13,7 @@ import CryptoSwift
 import BigInt
 
 
-public class Torus{
+public class TorusUtils{
     public var torusUtils : utils = utils()
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
     var privateKey = ""
@@ -315,7 +315,7 @@ public class Torus{
         var nodeReturnedPubKeyX:String = ""
         var nodeReturnedPubKeyY:String = ""
         
-        print(privateKey?.toHexString(), publicKeyHex, pubKeyX, pubKeyY, tokenCommitment)
+        print(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, tokenCommitment)
         
         commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
             .then{ data -> Promise<[Int:[String:String]]> in

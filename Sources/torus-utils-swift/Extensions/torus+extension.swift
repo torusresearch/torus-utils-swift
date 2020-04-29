@@ -11,7 +11,7 @@ import PromiseKit
 import secp256k1
 import PMKFoundation
 
-extension Torus {
+extension TorusUtils {
     
     func makeUrlRequest(url: String) throws -> URLRequest {
         var rq = URLRequest(url: URL(string: url)!)
@@ -42,7 +42,7 @@ extension Torus {
         let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
             if let pkRawPointer = a.baseAddress, a.count > 0 {
                 let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
-                let res = secp256k1_ec_pubkey_tweak_mul(Torus.context!, UnsafeMutablePointer<secp256k1_pubkey>(&pubKey2), privateKeyPointer)
+                let res = secp256k1_ec_pubkey_tweak_mul(TorusUtils.context!, UnsafeMutablePointer<secp256k1_pubkey>(&pubKey2), privateKeyPointer)
                 return res
             } else {
                 return nil
@@ -166,7 +166,7 @@ extension Torus {
         let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
             if let pkRawPointer = a.baseAddress, a.count > 0 {
                 let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
-                let res = secp256k1_ec_pubkey_create(Torus.context!, UnsafeMutablePointer<secp256k1_pubkey>(&publicKey), privateKeyPointer)
+                let res = secp256k1_ec_pubkey_create(TorusUtils.context!, UnsafeMutablePointer<secp256k1_pubkey>(&publicKey), privateKeyPointer)
                 return res
             } else {
                 return nil
