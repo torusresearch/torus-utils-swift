@@ -4,7 +4,7 @@
  */
 
 import Foundation
-import fetch_node_details
+import FetchNodeDetails
 import web3swift
 import PromiseKit
 import secp256k1
@@ -14,7 +14,6 @@ import BigInt
 
 
 public class TorusUtils{
-    public var torusUtils : utils = utils()
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
     var privateKey = ""
     
@@ -32,19 +31,15 @@ public class TorusUtils{
         let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
 
         keyLookup.then{ lookupData -> Promise<[String: String]> in
-            // print(lookupData)
             let error = lookupData["err"]
-            // print(error)
             
             if(error != nil){
                 // Assign key to the user and return (wraped in a promise)
                 return self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<[String:String]> in
-                    // print("keyAssign", data)
                     // Do keylookup again
                     return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 }.then{ data -> Promise<[String: String]> in
-                    // print("keylookup", data)
-                    // let jsonlookupData = try JSONSerialization.jsonObject(with: Data(data.utf8)) as! [String : [String: String]]
+                   
                     return Promise<[String: String]>.value(data)
                 }
             }else{
@@ -298,7 +293,7 @@ public class TorusUtils{
         return tempPromise
     }
     
-    func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
+    public func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
         // Generate pubkey-privatekey
         let privateKey = SECP256K1.generatePrivateKey()
         let publicKey = SECP256K1.privateToPublic(privateKey: privateKey!, compressed: false)?.suffix(64) // take last 64
@@ -345,6 +340,7 @@ public class TorusUtils{
                     throw "could not derive private key"
                 }
                 
+                return Promise<String>.value(data)
                 print("final private key", self.privateKey)
             }.catch{
                 err in print(err)

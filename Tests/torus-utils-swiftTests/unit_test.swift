@@ -1,11 +1,10 @@
 import XCTest
 import PromiseKit
-import fetch_node_details
+import FetchNodeDetails
 import CryptoSwift
 import BigInt
 import web3swift
 import secp256k1
-
 
 /**
  
@@ -16,7 +15,7 @@ import secp256k1
  - All functions
  
  */
-@testable import torus_utils_swift
+@testable import TorusUtils
 
 final class torus_utils_swiftTests: XCTestCase {
     
@@ -29,7 +28,7 @@ final class torus_utils_swiftTests: XCTestCase {
     
     override class func setUp() {
         super.setUp()
-        let fnd = fetch_node_details.FetchNodeDetails()
+        let fnd = FetchNodeDetails()
         print(fnd.getNodeDetails().getTorusNodeEndpoints())
     }
     

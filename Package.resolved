@@ -29,12 +29,12 @@
         }
       },
       {
-        "package": "fetch-node-details",
+        "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
           "branch": null,
-          "revision": "ff6d22e87e39ad3404c37b8a06ba4c5902f06fce",
-          "version": "0.0.4"
+          "revision": "07bfc00058388741df7cb0fe5e14c7c177bacae6",
+          "version": "0.0.5"
         }
       },
       {

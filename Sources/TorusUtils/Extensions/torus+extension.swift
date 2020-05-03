@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import fetch_node_details
+import FetchNodeDetails
 import PromiseKit
 import secp256k1
 import PMKFoundation
