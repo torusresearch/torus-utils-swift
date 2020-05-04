@@ -26,10 +26,10 @@ public class TorusUtils{
     }
     
     public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
-
+        
         let (tempPromise, seal) = Promise<[String:String]>.pending()
         let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-
+        
         keyLookup.then{ lookupData -> Promise<[String: String]> in
             let error = lookupData["err"]
             
@@ -39,7 +39,7 @@ public class TorusUtils{
                     // Do keylookup again
                     return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 }.then{ data -> Promise<[String: String]> in
-                   
+                    
                     return Promise<[String: String]>.value(data)
                 }
             }else{
@@ -55,9 +55,9 @@ public class TorusUtils{
         }.catch{err in
             print("err", err)
         }
-
+        
         return tempPromise
-
+        
     }
     
     func commitmentRequest(endpoints : Array<String>, verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) -> Promise<[[String:String]]>{
@@ -285,7 +285,7 @@ public class TorusUtils{
                 let secretString = String(secret.serialize().hexa.suffix(64))
                 // print("secret is", secretString, secret, "\n")
                 if(sharesDecrypt == shareList.count){
-                   seal.fulfill(secretString)
+                    seal.fulfill(secretString)
                 }
                 semaphore.signal()
             }
@@ -293,7 +293,7 @@ public class TorusUtils{
         return tempPromise
     }
     
-    public func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String){
+    public func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String) -> Promise<String>{
         // Generate pubkey-privatekey
         let privateKey = SECP256K1.generatePrivateKey()
         let publicKey = SECP256K1.privateToPublic(privateKey: privateKey!, compressed: false)?.suffix(64) // take last 64
@@ -310,13 +310,14 @@ public class TorusUtils{
         var nodeReturnedPubKeyX:String = ""
         var nodeReturnedPubKeyY:String = ""
         
-        print(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, tokenCommitment)
+        // print(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, tokenCommitment)
         
-        commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
-            .then{ data -> Promise<[Int:[String:String]]> in
-                nodeReturnedPubKeyX = data[0]["pubKeyX"]!
-                nodeReturnedPubKeyY = data[0]["pubKeyY"]!
-                return self.retreiveIndividualNodeShare(endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, nodeSignatures: data)
+        return Promise<String> { seal in
+            commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
+                .then{ data -> Promise<[Int:[String:String]]> in
+                    nodeReturnedPubKeyX = data[0]["pubKeyX"]!
+                    nodeReturnedPubKeyY = data[0]["pubKeyY"]!
+                    return self.retreiveIndividualNodeShare(endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, nodeSignatures: data)
             }.then{ data -> Promise<[Int:String]> in
                 // print("data after retrieve shares", data)
                 return self.decryptIndividualShares(shares: data, privateKey: privateKey!.toHexString())
@@ -340,10 +341,11 @@ public class TorusUtils{
                     throw "could not derive private key"
                 }
                 
-                return Promise<String>.value(data)
-                print("final private key", self.privateKey)
-            }.catch{
-                err in print(err)
+                seal.fulfill(self.privateKey)
+            }.catch{ err in
+                seal.reject(err)
             }
+        }
+        
     }
 }
