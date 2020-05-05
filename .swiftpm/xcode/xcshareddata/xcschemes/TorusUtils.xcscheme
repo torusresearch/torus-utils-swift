@@ -51,11 +51,6 @@
                BlueprintName = "torus-utils-swiftTests"
                ReferencedContainer = "container:">
             </BuildableReference>
-            <SkippedTests>
-               <Test
-                  Identifier = "torus_utils_swiftTests/testRetreiveShares()">
-               </Test>
-            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>

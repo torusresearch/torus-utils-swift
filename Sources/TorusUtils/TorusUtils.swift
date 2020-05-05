@@ -85,12 +85,15 @@ public class TorusUtils{
         return Promise<String>{ seal in
             commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
                 .then{ data -> Promise<[Int:[String:String]]> in
-                    //print("data after commitment requrest", data)
+                    print("data after commitment requrest", data)
                     return self.retreiveIndividualNodeShare(endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, nodeSignatures: data)
             }.then{ data -> Promise<[Int:String]> in
-                //print("data after retrieve shares", data)
-                nodeReturnedPubKeyX = data[0]!["pubKeyX"]!
-                nodeReturnedPubKeyY = data[0]!["pubKeyY"]!
+                print("data after retrieve shares", data)
+                if let temp  = data.first{
+                    nodeReturnedPubKeyX = temp.value["pubKeyX"]!
+                    nodeReturnedPubKeyY = temp.value["pubKeyY"]!
+                }
+                
                 return self.decryptIndividualShares(shares: data, privateKey: privateKey!.toHexString())
             }.then{ data -> Promise<String> in
                 //print("individual shares array", data)

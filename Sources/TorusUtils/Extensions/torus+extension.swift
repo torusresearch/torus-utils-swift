@@ -141,15 +141,18 @@ extension TorusUtils {
                 
                 let decodedResult = decoded.result as? [String:Any]
                 let keyObj = decodedResult!["keys"] as? [[String:Any]]
-                let metadata = keyObj?[0]["Metadata"] as! [String : String]
-                let share = keyObj?[0]["Share"] as! String
-                let publicKey = keyObj?[0]["PublicKey"] as! [String : String]
-                // print("publicKey", publicKey)
-                ShareResponses[i] = publicKey //For threshold
-                //resultArrayObjects[i] = decoded
-                resultArray[i] = ["iv": metadata["iv"]!, "ephermalPublicKey": metadata["ephemPublicKey"]!, "share": share, "pubKeyX": publicKey["X"]!, "pubKeyY": publicKey["Y"]!]
                 
-                // let publicKeyString = String(data: try JSONSerialization.data(withJSONObject: publicKey), encoding: .utf8)
+                // Due to multiple keyAssign
+                if let temp = keyObj?.first{
+                    let metadata = temp["Metadata"] as! [String : String]
+                    let share = temp["Share"] as! String
+                    let publicKey = temp["PublicKey"] as! [String : String]
+
+                    ShareResponses[i] = publicKey //For threshold
+
+                    resultArray[i] = ["iv": metadata["iv"]!, "ephermalPublicKey": metadata["ephemPublicKey"]!, "share": share, "pubKeyX": publicKey["X"]!, "pubKeyY": publicKey["Y"]!]
+                }
+                
                 let lookupShares = ShareResponses.filter{ $0 != nil } // Nonnil elements
                 
                 // Comparing dictionaries, so the order of keys doesn't matter
