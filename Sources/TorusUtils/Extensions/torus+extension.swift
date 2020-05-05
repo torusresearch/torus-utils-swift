@@ -83,7 +83,6 @@ extension TorusUtils {
         return Promise<[[String:String]]>{ seal in
             for (i, pr) in promisesArray.enumerated(){
                 pr.done{ data, response in
-                    // seal.fulfill([["1":"@"]])
                     let encoder = JSONEncoder()
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                     
@@ -100,13 +99,7 @@ extension TorusUtils {
                     if(lookupShares.count >= Int(endpoints.count/4)*3+1 && !isTokenCommitmentDone){
                         // print("resolving some promise")
                         isTokenCommitmentDone = true
-                        
-                        var nodeSignatures: [[String:String]] = []
-                        for el in resultArrayObjects{
-                            if(el != nil){
-                                nodeSignatures.append(el?.result as! [String:String])
-                            }
-                        }
+                        let nodeSignatures = resultArrayObjects.compactMap{ $0 }.map{return $0.result as! [String:String]}
                         seal.fulfill(nodeSignatures)
                     }
                 }.catch{ err in

@@ -113,8 +113,8 @@ public class TorusUtils{
                     throw "could not derive private key"
                 }
             }.catch{ err in
-                print(err)
-                 seal.reject(err)
+                // print(err)
+                seal.reject(err)
             }
             
         }
