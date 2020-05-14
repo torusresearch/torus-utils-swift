@@ -15,17 +15,16 @@ import PMKFoundation
 
 extension TorusUtils {
     
-    func makeUrlRequest(url: String) throws -> URLRequest {
+    func makeUrlRequest(url: String) -> URLRequest {
         var rq = URLRequest(url: URL(string: url)!)
         rq.httpMethod = "POST"
         rq.addValue("application/json", forHTTPHeaderField: "Content-Type")
         rq.addValue("application/json", forHTTPHeaderField: "Accept")
-        // rq.httpBody = try JSONEncoder().encode(obj)
         return rq
     }
     
     func thresholdSame<T:Hashable>(arr: Array<T>, threshold: Int) -> T?{
-        // uprint(threshold)
+        // print(threshold)
         var hashmap = [T:Int]()
         for (_, value) in arr.enumerated(){
             if((hashmap[value]) != nil) {hashmap[value]! += 1}
@@ -39,7 +38,7 @@ extension TorusUtils {
     }
     
     func ecdh(pubKey: secp256k1_pubkey, privateKey: Data) -> secp256k1_pubkey? {
-        var pubKey2 = pubKey // Pointer takes variable
+        var pubKey2 = pubKey // Pointer takes a variable
         if (privateKey.count != 32) {return nil}
         let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
             if let pkRawPointer = a.baseAddress, a.count > 0 {
@@ -60,7 +59,7 @@ extension TorusUtils {
         
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
-            let rq = try! self.makeUrlRequest(url: el);
+            let rq = self.makeUrlRequest(url: el);
             let encoder = JSONEncoder()
             let rpcdata = try! encoder.encode(JSONRPCrequest(
                 method: "CommitmentRequest",
@@ -71,6 +70,7 @@ extension TorusUtils {
                          "verifieridentifier":verifier,
                          "timestamp": timestamp]
             ))
+            
             // print( String(data: rpcdata, encoding: .utf8)!)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
@@ -88,7 +88,7 @@ extension TorusUtils {
                     
                     if(decoded.error != nil) {
                         print(decoded)
-                        throw "decoding error"
+                        throw TorusError.decodingError
                     }
                     
                     // check if k+t responses are back
@@ -115,7 +115,7 @@ extension TorusUtils {
         
         var promisesArrayReq = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
-            let rq = try! self.makeUrlRequest(url: el);
+            let rq = self.makeUrlRequest(url: el);
             
             // todo : look into hetrogeneous array encoding
             let dataForRequest = ["jsonrpc": "2.0",
@@ -125,7 +125,6 @@ extension TorusUtils {
                                              "item": [["verifieridentifier":verifier, "verifier_id": verifierParams["verifier_id"]!, "idtoken": idToken, "nodesignatures": nodeSignatures]]]] as [String : Any]
             
             let rpcdata = try! JSONSerialization.data(withJSONObject: dataForRequest)
-            // print( String(data: rpcdata, encoding: .utf8)!)
             promisesArrayReq.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
@@ -137,7 +136,7 @@ extension TorusUtils {
             pr.done{ data, response in
                 let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                 print("share responses", decoded)
-                if(decoded.error != nil) {throw "decoding error"}
+                if(decoded.error != nil) {throw TorusError.decodingError}
                 
                 let decodedResult = decoded.result as? [String:Any]
                 let keyObj = decodedResult!["keys"] as? [[String:Any]]
@@ -160,12 +159,10 @@ extension TorusUtils {
                 if(keyResult != nil && !receivedRequiredShares){
                     receivedRequiredShares = true
                     seal.fulfill(resultArray)
-                }else{
-                    // print("All public keys ain't matchin \(i)")
-                    // return Promise.init(error: "All public keys ain't matchin \(i)")
                 }
             }.catch{ err in
                 print(err)
+                seal.reject(err)
             }
         }
         return tempPromise
@@ -176,7 +173,7 @@ extension TorusUtils {
         
         var result = [Int:String]()
         
-        for(i, el) in shares.enumerated(){
+        for(_, el) in shares.enumerated(){
             
             let nodeIndex = el.key
             
@@ -208,16 +205,11 @@ extension TorusUtils {
                 let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv!), padding: .pkcs7)
                 let decrypt = try aes.decrypt(share)
                 result[nodeIndex] = decrypt.hexa
-                // print(result)
-                
                 if(shares.count == result.count) {
-                    // print("result", result)
-                    seal.fulfill(result)
+                    seal.fulfill(result) // Resolve if all shares decrypt
                 }
-                // print("decrypt", decrypt.hexa)
             }catch{
-                print("padding error")
-                seal.reject("Padding error")
+                seal.reject(TorusError.decryptionFailed)
             }
         }
         return tempPromise
@@ -283,7 +275,7 @@ extension TorusUtils {
         // Create Array of URLRequest Promises
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
-            let rq = try! self.makeUrlRequest(url: el);
+            let rq = self.makeUrlRequest(url: el);
             let encoder = JSONEncoder()
             let rpcdata = try! encoder.encode(JSONRPCrequest(method: "VerifierLookupRequest", params: ["verifier":verifier, "verifier_id":verifierId]))
             //print( String(data: rpcdata, encoding: .utf8)!)
@@ -295,6 +287,7 @@ extension TorusUtils {
             pr.done{ data, response in
                 // print("keyLookup", String(data: data, encoding: .utf8))
                 let decoder = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                if(decoder == nil) { throw TorusError.decodingError }
                 //print(decoder)
                 let result = decoder?.result
                 let error = decoder?.error
@@ -314,6 +307,7 @@ extension TorusUtils {
             }.catch{error in
                 // Node returned error handling is done above
                 print(error)
+                seal.reject(error)
             }
         }
         return tempPromise
@@ -342,7 +336,7 @@ extension TorusUtils {
                 // print(SignerObject)
                 let rpcdata = try! encoder.encode(SignerObject)
                 // print("rpcdata", String(data: rpcdata, encoding: .utf8))
-                var request = try! self.makeUrlRequest(url:  "https://signer.tor.us/api/sign")
+                var request = self.makeUrlRequest(url:  "https://signer.tor.us/api/sign")
                 request.addValue(torusNodePubs[i].getX(), forHTTPHeaderField: "pubKeyX")
                 request.addValue(torusNodePubs[i].getY(), forHTTPHeaderField: "pubKeyY")
                 
@@ -352,7 +346,7 @@ extension TorusUtils {
                     // print("repsonse from signer", String(data: data, encoding: .utf8))
                     // Combine jsonData and rpcData
                     let jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-                    var request = try self.makeUrlRequest(url: endpoint)
+                    var request = self.makeUrlRequest(url: endpoint)
                     
                     request.addValue(jsonData["torus-timestamp"] as! String, forHTTPHeaderField: "torus-timestamp")
                     request.addValue(jsonData["torus-nonce"] as! String, forHTTPHeaderField: "torus-nonce")
@@ -362,12 +356,9 @@ extension TorusUtils {
                     return URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
                 }.done{ data, response in
                     let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                    // print("response from node", String(data: data, encoding: .utf8))
-                    // print(String(data: data, encoding: .utf8))
                     seal.fulfill(decodedData)
                     
-                    // Signal to start again
-                    semaphore.signal()
+                    semaphore.signal() // Signal to start again
                 }.catch{ err in
                     // Reject only if reached the last point
                     if(i+1==endpoint.count) {
@@ -416,6 +407,28 @@ extension TorusUtils {
 
 // Necessary for decryption
 
+extension String {
+    func fromBase64() -> String? {
+        guard let data = Data(base64Encoded: self) else {
+            return nil
+        }
+        return String(data: data, encoding: .utf8)
+    }
+    
+    func toBase64() -> String {
+        return Data(self.utf8).base64EncodedString()
+    }
+    
+    func strip04Prefix() -> String {
+        if self.hasPrefix("04") {
+            let indexStart = self.index(self.startIndex, offsetBy: 2)
+            return String(self[indexStart...])
+        }
+        return self
+    }
+    
+}
+
 extension StringProtocol {
     var hexa: [UInt8] {
         var startIndex = self.startIndex
@@ -452,24 +465,3 @@ extension Data {
     }
 }
 
-extension String {
-    func fromBase64() -> String? {
-            guard let data = Data(base64Encoded: self) else {
-                    return nil
-            }
-            return String(data: data, encoding: .utf8)
-    }
-    
-    func toBase64() -> String {
-            return Data(self.utf8).base64EncodedString()
-    }
-    
-    func strip04Prefix() -> String {
-        if self.hasPrefix("04") {
-            let indexStart = self.index(self.startIndex, offsetBy: 2)
-            return String(self[indexStart...])
-        }
-        return self
-    }
-    
-}

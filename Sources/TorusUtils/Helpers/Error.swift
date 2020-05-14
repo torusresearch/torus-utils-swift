@@ -10,6 +10,8 @@ import Foundation
 public enum TorusError: Error{
     case apiRequestFailed
     case errInResponse(Any)
+    case decodingError
+    case decryptionFailed
 }
 
 extension TorusError: CustomDebugStringConvertible{
@@ -17,8 +19,12 @@ extension TorusError: CustomDebugStringConvertible{
         switch self {
         case .apiRequestFailed:
             return "API request failed or No response from the node"
+        case .decodingError:
+            return "JSON Decoding error"
         case .errInResponse(let str):
-            return "API resopnse error \(str)"
+            return "API response error \(str)"
+        case .decryptionFailed:
+            return "Decryption Failed"
         }
         
     }

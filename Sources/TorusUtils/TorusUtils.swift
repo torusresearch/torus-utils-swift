@@ -54,6 +54,7 @@ public class TorusUtils{
             }
         }.catch{err in
             print("err", err)
+            seal.reject(TorusError.decodingError)
         }
         
         return tempPromise
