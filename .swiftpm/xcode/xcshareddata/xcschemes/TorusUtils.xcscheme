@@ -51,6 +51,17 @@
                BlueprintName = "torus-utils-swiftTests"
                ReferencedContainer = "container:">
             </BuildableReference>
+            <SkippedTests>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testGetPublicAddress()">
+               </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testKeyAssign()">
+               </Test>
+               <Test
+                  Identifier = "torus_utils_swiftTests/testKeyLookup()">
+               </Test>
+            </SkippedTests>
          </TestableReference>
       </Testables>
    </TestAction>

@@ -63,7 +63,7 @@ public class TorusUtils{
     
     
     
-    public func retreiveShares(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String) -> Promise<String>{
+    public func retreiveShares(endpoints : Array<String>, verifierIdentifier: String, verifierParams: [[String: String]], subVerifierIds: [String], verifierId: String) -> Promise<String>{
         
         // Generate privatekey
         let privateKey = SECP256K1.generatePrivateKey()
@@ -75,7 +75,8 @@ public class TorusUtils{
         let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
         
         // Hash the token from OAuth login
-        let tokenCommitment = idToken.sha3(.keccak256)
+        let tempIDToken = verifierParams.map{$0["idtoken"]!}.joined(separator: "\u{001d}")
+        let tokenCommitment = tempIDToken.sha3(.keccak256)
         let timestamp = String(Int(Date().timeIntervalSince1970))
         
         var nodeReturnedPubKeyX:String = ""
@@ -84,17 +85,16 @@ public class TorusUtils{
         print(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, tokenCommitment)
         
         return Promise<String>{ seal in
-            commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
+            commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment.sha3(.keccak256))
                 .then{ data -> Promise<[Int:[String:String]]> in
-                    print("data after commitment requrest", data)
-                    return self.retreiveIndividualNodeShare(endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, nodeSignatures: data)
+                   print("data after commitment requrest", data)
+                    return self.retreiveIndividualNodeShare(endpoints: endpoints, verifier: verifierIdentifier, verifierParams: verifierParams, tokenCommitment: tokenCommitment, nodeSignatures: data, subVerifierId: subVerifierIds, verifierId: verifierId)
             }.then{ data -> Promise<[Int:String]> in
                 print("data after retrieve shares", data)
                 if let temp  = data.first{
                     nodeReturnedPubKeyX = temp.value["pubKeyX"]!
                     nodeReturnedPubKeyY = temp.value["pubKeyY"]!
                 }
-                
                 return self.decryptIndividualShares(shares: data, privateKey: privateKey!.toHexString())
             }.then{ data -> Promise<String> in
                 //print("individual shares array", data)

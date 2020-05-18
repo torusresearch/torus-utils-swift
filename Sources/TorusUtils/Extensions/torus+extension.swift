@@ -71,7 +71,7 @@ extension TorusUtils {
                          "timestamp": timestamp]
             ))
             
-            // print( String(data: rpcdata, encoding: .utf8)!)
+            print( String(data: rpcdata, encoding: .utf8)!)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
@@ -110,7 +110,7 @@ extension TorusUtils {
         
     }
     
-    func retreiveIndividualNodeShare(endpoints : Array<String>, verifier: String, verifierParams: [String: String], idToken:String, nodeSignatures: [[String:String]]) -> Promise<[Int:[String:String]]>{
+    func retreiveIndividualNodeShare(endpoints : Array<String>, verifier: String, verifierParams: [[String: String]], tokenCommitment:String, nodeSignatures: [[String:String]], subVerifierId: [String], verifierId: String) -> Promise<[Int:[String:String]]>{
         let (tempPromise, seal) = Promise<[Int:[String:String]]>.pending()
         
         var promisesArrayReq = Array<Promise<(data: Data, response: URLResponse)> >()
@@ -122,9 +122,9 @@ extension TorusUtils {
                                   "id":10,
                                   "method": "ShareRequest",
                                   "params": ["encrypted": "yes",
-                                             "item": [["verifieridentifier":verifier, "verifier_id": verifierParams["verifier_id"]!, "idtoken": idToken, "nodesignatures": nodeSignatures]]]] as [String : Any]
-            
+                                             "item": [["verify_params": verifierParams, "sub_verifier_ids": subVerifierId, "verifieridentifier":verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures, "idtoken": tokenCommitment]]]] as [String : Any]
             let rpcdata = try! JSONSerialization.data(withJSONObject: dataForRequest)
+            print( String(data: rpcdata, encoding: .utf8)!)
             promisesArrayReq.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
@@ -134,6 +134,7 @@ extension TorusUtils {
         var receivedRequiredShares = false
         for (i, pr) in promisesArrayReq.enumerated(){
             pr.done{ data, response in
+                print(try! JSONSerialization.jsonObject(with: data, options: []))
                 let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                 print("share responses", decoded)
                 if(decoded.error != nil) {throw TorusError.decodingError}
