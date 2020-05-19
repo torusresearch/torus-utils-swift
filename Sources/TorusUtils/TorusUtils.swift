@@ -77,7 +77,7 @@ public class TorusUtils{
         // let tempIDToken = verifierParams.map{$0["idtoken"]!}.joined(separator: "\u{001d}")
 
         let hashedOnce = idToken.sha3(.keccak256)
-        let tokenCommitment = hashedOnce.sha3(.keccak256)
+        // let tokenCommitment = hashedOnce.sha3(.keccak256)
         
         let timestamp = String(Int(Date().timeIntervalSince1970))
         
@@ -87,10 +87,10 @@ public class TorusUtils{
         print(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, hashedOnce, tokenCommitment)
         
         return Promise<String>{ seal in
-            commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
+            commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: hashedOnce)
                 .then{ data -> Promise<[Int:[String:String]]> in
                    // print("data after commitment requrest", data)
-                    return self.retrieveIndividualNodeShare(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: hashedOnce, nodeSignatures: data, verifierId: verifierId)
+                    return self.retrieveIndividualNodeShare(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId)
             }.then{ data -> Promise<[Int:String]> in
                 print("data after retrieve shares", data)
                 if let temp  = data.first{
