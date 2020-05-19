@@ -13,6 +13,7 @@ import CryptoSwift
 import BigInt
 
 
+@available(iOS 9.0, *)
 public class TorusUtils{
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
     var privateKey = ""
@@ -61,9 +62,7 @@ public class TorusUtils{
         
     }
     
-    
-    
-    public func retreiveShares(endpoints : Array<String>, verifierIdentifier: String, verifierParams: [[String: String]], subVerifierIds: [String], verifierId: String) -> Promise<String>{
+    public func retrieveShares(endpoints : Array<String>, verifierIdentifier: String, verifierId:String, idToken: String, extraParams: Data) -> Promise<String>{
         
         // Generate privatekey
         let privateKey = SECP256K1.generatePrivateKey()
@@ -75,20 +74,23 @@ public class TorusUtils{
         let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
         
         // Hash the token from OAuth login
-        let tempIDToken = verifierParams.map{$0["idtoken"]!}.joined(separator: "\u{001d}")
-        let tokenCommitment = tempIDToken.sha3(.keccak256)
+        // let tempIDToken = verifierParams.map{$0["idtoken"]!}.joined(separator: "\u{001d}")
+
+        let hashedOnce = idToken.sha3(.keccak256)
+        let tokenCommitment = hashedOnce.sha3(.keccak256)
+        
         let timestamp = String(Int(Date().timeIntervalSince1970))
         
         var nodeReturnedPubKeyX:String = ""
         var nodeReturnedPubKeyY:String = ""
         
-        print(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, tokenCommitment)
+        print(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, hashedOnce, tokenCommitment)
         
         return Promise<String>{ seal in
-            commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment.sha3(.keccak256))
+            commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: tokenCommitment)
                 .then{ data -> Promise<[Int:[String:String]]> in
-                   print("data after commitment requrest", data)
-                    return self.retreiveIndividualNodeShare(endpoints: endpoints, verifier: verifierIdentifier, verifierParams: verifierParams, tokenCommitment: tokenCommitment, nodeSignatures: data, subVerifierId: subVerifierIds, verifierId: verifierId)
+                   // print("data after commitment requrest", data)
+                    return self.retrieveIndividualNodeShare(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: hashedOnce, nodeSignatures: data, verifierId: verifierId)
             }.then{ data -> Promise<[Int:String]> in
                 print("data after retrieve shares", data)
                 if let temp  = data.first{
@@ -100,8 +102,6 @@ public class TorusUtils{
                 //print("individual shares array", data)
                 return self.lagrangeInterpolation(shares: data)
             }.done{ data in
-                print("private key rebuild", data)
-                
                 let publicKey = SECP256K1.privateToPublic(privateKey: Data.init(hex: data) , compressed: false)?.suffix(64) // take last 64
                 
                 // Split key in 2 parts, X and Y
@@ -109,10 +109,13 @@ public class TorusUtils{
                 let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
                 let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
                 
-                seal.fulfill(data)
+                print("private key rebuild", data, pubKeyX, pubKeyY)
+
                 // Verify
                 if( pubKeyX == nodeReturnedPubKeyX && pubKeyY == nodeReturnedPubKeyY) {
                     self.privateKey = data
+                    seal.fulfill(data)
+
                 }else{
                     throw "could not derive private key"
                 }

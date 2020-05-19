@@ -13,6 +13,7 @@ import BigInt
 import CryptoSwift
 import PMKFoundation
 
+@available(iOS 9.0, *)
 extension TorusUtils {
     
     func makeUrlRequest(url: String) -> URLRequest {
@@ -57,21 +58,23 @@ extension TorusUtils {
     
     func commitmentRequest(endpoints : Array<String>, verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) -> Promise<[[String:String]]>{
         
+        // Todo: Add try catch for encoding block
+        let encoder = JSONEncoder()
+        let rpcdata = try! encoder.encode(JSONRPCrequest(
+            method: "CommitmentRequest",
+            params: ["messageprefix": "mug00",
+                     "tokencommitment": tokenCommitment,
+                     "temppubx": pubKeyX,
+                     "temppuby": pubKeyY,
+                     "verifieridentifier":verifier,
+                     "timestamp": timestamp]
+        ))
+        print( String(data: rpcdata, encoding: .utf8)!)
+        
+        // Build promises array
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
             let rq = self.makeUrlRequest(url: el);
-            let encoder = JSONEncoder()
-            let rpcdata = try! encoder.encode(JSONRPCrequest(
-                method: "CommitmentRequest",
-                params: ["messageprefix": "mug00",
-                         "tokencommitment": tokenCommitment,
-                         "temppubx": pubKeyX,
-                         "temppuby": pubKeyY,
-                         "verifieridentifier":verifier,
-                         "timestamp": timestamp]
-            ))
-            
-            print( String(data: rpcdata, encoding: .utf8)!)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
@@ -110,63 +113,79 @@ extension TorusUtils {
         
     }
     
-    func retreiveIndividualNodeShare(endpoints : Array<String>, verifier: String, verifierParams: [[String: String]], tokenCommitment:String, nodeSignatures: [[String:String]], subVerifierId: [String], verifierId: String) -> Promise<[Int:[String:String]]>{
-        let (tempPromise, seal) = Promise<[Int:[String:String]]>.pending()
+    func retrieveIndividualNodeShare(endpoints : Array<String>, extraParams: Data, verifier: String, tokenCommitment:String, nodeSignatures: [[String:String]], verifierId: String) -> Promise<[Int:[String:String]]>{
+            
+        // Rebuild extraParams
+        var rpcdata : Data = Data.init()
+        do {
+            if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String:Any] {
+                // print(loadedStrings)
+                let newValue = ["verifieridentifier":verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures, "idtoken": tokenCommitment] as [String:AnyObject]
+                let keepingCurrent = loadedStrings.merging(newValue) { (current, _) in current }
+                
+                // todo : look into hetrogeneous array encoding
+                let dataForRequest = ["jsonrpc": "2.0",
+                                      "id":10,
+                                      "method": "ShareRequest",
+                                      "params": ["encrypted": "yes",
+                                                 "item": [keepingCurrent]]] as [String : Any]
+                rpcdata = try! JSONSerialization.data(withJSONObject: dataForRequest)
+                print( String(data: rpcdata, encoding: .utf8)!)
+                // print(keepingCurrent)
+            }
+        } catch {
+            print("Couldn't read file.")
+        }
         
+        // Build promises array
         var promisesArrayReq = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
             let rq = self.makeUrlRequest(url: el);
-            
-            // todo : look into hetrogeneous array encoding
-            let dataForRequest = ["jsonrpc": "2.0",
-                                  "id":10,
-                                  "method": "ShareRequest",
-                                  "params": ["encrypted": "yes",
-                                             "item": [["verify_params": verifierParams, "sub_verifier_ids": subVerifierId, "verifieridentifier":verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures, "idtoken": tokenCommitment]]]] as [String : Any]
-            let rpcdata = try! JSONSerialization.data(withJSONObject: dataForRequest)
-            print( String(data: rpcdata, encoding: .utf8)!)
             promisesArrayReq.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
-        var ShareResponses = Array<[String:String]?>.init(repeating: nil, count: promisesArrayReq.count)
-        var resultArray = [Int:[String:String]]()
-        
-        var receivedRequiredShares = false
-        for (i, pr) in promisesArrayReq.enumerated(){
-            pr.done{ data, response in
-                print(try! JSONSerialization.jsonObject(with: data, options: []))
-                let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
-                print("share responses", decoded)
-                if(decoded.error != nil) {throw TorusError.decodingError}
-                
-                let decodedResult = decoded.result as? [String:Any]
-                let keyObj = decodedResult!["keys"] as? [[String:Any]]
-                
-                // Due to multiple keyAssign
-                if let temp = keyObj?.first{
-                    let metadata = temp["Metadata"] as! [String : String]
-                    let share = temp["Share"] as! String
-                    let publicKey = temp["PublicKey"] as! [String : String]
-
-                    ShareResponses[i] = publicKey //For threshold
-
-                    resultArray[i] = ["iv": metadata["iv"]!, "ephermalPublicKey": metadata["ephemPublicKey"]!, "share": share, "pubKeyX": publicKey["X"]!, "pubKeyY": publicKey["Y"]!]
+        return Promise<[Int:[String:String]]>{ seal in
+            
+            var ShareResponses = Array<[String:String]?>.init(repeating: nil, count: promisesArrayReq.count)
+            var resultArray = [Int:[String:String]]()
+            var receivedRequiredShares = false
+            
+            
+            for (i, pr) in promisesArrayReq.enumerated(){
+                pr.done{ data, response in
+                    print(try! JSONSerialization.jsonObject(with: data, options: []))
+                    let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                    // print("share responses", decoded)
+                    if(decoded.error != nil) {throw TorusError.decodingError}
+                    
+                    let decodedResult = decoded.result as? [String:Any]
+                    let keyObj = decodedResult!["keys"] as? [[String:Any]]
+                    
+                    // Due to multiple keyAssign
+                    if let temp = keyObj?.first{
+                        let metadata = temp["Metadata"] as! [String : String]
+                        let share = temp["Share"] as! String
+                        let publicKey = temp["PublicKey"] as! [String : String]
+                        
+                        ShareResponses[i] = publicKey //For threshold
+                        
+                        resultArray[i] = ["iv": metadata["iv"]!, "ephermalPublicKey": metadata["ephemPublicKey"]!, "share": share, "pubKeyX": publicKey["X"]!, "pubKeyY": publicKey["Y"]!]
+                    }
+                    
+                    let lookupShares = ShareResponses.filter{ $0 != nil } // Nonnil elements
+                    
+                    // Comparing dictionaries, so the order of keys doesn't matter
+                    let keyResult = self.thresholdSame(arr: lookupShares.map{$0}, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
+                    if(keyResult != nil && !receivedRequiredShares){
+                        receivedRequiredShares = true
+                        seal.fulfill(resultArray)
+                    }
+                }.catch{ err in
+                    print(err)
+                    seal.reject(err)
                 }
-                
-                let lookupShares = ShareResponses.filter{ $0 != nil } // Nonnil elements
-                
-                // Comparing dictionaries, so the order of keys doesn't matter
-                let keyResult = self.thresholdSame(arr: lookupShares.map{$0}, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
-                if(keyResult != nil && !receivedRequiredShares){
-                    receivedRequiredShares = true
-                    seal.fulfill(resultArray)
-                }
-            }.catch{ err in
-                print(err)
-                seal.reject(err)
             }
         }
-        return tempPromise
     }
     
     func decryptIndividualShares(shares: [Int:[String:String]], privateKey: String) -> Promise<[Int:String]>{
