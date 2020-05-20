@@ -90,8 +90,8 @@ extension TorusUtils {
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                     
                     if(decoded.error != nil) {
-                        print(decoded)
-                        throw TorusError.decodingError
+                        // print(decoded)
+                        throw TorusError.commitmentRequestFailed
                     }
                     
                     // check if k+t responses are back
@@ -114,7 +114,7 @@ extension TorusUtils {
     }
     
     func retrieveIndividualNodeShare(endpoints : Array<String>, extraParams: Data, verifier: String, tokenCommitment:String, nodeSignatures: [[String:String]], verifierId: String) -> Promise<[Int:[String:String]]>{
-            
+        
         // Rebuild extraParams
         var rpcdata : Data = Data.init()
         do {
@@ -131,7 +131,6 @@ extension TorusUtils {
                                                  "item": [keepingCurrent]]] as [String : Any]
                 rpcdata = try! JSONSerialization.data(withJSONObject: dataForRequest)
                 print( String(data: rpcdata, encoding: .utf8)!)
-                // print(keepingCurrent)
             }
         } catch {
             print("Couldn't read file.")
@@ -150,10 +149,9 @@ extension TorusUtils {
             var resultArray = [Int:[String:String]]()
             var receivedRequiredShares = false
             
-            
             for (i, pr) in promisesArrayReq.enumerated(){
                 pr.done{ data, response in
-                    print(try! JSONSerialization.jsonObject(with: data, options: []))
+                    // print(try! JSONSerialization.jsonObject(with: data, options: []))
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                     // print("share responses", decoded)
                     if(decoded.error != nil) {throw TorusError.decodingError}
@@ -181,7 +179,7 @@ extension TorusUtils {
                         seal.fulfill(resultArray)
                     }
                 }.catch{ err in
-                    print(err)
+                    // print(err)
                     seal.reject(err)
                 }
             }

@@ -11,6 +11,7 @@ public enum TorusError: Error{
     case apiRequestFailed
     case errInResponse(Any)
     case decodingError
+    case commitmentRequestFailed
     case decryptionFailed
 }
 
@@ -25,6 +26,8 @@ extension TorusError: CustomDebugStringConvertible{
             return "API response error \(str)"
         case .decryptionFailed:
             return "Decryption Failed"
+        case .commitmentRequestFailed:
+            return "commitment request failed"
         }
         
     }
