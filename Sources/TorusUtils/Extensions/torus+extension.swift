@@ -156,7 +156,7 @@ extension TorusUtils {
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                     // print("share responses", decoded)
                     if(decoded.error != nil) {
-                        print(decoded)
+                        print(try! JSONSerialization.jsonObject(with: data, options: []))
                         throw TorusError.decodingError
                         
                     }
@@ -452,6 +452,14 @@ extension String {
         return self
     }
     
+    func addLeading0sForLength64() -> String{
+        if self.count < 64 {
+            let toAdd = String(repeating: "0", count: 64 - self.count)
+            return toAdd + self
+        }else {
+            return self
+        }
+    }
 }
 
 extension StringProtocol {

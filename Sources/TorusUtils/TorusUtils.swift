@@ -71,8 +71,8 @@ public class TorusUtils{
         
         // Split key in 2 parts, X and Y
         let publicKeyHex = publicKey?.toHexString()
-        let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
-        let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
+        let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString().addLeading0sForLength64()
+        let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString().addLeading0sForLength64()
         
         // Hash the token from OAuth login
         // let tempIDToken = verifierParams.map{$0["idtoken"]!}.joined(separator: "\u{001d}")
@@ -97,12 +97,12 @@ public class TorusUtils{
             }.then{ data -> Promise<[Int:String]> in
                 print("data after retrieve shares", data)
                 if let temp  = data.first{
-                    nodeReturnedPubKeyX = temp.value["pubKeyX"]!
-                    nodeReturnedPubKeyY = temp.value["pubKeyY"]!
+                    nodeReturnedPubKeyX = temp.value["pubKeyX"]!.addLeading0sForLength64()
+                    nodeReturnedPubKeyY = temp.value["pubKeyY"]!.addLeading0sForLength64()
                 }
                 return self.decryptIndividualShares(shares: data, privateKey: privateKey!.toHexString())
             }.then{ data -> Promise<String> in
-                //print("individual shares array", data)
+                print("individual shares array", data)
                 return self.lagrangeInterpolation(shares: data)
             }.done{ data in
                 let publicKey = SECP256K1.privateToPublic(privateKey: Data.init(hex: data) , compressed: false)?.suffix(64) // take last 64
@@ -112,7 +112,7 @@ public class TorusUtils{
                 let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
                 let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
                 
-                // print("private key rebuild", data, pubKeyX, pubKeyY)
+                print("private key rebuild", data, pubKeyX, pubKeyY)
 
                 // Verify
                 if( pubKeyX == nodeReturnedPubKeyX && pubKeyY == nodeReturnedPubKeyY) {
