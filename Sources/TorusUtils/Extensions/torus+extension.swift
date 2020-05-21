@@ -86,11 +86,12 @@ extension TorusUtils {
         return Promise<[[String:String]]>{ seal in
             for (i, pr) in promisesArray.enumerated(){
                 pr.done{ data, response in
+                    
                     let encoder = JSONEncoder()
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                     
                     if(decoded.error != nil) {
-                        // print(decoded)
+                         print(try! JSONSerialization.jsonObject(with: data, options: []))
                         throw TorusError.commitmentRequestFailed
                     }
                     
@@ -154,7 +155,11 @@ extension TorusUtils {
                     // print(try! JSONSerialization.jsonObject(with: data, options: []))
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                     // print("share responses", decoded)
-                    if(decoded.error != nil) {throw TorusError.decodingError}
+                    if(decoded.error != nil) {
+                        print(decoded)
+                        throw TorusError.decodingError
+                        
+                    }
                     
                     let decodedResult = decoded.result as? [String:Any]
                     let keyObj = decodedResult!["keys"] as? [[String:Any]]
@@ -290,13 +295,15 @@ extension TorusUtils {
     public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<[String:String]>{
         let (tempPromise, seal) = Promise<[String:String]>.pending()
         
+        // Enode data
+        let encoder = JSONEncoder()
+        let rpcdata = try! encoder.encode(JSONRPCrequest(method: "VerifierLookupRequest", params: ["verifier":verifier, "verifier_id":verifierId]))
+        //print( String(data: rpcdata, encoding: .utf8)!)
+        
         // Create Array of URLRequest Promises
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
             let rq = self.makeUrlRequest(url: el);
-            let encoder = JSONEncoder()
-            let rpcdata = try! encoder.encode(JSONRPCrequest(method: "VerifierLookupRequest", params: ["verifier":verifier, "verifier_id":verifierId]))
-            //print( String(data: rpcdata, encoding: .utf8)!)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
         }
         
