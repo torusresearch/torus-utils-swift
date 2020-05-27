@@ -6,12 +6,18 @@
 //
 
 import Foundation
-import FetchNodeDetails
 import PromiseKit
+#if canImport(FetchNodeDetails)
+    import FetchNodeDetails
+    import PMKFoundation
+#elseif canImport(Torus_fetchNodeDetails)
+    import Torus_fetchNodeDetails
+#endif
+//import Torus_fetchNodeDetails
+//import FetchNodeDetails
 import secp256k1
 import BigInt
 import CryptoSwift
-import PMKFoundation
 
 @available(iOS 9.0, *)
 extension TorusUtils {
@@ -247,7 +253,7 @@ extension TorusUtils {
         _ = shares.map { shareList[BigInt($0.key+1)] = BigInt($0.value, radix: 16)}
         print(shares, shareList)
         
-        var secret = BigInt("0")
+        var secret = BigUInt("0") // to support BigInt 4.0 dependency on cocoapods
         let serialQueue = DispatchQueue(label: "lagrange.serial.queue")
         let semaphore = DispatchSemaphore(value: 1)
         var sharesDecrypt = 0
@@ -277,7 +283,7 @@ extension TorusUtils {
                 var delta = (upper*(lower.inverse(secp256k1N)!)).modulus(secp256k1N);
                 // print("delta", delta, "inverse of lower", lower.inverse(secp256k1N)!)
                 delta = (delta*share).modulus(secp256k1N)
-                secret = (secret+delta).modulus(secp256k1N)
+                secret = BigUInt((BigInt(secret)+delta).modulus(secp256k1N))
                 sharesDecrypt += 1
                 
                 let secretString = String(secret.serialize().hexa.suffix(64))
