@@ -1,4 +1,4 @@
-framework module Torus_fetchNodeDetails {
+framework module FetchNodeDetails {
   umbrella header "Torus-fetchNodeDetails-umbrella.h"
 
   export *

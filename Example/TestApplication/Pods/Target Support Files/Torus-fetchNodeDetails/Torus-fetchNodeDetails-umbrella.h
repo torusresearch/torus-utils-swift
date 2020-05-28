@@ -11,6 +11,6 @@
 #endif
 
 
-FOUNDATION_EXPORT double Torus_fetchNodeDetailsVersionNumber;
-FOUNDATION_EXPORT const unsigned char Torus_fetchNodeDetailsVersionString[];
+FOUNDATION_EXPORT double FetchNodeDetailsVersionNumber;
+FOUNDATION_EXPORT const unsigned char FetchNodeDetailsVersionString[];
 

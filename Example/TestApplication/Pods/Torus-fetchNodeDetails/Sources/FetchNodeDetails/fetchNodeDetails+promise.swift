@@ -33,6 +33,8 @@ extension FetchNodeDetails {
             let epoch = data.first?.value
             guard let newEpoch = epoch else { throw "some error"}
             seal.fulfill(Int("\(newEpoch)")!)
+        }.catch{ err in
+            seal.reject(err)
         }
         
         return tempPromise
@@ -131,11 +133,10 @@ extension FetchNodeDetails {
             }.then{epochInfo -> Guarantee<[Result<NodeInfo>]> in
                 let nodelist = epochInfo.getNodeList();
                 var torusIndexes:[BigInt] = Array()
-                var nodeEndPoints:[NodeInfo] = Array()
                 var getNodeInfoPromisesArray:[Promise<NodeInfo>] = Array()
                 for i in 0..<nodelist.count{
                     torusIndexes.append(BigInt(i+1))
-                    getNodeInfoPromisesArray.append(try self.getNodeEndpointPromise(nodeEthAddress: nodelist[i]))
+                    getNodeInfoPromisesArray.append(self.getNodeEndpointPromise(nodeEthAddress: nodelist[i]))
                 }
                 return when(resolved: getNodeInfoPromisesArray)
             }.done{ results in

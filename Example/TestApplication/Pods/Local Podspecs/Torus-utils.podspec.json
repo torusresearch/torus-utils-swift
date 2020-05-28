@@ -21,13 +21,10 @@
   ],
   "dependencies": {
     "Torus-fetchNodeDetails": [
-      "~> 0.0.8"
+      "~> 0.0.10"
     ],
     "PromiseKit/Foundation": [
       "~> 6.0"
-    ],
-    "BlueECC": [
-      "~> 1.2.4"
     ]
   },
   "swift_version": "5.0"
