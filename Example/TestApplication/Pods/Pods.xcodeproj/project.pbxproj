@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -26,23 +26,19 @@
 		0E5DF4B4DE65F197023A69EC9DD8B60F /* hash.h in Headers */ = {isa = PBXBuildFile; fileRef = C96B62268EA206ABAA0E10EE5E9E0B34 /* hash.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		0E6F0E8337D8928B164D18FC54D6C7F9 /* Bit.swift in Sources */ = {isa = PBXBuildFile; fileRef = E40A9064F75349BACDDED1370059C533 /* Bit.swift */; };
 		118127208E194C49B214D89342910BEB /* scalar_low.h in Headers */ = {isa = PBXBuildFile; fileRef = 3F9E4E90B0A4D836C5E9263CBDA5D362 /* scalar_low.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		11EBB901CBF77ED7D16D0E692E8DE07A /* FetchNodeDetails.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49AD3B8C455F9118AFBF3008173879C5 /* FetchNodeDetails.framework */; };
 		12E453E2F5939A806AFB041F5EA34A79 /* torusNodePub.swift in Sources */ = {isa = PBXBuildFile; fileRef = CE07EAEE91411F2252AE38EFE9281866 /* torusNodePub.swift */; };
 		134213E72D80D87A02B3B1B0FD9F59E6 /* fetchNodeDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0F44A48A73DEEC7E13EE70D84415AC2 /* fetchNodeDetails.swift */; };
 		13A4BA994DAE26C3B22F1842D5E186BD /* Padding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04C519C969F931E051E4970F81C756FE /* Padding.swift */; };
 		13E1438FFEE1786733A95E3FC7F686CE /* Web3+ERC1643.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3671A673757A47810D7BE2E93A5CA5 /* Web3+ERC1643.swift */; };
-		14CA02E4D11631E4DDE761C4757011AB /* NativeTypesEncoding+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3EE2096BF4539278418DB26E8D91E77 /* NativeTypesEncoding+Extensions.swift */; };
 		15901C26A398A72C746D1369042356B6 /* join.m in Sources */ = {isa = PBXBuildFile; fileRef = 75F90685A4E4396C423683507A560DF5 /* join.m */; };
 		15B7CB04C22B0509B592FE8547D47C5D /* Promise+Web3+Eth+GetBlockByHash.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12C414D282A1EAA64E5D29111F05EC90 /* Promise+Web3+Eth+GetBlockByHash.swift */; };
 		1627E6FA0453D6DB472BA444F1D32AE7 /* SSLClientCertificate.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D748E7EF722F6152D652D479481FC0 /* SSLClientCertificate.swift */; };
-		16D30C7AA0C024EE016919D8F11BF3B5 /* Torus-utils-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = F5DD464C9D6D787E18B398D16875A327 /* Torus-utils-dummy.m */; };
 		16F71F20D31B7EEC6A60DB14135AB7A9 /* Comparable.swift in Sources */ = {isa = PBXBuildFile; fileRef = C566C5AA3E8548DEAAC0B769C093F4B3 /* Comparable.swift */; };
 		172BA39C44D44DDE0603E2761D4E5185 /* Web3+Protocols.swift in Sources */ = {isa = PBXBuildFile; fileRef = 720ACA72088A80964CF63A2327C103F8 /* Web3+Protocols.swift */; };
 		1805366B980A934DC81745E7BF54091E /* Web3+Eth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 297DC18AAB993D7DCD9F5F7BA2ACA557 /* Web3+Eth.swift */; };
 		188251FB63AB1D4022290F5DED58CE13 /* secp256k1-config.h in Headers */ = {isa = PBXBuildFile; fileRef = 377E9A7CE9DF99AA0319505346BBAD1D /* secp256k1-config.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		18B046E69D8A6D6982DA8BFE4A8C7F6F /* Torus-utils-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = C609B1B1531FC439B71DE72B523CF964 /* Torus-utils-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		18DF6A317CCB7F5BEE8D7AF5D79AEB38 /* PromiseKit-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 47982AF68D00A817208CFF6D24882F02 /* PromiseKit-dummy.m */; };
-		1B8D413D1080C530DA7420D053AB6F7A /* Encodable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77B7F94F5ADE579AFC40FB2F2C179F2C /* Encodable+Extensions.swift */; };
+		1ABB2ABE6C99DE7B5EC24D6159EB663F /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = B716ABFA4CD2EE98BA8501A8833EFA90 /* Array+Extension.swift */; };
 		1C482705924CA6C3DF716EC60624900B /* Generics.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC612FC4B7C4EB4E4DB8B5E932C5DF54 /* Generics.swift */; };
 		1C53F842BF95C8FC79D67CFE07E47F3F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D1AB6BB3213C659DC4E7871A60FDC3C /* Foundation.framework */; };
 		1C5D3593B983B9369EFCFDE7D4DE0D19 /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36906EEAA4C1CCFB8309B5E6525AB7D7 /* Configuration.swift */; };
@@ -55,13 +51,13 @@
 		208EDAA1D258CAA2BD08E462359D4FFF /* when.m in Sources */ = {isa = PBXBuildFile; fileRef = 516EB54A9EB735209B08B5A4F6D5407C /* when.m */; };
 		209C4C8BE72F7339855DE895E45400C1 /* Web3+Eth+Websocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2DB67DD3A7459D6650DE9920CA7B85F /* Web3+Eth+Websocket.swift */; };
 		20EC15B2D04F3D3A732CB9E2C0C4D095 /* Web3+ERC1410.swift in Sources */ = {isa = PBXBuildFile; fileRef = B79C885942769BAEBEC3F911F825AE75 /* Web3+ERC1410.swift */; };
+		20FA0240E049467DC32BC1A13173DC41 /* Data+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E671EF4E9A91FE45C3BE6722E7155C70 /* Data+Extension.swift */; };
 		21A7A8B5D8F2F97DCEFDA93A527E292B /* field_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 661CB68E789A91D68BBB0720F432F28A /* field_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		2228B8549F0F5445D1B2D346E12A20CD /* Floating Point Conversion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00B323D665D8B076A9C9DB0F55C1FE39 /* Floating Point Conversion.swift */; };
 		22ACB33FC06FBE7D21727BB708773FB2 /* scalar_4x64.h in Headers */ = {isa = PBXBuildFile; fileRef = 7AFDC99531CCC2C97473968B6EEF69D6 /* scalar_4x64.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		294C60E5E562CF3C2917335BDD910F42 /* Checksum.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4FA2E1F43D0A77E276AF618AA7ACCBD /* Checksum.swift */; };
 		294D61E8A195B6A1F6AEDCF0F73599A5 /* Starscream-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 82E5CEB9B7EE6EA40C3676BEFD2753DD /* Starscream-dummy.m */; };
 		29643F7A000899634C9174BCB8D1A1AB /* NSNotificationCenter+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB5A4E88A7F7F8AC12833A4519E46818 /* NSNotificationCenter+Promise.swift */; };
-		2A06A55349E71D7BC5FE4C0475EB03FA /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = C332C981A8A0796D27A2A0338C8BB138 /* Error.swift */; };
 		2A96C7589A9B1C2FDC260ADB68766585 /* ContractProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BAF01307087E72BEA516AC7221EFBCF /* ContractProtocol.swift */; };
 		2BAB6849DCBD578593DDBF2A332A2077 /* scalar_8x32_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 9B57E11568A6E0132B3678A3DC164151 /* scalar_8x32_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		2C2D8E2B60EF535E64C5CCDE912FE6D3 /* SECP256k1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4840269C6FAC1110501067A6F371BF30 /* SECP256k1.swift */; };
@@ -72,7 +68,6 @@
 		2F8F9344997A8EE2CD1D65155CBEA5E4 /* fetchNodeDetails+promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EC41AE1F293D0C9A149E95AD3B5C0EF /* fetchNodeDetails+promise.swift */; };
 		2FDD3DAC4E9D0C03A16D3F838A8E15F5 /* SHA2.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6CBE9B1ED26B7BFDACA2950AE8D647D /* SHA2.swift */; };
 		301B5F7669D2DC7E46384FBAC71B7C19 /* hang.m in Sources */ = {isa = PBXBuildFile; fileRef = ED54D8F2DEE6E28EE9C012F37B13C465 /* hang.m */; };
-		31FE45129EFC3CCCDF76CDAD4CBCCF87 /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47FF7DCB7DF23AB1573FB36DDE3DFF63 /* Array+Extension.swift */; };
 		3208DDEB9CAC16AC7D2C7E9A7F057DC1 /* NSURLSession+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75AE29519EE0C415726EA6C12B76C7F6 /* NSURLSession+Promise.swift */; };
 		3378C1EEFC149B899433AF30F147CE32 /* after.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D29C9C138595DA93E0F1688B90FDCF3 /* after.swift */; };
 		33B79E4BFF8D25E1A705E2C469BBCA9B /* PromiseKit.h in Headers */ = {isa = PBXBuildFile; fileRef = 99862F932B6F210EC2E908DFC556357C /* PromiseKit.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -86,7 +81,6 @@
 		3AAE347ADDFEFAC7DDECBC744D1BD6AC /* NSTask+AnyPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = 418FB206F6ED149EAC1AEF0DFE3A788A /* NSTask+AnyPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		3AB755C7D90794EEBA021D70FDE33C64 /* eckey_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = FD10892D11E93B6294A8EDE9324F472C /* eckey_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		3B9A2601095A9A72843D76CA44B37782 /* Division.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF11167B2455A32EEAD52D21BBA35B64 /* Division.swift */; };
-		3D42EEB955442E43D945BEA5B66C59F1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D1AB6BB3213C659DC4E7871A60FDC3C /* Foundation.framework */; };
 		3E3FE29D83B6DB4B229CB38CCB4E1C86 /* CBCMAC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C6131D47614EFD53C98FD54797B4C4A /* CBCMAC.swift */; };
 		3EEDEF5300B21540F1F36CD42E4864BC /* EthereumContract.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1923971B98159149BBCB95EF6928C895 /* EthereumContract.swift */; };
 		3F13329E84C53877C53E8F85D9120290 /* Web3+ERC1633.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FE4E945EC573CD37694F57F321D121D /* Web3+ERC1633.swift */; };
@@ -94,18 +88,17 @@
 		420C87B493B70746472899A82479242F /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46DA9A29620E8DDE37A6116268E9B38A /* String+Extension.swift */; };
 		422A0D59348BD4F30ED57A4150296ACB /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C5E44269732327D2131A3035738322 /* Array+Extension.swift */; };
 		42495A8941D9B42B07F032390AA2389F /* UIViewPropertyAnimator+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDFAA2898A8DDFCE7CBF1D6404A0CB40 /* UIViewPropertyAnimator+Promise.swift */; };
-		42BF40667AD381D8EB34CF05C9243F78 /* RIPEMD160+StackOveflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = C581A8E1E5857DB457F155257532935A /* RIPEMD160+StackOveflow.swift */; };
 		432C42F5F8339D883C5596F25A7A4377 /* Pods-TestApplication-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 1F35ACAD54CA4C8BA1628EEC5C9C803A /* Pods-TestApplication-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4362503059C68DFCDCB8621F4FD9E325 /* Square Root.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4CB54B3D967131C5961E61BF312BCE7 /* Square Root.swift */; };
 		436F8BE51D5F6BB39AFD9CDD871148A5 /* ecmult_const.h in Headers */ = {isa = PBXBuildFile; fileRef = 29293AE7DA5A7E32E6F6BF78F77D83C1 /* ecmult_const.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		438DAC7813FDB677252FB52A8FA3E708 /* Updatable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28FECDFD564C2AC043A4F3423246F6FA /* Updatable.swift */; };
-		439CF4658A6537FA91A1DBD7F970E97B /* SECP256k1.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78FCDD9F28E7952E65EE0ECF673BFCD8 /* SECP256k1.swift */; };
 		43F6C555EF9E3E83526105E411E94679 /* KeystoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2C7DBE5276FE10DFA71FF278CAC512A /* KeystoreManager.swift */; };
 		4418281931C4D1176F2C541CDD770F14 /* Catchable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68F3760BCD4DA47B0801E2E92EBBF0CE /* Catchable.swift */; };
 		448506F29495E3B3BAB56D093D681C1A /* Authenticator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CE427F7624AA8581A3C0FB5B40A23B8 /* Authenticator.swift */; };
 		4513DB54C2A62C0A1B5117AB2B9D4B58 /* abi.json in Sources */ = {isa = PBXBuildFile; fileRef = 5D27C0FCC4D9FF36D935F9F6735DF777 /* abi.json */; };
 		45746D692A8E7F09C0EED2675231EF41 /* StreamEncryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9706FBE3AED47CFE4BB968381BC7F5EA /* StreamEncryptor.swift */; };
 		46C4120B8C66DBCBEEC55D09F043D618 /* race.m in Sources */ = {isa = PBXBuildFile; fileRef = 798A59187454779CC39E71EFE076A2D7 /* race.m */; };
+		480935654425EADB2D0A91701670E8B4 /* Decodable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A019206697FB9163BA5C922BC9D5141 /* Decodable+Extensions.swift */; };
 		4837BDF1069E0D98D9027137D8B9C872 /* Web3+HttpProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 941391692500E58F1DA9744C9723E83D /* Web3+HttpProvider.swift */; };
 		485BB236DBDF4AAF45C4BA8C1BD47BAC /* Web3+ERC1376.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F1E0D8E17D2799C927C210E1BB1F69A /* Web3+ERC1376.swift */; };
 		48A9FC2654E5476B79C73C4243BB9507 /* BIP39+WordLists.swift in Sources */ = {isa = PBXBuildFile; fileRef = 913B37F36F25C962E5BF58138633E323 /* BIP39+WordLists.swift */; };
@@ -115,14 +108,16 @@
 		49C8C4DFD859391ED9CB7EBC50DDBBD1 /* MD5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 826B94AFDB4CD470E86EB72C0265E1A6 /* MD5.swift */; };
 		4A613C22671DE0E90BC4F1B70CB3B479 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D1AB6BB3213C659DC4E7871A60FDC3C /* Foundation.framework */; };
 		4A8B21596204A43258F4EC69A7AEC66E /* Hashable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86CE834922CAFE1E04A9EA7126CFF5D6 /* Hashable.swift */; };
-		4BAEA081FF4032BC619CF01C889EBC06 /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB324B5FDA98DEEB8DEB64A7D3800322 /* String+Extension.swift */; };
+		4CA962F76751D11AC4EDFAE2F8541BF3 /* SECP256k1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B797AAF03B6F15DB184AE767CF4A33AC /* SECP256k1.swift */; };
 		4CC1869600E147931105561D03377585 /* Promise+Web3+Eth+SendTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5B758DA7CB70E29855D6676AD3B243F /* Promise+Web3+Eth+SendTransaction.swift */; };
 		4CC49D8FD2EB8F87B872DE0A09FD6C3F /* ENSResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A866FEF44DAA52BA4EDF371E64C68DA /* ENSResolver.swift */; };
 		4D63B2F48E2A1F63585459BC620F273C /* ABIParameterTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9E60B12A0CDCF6D49599D841C72F74B /* ABIParameterTypes.swift */; };
 		4D65C782220C5E27BF8A3B61EBBDAB3E /* Guarantee.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8CE035F3F130019714176C76B44BAA /* Guarantee.swift */; };
 		4D8FCBDF48198F1385A3BE1A10E4E886 /* Web3+ERC1644.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17C04A3E750A7380B3BB9E80D8631895 /* Web3+ERC1644.swift */; };
+		4DFDE503209F698FFC5695AC6835C410 /* NSRegularExpressionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C11C5048B9DBC421FA08704E53422D23 /* NSRegularExpressionExtension.swift */; };
 		4EC7BD8654B3587F1F725E812C9D828C /* race.swift in Sources */ = {isa = PBXBuildFile; fileRef = E48545E93CD1545AF2978ACA040FC1CA /* race.swift */; };
 		4ECDA8E4973B934DF663A9BAF9221F86 /* ecdh_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 4193D7FDE5D8D92188F365EA6442ACBF /* ecdh_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		4F0251B8F9B993B2A9F2FE3393D60604 /* CryptoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C09D2D5ECF2259C3386F14D5A6D88E9A /* CryptoExtensions.swift */; };
 		51812B9531F31499DDFED65C5D2D023B /* ABIParsing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9BB01D83A502C72B61AE7B82C54542A /* ABIParsing.swift */; };
 		52F57EB35132E86D75FE9443258EFDBF /* UIView+AnyPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 08EFA7DF0E5D16B3993B0D9578C23E3A /* UIView+AnyPromise.m */; };
 		5300EB86348ED2DD35A9339104F21842 /* CBC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D61C896261C4B47228AABF8CCD7256D /* CBC.swift */; };
@@ -131,7 +126,6 @@
 		54BDD3BC1B92330FEF7F64FA1660BB13 /* AES.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88A85235F06553A008F2B393ACE25096 /* AES.swift */; };
 		56BE9F75457D1CCE0E8298427E733D7D /* secp256k1.c in Sources */ = {isa = PBXBuildFile; fileRef = 8F22C6C4039354E4BBA30C80C4B66534 /* secp256k1.c */; };
 		56D8783CBF33646ECBF610FCC8EFC43E /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D46EFB110C7963B60DC1863400738DE0 /* UIKit.framework */; };
-		577818023493C85F80DBFCF9D6DE00EA /* Dictionary+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AB59500D493EA8832763BC4A8B999C1 /* Dictionary+Extension.swift */; };
 		578F1B5EC13C8F38C6F146523E303D99 /* field_5x52.h in Headers */ = {isa = PBXBuildFile; fileRef = 78E5C370C981CA6FA5A433F83582C547 /* field_5x52.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		5802BD2A7E671D3015BE4E98C13D10CB /* NSURLSession+AnyPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = CE102B72B60B10D0CCA17C9791E42FDE /* NSURLSession+AnyPromise.m */; };
 		58AD203AF555F9B8416F7F9B4C7DA435 /* Rabbit.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79B0E90A570AAF03C24160E7C16E8CC2 /* Rabbit.swift */; };
@@ -145,7 +139,6 @@
 		5D2D358E754D92564B259BBACFBA8271 /* PMKFoundation.h in Headers */ = {isa = PBXBuildFile; fileRef = 6F3ABFBC4237CCC2022F62EB292FD83D /* PMKFoundation.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		5E2574B7162EED00A81237F56CDC0BE4 /* BigInt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5931D868F4B85B6020C4EA55F14B2FAF /* BigInt.swift */; };
 		5E5EBD7039DC8763BFB20616B2AFE5F6 /* CryptoSwift-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = EDA63948F0FD9F42947C766A8237F374 /* CryptoSwift-dummy.m */; };
-		5F7D7860E942ADC38C7A12FCE1BC4E40 /* CryptoExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F7377E1F4C420B0ABB0617809D2A635 /* CryptoExtensions.swift */; };
 		5FDAD3F1739595982080BE2DD789C697 /* CipherModeWorker.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC4B5E503790C51B7FE6755CC647CEE3 /* CipherModeWorker.swift */; };
 		6002AD14210CBE9C34EB848031CFD7E6 /* Addition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A331E88415E2CDEAED4B22A95AE7D89 /* Addition.swift */; };
 		60E2A8D9F764A622D9A574574ADDD767 /* Web3+Contract.swift in Sources */ = {isa = PBXBuildFile; fileRef = D47E2165BF4CCAE8E47936910362822C /* Web3+Contract.swift */; };
@@ -158,14 +151,17 @@
 		63E79E74FFD58B0F2CF6BEE37D85DA6D /* Promise+Web3+Eth+GetBalance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6EED59DC0B2832C20331BAB4FCF75CC0 /* Promise+Web3+Eth+GetBalance.swift */; };
 		65DE571B0A682062FD35C82439779040 /* scalar_low_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 764D3252D99C42C89100360733DE0928 /* scalar_low_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		664C86D22AA5274C6B52FA60E38C4E46 /* ENSBaseRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F07E7D43079BFCE72CFE9F90C978ACD /* ENSBaseRegistrar.swift */; };
+		67781A8BBE26A31A11EE9C55C288EDBA /* Dictionary+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04346AEE9365C3D779E41D6106BB5362 /* Dictionary+Extension.swift */; };
 		6835A7C49329AC5FDA4858B33E0B4FC8 /* AbstractKeystore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB70FA8F4F49BE5F5202B956066BEBD3 /* AbstractKeystore.swift */; };
 		68A92231E087567C6A9AD700359DAE80 /* AEADChaCha20Poly1305.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78A1BF472A70058555C4694A2EAFF13A /* AEADChaCha20Poly1305.swift */; };
+		68ABA0203AB2120FC3B5FF5F89FBEC0F /* TorusUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 425EBAEC1454E127BDEFA73D6C167DBB /* TorusUtils.swift */; };
 		68BF24F97A9E4ECF8666F387D2BB83F6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D1AB6BB3213C659DC4E7871A60FDC3C /* Foundation.framework */; };
 		694E630570AB4DB0BCDF003411CF2B63 /* SHA3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91D4948373AB59AED62B61BAC3215AC9 /* SHA3.swift */; };
 		697A14E125A1EDAE2A04383BA14F90C8 /* CryptoSwift.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 806C903F7210C678D5DF4EB3952E1AE7 /* CryptoSwift.framework */; };
 		69DBAB1E3A8EEBFCC466D95509DE7125 /* UIView+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26BCC48DCD93DFC7921525A57641CEE7 /* UIView+Promise.swift */; };
 		69E62D35A7043AEBAFF100D522F38A30 /* DigestType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35C3632D8B9C52CB3A6195495FFF0C38 /* DigestType.swift */; };
 		6BC7A6F27128DCFAB9CF30CC16ADC7EB /* Web3+Instance.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5AA529AC6D95FB9C5306623ECBABEB /* Web3+Instance.swift */; };
+		6CB45CEDB7319C118A2A297AECC7AD78 /* JSONRPCRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AE0E2E8C807F21917ABB15AD35E9EEA /* JSONRPCRequest.swift */; };
 		6D78DA2799A948EFEBBDDCDB21181B6E /* HMAC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93C3EFDCA8E49126E06E491A24B85C3D /* HMAC.swift */; };
 		6DE830042E36FDE326546970CA90F9B6 /* Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01EC62F4E50244B98AFBF85EF6DE2E4C /* Promise.swift */; };
 		6EFF6DC68E688CBB6D07105287A96B73 /* group_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = C04EF666A28AA0512208F6794236CFCF /* group_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -173,6 +169,7 @@
 		720F912EEB6A04E821D380935D6653B7 /* Web3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8515606B80F0B6B3A189145182A54DEE /* Web3.swift */; };
 		729F620FCDF9E3ACF9306ABB91A1979A /* Promise+Web3+Eth+GetBlockNumber.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86623ECCFD88F3EC7A53382C6D71BEDB /* Promise+Web3+Eth+GetBlockNumber.swift */; };
 		72DE41D3ACCEBD076822C6F7C0301767 /* Encodable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49311B48DD477BCE76019FBEC7E46E2E /* Encodable+Extensions.swift */; };
+		7333D98B7A047C4E5E7B8122ADCB8DF0 /* BigUInt+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8038C2493D3965EED7C48E9B1F8DFA7D /* BigUInt+Extensions.swift */; };
 		73EA1C553B580637369E1D5A72A425B3 /* when.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D4BC7B5883078EF1F3B3357FBF25BE1 /* when.swift */; };
 		77DA201CE3BFCB47F57CDFC4111FB7BD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D1AB6BB3213C659DC4E7871A60FDC3C /* Foundation.framework */; };
 		784EBBF9C1215208B7A8CCDCA2BE21EB /* ENSReverseRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51B76AFA093D79E959FF8ACA94AD4B2F /* ENSReverseRegistrar.swift */; };
@@ -195,8 +192,8 @@
 		854AF7B141389D5512E8E73DF38FEBEA /* BlockMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B386825F575B0A60AD9656DFFA5D030 /* BlockMode.swift */; };
 		8573D5547D4AC8CEE69AB545148A72B6 /* CCM.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1097687EF0922EBAAF77F05E3A52E83C /* CCM.swift */; };
 		8599E23B2946C6F3F6DA3D63EC82C4A3 /* Words and Bits.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D8FA6D42849085C32C7A9B5EF332DB5 /* Words and Bits.swift */; };
+		87962404D43CD4F435D00EBA334DC6B2 /* Torus-utils-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 4CB307D1DEA70D4195E42FB9FCFF6150 /* Torus-utils-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		892346F5B1D7BF8181EE12E0B42216CA /* secp256k1.c-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = 7CEAAB074799649C6860AA641F85150C /* secp256k1.c-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		8B09D96D06D95DA50A6EDF246700D327 /* PromiseKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C9A25C154DA98FE5889B22621B5A05B /* PromiseKit.framework */; };
 		8B3350D96B15B975184C8EE0819F9623 /* SSLSecurity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 002B314804EFD9ACDEDA345E1D47314E /* SSLSecurity.swift */; };
 		8C05403EC0F455CB86CFD8060C1C5DC2 /* Cryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 179A77641607AF0C4DC570BB659F3AEF /* Cryptor.swift */; };
 		8C5E1B41BC5E8003CF34C4AAC6C81763 /* ecmult_gen_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = AA423AC964D4BCFF13C2D9EA7399941B /* ecmult_gen_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -207,8 +204,10 @@
 		8EA152D3E836DE243322F5238A7A5E54 /* field_10x26_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 26455F1744BDCD412885E6FDF26E3146 /* field_10x26_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		8ED7D4847260B4F398ECF4351280AB31 /* Digest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F114BB3837F863E709A6A8F473B85DD /* Digest.swift */; };
 		8F2D6E523071433EB35C08C1CA950FFE /* BIP39.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2ED1E082CC9ED8499243ECCF0D5313E5 /* BIP39.swift */; };
+		91389C00487EAFF259D07187A4F0A92C /* FetchNodeDetails.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49AD3B8C455F9118AFBF3008173879C5 /* FetchNodeDetails.framework */; };
 		913A5D221541C2CA199BF851C9E691DB /* Dictionary+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8276DC303C2ECBBB5DE42F97CD3D70E4 /* Dictionary+Extension.swift */; };
 		91A59A657AB2118D4FFFC913EAD87EC9 /* BatchedCollection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80C3C7F4D0E81863A10B2F79F75E12A9 /* BatchedCollection.swift */; };
+		920EE75EEE406C4C5FC62D1B6E1D3C0D /* torus+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44DFA27979A87DD4EDB7BC22A592BBE4 /* torus+extension.swift */; };
 		930D040081A647A1F45F755D51557F67 /* Web3+ERC721x.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA5D95C545D36053DF59CBD4FD7A3264 /* Web3+ERC721x.swift */; };
 		9447BD0FB408B2A7C9BFDFF99BBE1EBE /* UIViewController+AnyPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 26F269E4106B406687DC57DA15FF0245 /* UIViewController+AnyPromise.m */; };
 		94CDAEF5C1E8EB3B93551530FF20F6A3 /* Torus-fetchNodeDetails-umbrella.h in Headers */ = {isa = PBXBuildFile; fileRef = BC9DDCCE46D03313AFE24C0105D7E517 /* Torus-fetchNodeDetails-umbrella.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -226,23 +225,24 @@
 		99F35D362CDAA3F01D59E05FAB02907D /* Strideable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A03B102F391CAD3F337E882B6E8015F /* Strideable.swift */; };
 		9A80311C79CED9486D2E9FA4DEC3D45A /* StreamDecryptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B027BABC2AC6B6A40C06841172054BC /* StreamDecryptor.swift */; };
 		9B65647B927085E2366117D59DC1586D /* CustomStringConvertible.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E34322F8847C79474E0A30A9EDCC57C /* CustomStringConvertible.swift */; };
+		9B6DA90A8C37A09D71C3550F0BDE5258 /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1649CDF6067929F5BB34B39B54837C07 /* String+Extension.swift */; };
 		9BFE70DD7ECA3C6183B82DE691FE4491 /* Box.swift in Sources */ = {isa = PBXBuildFile; fileRef = 052B782B389E75E102B937A06ED9BA6D /* Box.swift */; };
 		9CA1836A7625F197FA4E8B29B52B74A3 /* Promise+Web3+Eth+GetTransactionCount.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF07A5184853B663B8DC62AB43177BB6 /* Promise+Web3+Eth+GetTransactionCount.swift */; };
 		9D22006C799C6F6E9452B97B760F7CD1 /* UInt64+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 51D56014D820B4A886C244FDB2D7A81F /* UInt64+Extension.swift */; };
 		9D43ABE6DE49D5E8CCF6A1A2D33EE8A8 /* field_10x26.h in Headers */ = {isa = PBXBuildFile; fileRef = 8FCBE27D8B2C9DE92EC9F7647B956FBF /* field_10x26.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		9D9F7711F11C249ADEE428F269FFC951 /* scratch.h in Headers */ = {isa = PBXBuildFile; fileRef = 05B38AB6AF6DA5AD4D49E36DC4B1588A /* scratch.h */; settings = {ATTRIBUTES = (Project, ); }; };
+		9F5FF2CBD570CA94030B8D5E7866C201 /* Encodable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92DFE1D4E56822E63E6F3FB42C0263F1 /* Encodable+Extensions.swift */; };
 		9FEA86C890DE257E5C333857037C3AC4 /* num_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 454D0E97BD0A49033EC6C54BEFFA9490 /* num_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
-		A08F6FCB7159B31A34F61E2E270953D8 /* TorusUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D0B8EA93217BD348C67F84D56001553 /* TorusUtils.swift */; };
 		A0D62D80A232C1F73D3900320E9527E1 /* scalar_8x32.h in Headers */ = {isa = PBXBuildFile; fileRef = D00F8F6ED5B9857406306A8BD6A17763 /* scalar_8x32.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		A0EB44B39FE896D974E3A6BC8E3D6731 /* Promise+Web3+Eth+GetTransactionDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BA853D6B5DC1948C9F20D73E1312D4F /* Promise+Web3+Eth+GetTransactionDetails.swift */; };
 		A10ABF66C781E9D8C69F7870EABD13D6 /* String+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = E80D22CAD68ADDCBF9A2BE9D149AF83B /* String+Extension.swift */; };
 		A1E6C35C5B3ECB558FE1AF9B1FAAB53B /* AnyPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 3AF227E6E8C51345D611461E620D05E1 /* AnyPromise.m */; };
+		A2A95BAB22939877C24B760E903A33A9 /* Error.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DA25FE648E5DF04F4CF034E0110EC2B /* Error.swift */; };
 		A5317B338FB174946AC9112624CB97CC /* PlainKeystore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B6D8C6E5CA0C51A8D507B116AF0E2A9 /* PlainKeystore.swift */; };
 		A5F5D7A20264221D4A7F489FB0060D34 /* afterlife.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02DCDE4C51A10474C03CB89D470FD811 /* afterlife.swift */; };
 		A65BC55FFE138090EF77D9EC1F72A88B /* HKDF.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31492B0ACAAFF4C1921B3C79840F9A19 /* HKDF.swift */; };
 		A6821FF14E8186B45486C24C11B0D31B /* field_5x52_asm_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 2F58150D4945E954FD25CC5265D9A308 /* field_5x52_asm_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		A68AA863F8DD4DDA433D777ACA99A8DE /* Promise+Web3+Eth+GetTransactionReceipt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D32A9CE91D56119FFEAC4575FF84B47 /* Promise+Web3+Eth+GetTransactionReceipt.swift */; };
-		A7A92CB191008D7F63EA2200E5CDB71A /* Decodable+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A04ED6C7236D5041902CA41A284BB742 /* Decodable+Extensions.swift */; };
 		A88654701A4F7417EC688E20B265E85B /* Web3+SecurityToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39EB4057D49ED7C8CA5F4F0156AFDA25 /* Web3+SecurityToken.swift */; };
 		A93275D5C1DAD3CA7CCC2A9586AC9ADE /* AEAD.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEDB8E9E0F88E243F6F860203BAED9D8 /* AEAD.swift */; };
 		A9E1947F4C2A543A215E8A3F386A0F34 /* scratch_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 1D3C23B38C29A52BAB50135B9F3166F3 /* scratch_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -255,6 +255,7 @@
 		ADE26A6317E68C1CB7FC86D68B4EB8BF /* RandomBytesSequence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611351298C748F409FA7C65B86929889 /* RandomBytesSequence.swift */; };
 		AE242F808DE761641CF108E8844745D6 /* Cipher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702EDD4BC3AD7A19099015A18A296CC8 /* Cipher.swift */; };
 		AEB3C8EF158F8ED7F3497245833E1323 /* ABITypeParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = FC1DF60C78B53E196E99FC1D3830D32D /* ABITypeParser.swift */; };
+		AF01E2575175D797014025E592F9B769 /* NativeTypesEncoding+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 777CF2D1B29AE69C4299BC3AAFA8523C /* NativeTypesEncoding+Extensions.swift */; };
 		AFA7D5C5E0778EDC23C26E950FD992B4 /* Promise+Web3+Personal+Sign.swift in Sources */ = {isa = PBXBuildFile; fileRef = E3988CBB319BF10EA7A17D19C11AD2AB /* Promise+Web3+Personal+Sign.swift */; };
 		AFC5D67ED5FC6445B9164D9116223206 /* BigInt.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEB013ED0EDEDD183263FEE2FF61D507 /* BigInt.framework */; };
 		B05EBD5F7FAC07944B6E368F41A1746A /* ABI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4E161F000D70361BE459254C6FE7646 /* ABI.swift */; };
@@ -268,15 +269,13 @@
 		B593B56495A204E756BAA753BA2D6E9C /* Deprecations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7221A63829342A43344D57C14335E934 /* Deprecations.swift */; };
 		B5F2712E13F653375ED238D250CED288 /* ecmult.h in Headers */ = {isa = PBXBuildFile; fileRef = 68346DC09EF63BE1F07F92102BFA8162 /* ecmult.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		B66117B01BBD2FA338F1BAEA7C2411CE /* BloomFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C8486CD1FA2079C816176E7D2314FEE /* BloomFilter.swift */; };
+		B6D7EB83498A6EF10A389583637327FC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D1AB6BB3213C659DC4E7871A60FDC3C /* Foundation.framework */; };
 		B758241FBF6592EFBE6283378D16F9FD /* NSObject+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = B899E8BF3ED4C2D51D886519F1C38866 /* NSObject+Promise.swift */; };
-		B7F137EF9B3853BA32AEAE7C11C4FED6 /* torus+extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF24D35116A94BE6128674C6D47493E6 /* torus+extension.swift */; };
-		B90167499F2FD2AF78A1B992881A6D94 /* Data+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A622C973D6CDE344C63681F95DDFB5B0 /* Data+Extension.swift */; };
 		BA1ECA78933F0697BF482F2C829455AA /* NonceMiddleware.swift in Sources */ = {isa = PBXBuildFile; fileRef = 836C93C634AA15EC0CB3B16D1BD8191B /* NonceMiddleware.swift */; };
 		BAA052C302D45F8DAB72606E997CAD69 /* Subtraction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19F2996F93D657A989EF943CED9A222 /* Subtraction.swift */; };
 		BC1824654F9AB7C0728A9B38012DA066 /* Web3+Methods.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCDF5889034CDE4261607D837E88CB2F /* Web3+Methods.swift */; };
 		BC92068A32D8BC0CEF27BD5961A8BF36 /* Promise+HttpProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FFFD9E34CA44566EFEAD98E34B2C3874 /* Promise+HttpProvider.swift */; };
 		BE29AFA73FEDAFA471F35F8AB1C3EA99 /* Shifts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9741B94C8459FD9626BAA54EB6B7642D /* Shifts.swift */; };
-		BE5348E5E3C8BCCE72D4535C11F8576A /* BigUInt+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F560D5B1674FCA2B32CE2D1767E25F4D /* BigUInt+Extensions.swift */; };
 		BF1E1F4FFBE265DB702A232BD1125C39 /* Web3+WebsocketProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3653276D72A42655B2B0729B777BEF90 /* Web3+WebsocketProvider.swift */; };
 		C02D9FEB295BDA1359D2F52C80F8E75A /* WebSocket.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15D30C2741A8F578B9CE300CCC0A7B9F /* WebSocket.swift */; };
 		C138FACCB027B81AE55814AA990543D5 /* OFB.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B710E9EE47658B42C0F071E0A28E96 /* OFB.swift */; };
@@ -302,6 +301,7 @@
 		CD644BE1BE3D1DC667C79F4CF90E63F8 /* BIP32HDNode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 08876CA8D7AA06120409D1F4EEF42729 /* BIP32HDNode.swift */; };
 		CF77FD620311C304213C2955157002DA /* scalar_4x64_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = 524D37E0DBB6217C699DD2E270978775 /* scalar_4x64_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		D1B43EAF6D3BC8448AFBC88000E970E6 /* BIP32KeystoreJSONStructure.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD59BB8F5D771ACF4BD31D70E56854B3 /* BIP32KeystoreJSONStructure.swift */; };
+		D221DF64489CBC1011C96A52250D877F /* Torus-utils-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = EE01E62BADFFFB00D81014C15279D096 /* Torus-utils-dummy.m */; };
 		D29ED3BC449767AF4EE92E66A7EDD9E7 /* Web3+EventParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3C2CCE95868538C7138EA94BC2AB896 /* Web3+EventParser.swift */; };
 		D37F26400ECEBED535E3746D70FB5399 /* Web3+ERC721.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70767EFD562FD4D575C0ABD51B183FB0 /* Web3+ERC721.swift */; };
 		D48A4410A7C8CE6B6A0787A0F4999DE5 /* Multiplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 418D85F33DE17BDCF62132D68EF1F913 /* Multiplication.swift */; };
@@ -330,7 +330,9 @@
 		E14652BF2080FCC82CD617BDA290E074 /* Web3+Eventloop.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5F11BD60838A693B918012537979FFEA /* Web3+Eventloop.swift */; };
 		E14D57CFA5B66112E58958716ADC4299 /* Web3+Personal.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBD009888EA62DDC38FE0952BC000EF2 /* Web3+Personal.swift */; };
 		E2C15FE087003C7CFD9A3243DBD97AE3 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5D1AB6BB3213C659DC4E7871A60FDC3C /* Foundation.framework */; };
+		E2EE23BD79D3F96E9BA05EA09C33B4BA /* PromiseKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3C9A25C154DA98FE5889B22621B5A05B /* PromiseKit.framework */; };
 		E2F28F4A44DDE5C26A4C5A662F95F3ED /* Pods-TestApplication-TestApplicationTests-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = CA38481A10469E72124DD89F5DC85BDD /* Pods-TestApplication-TestApplicationTests-dummy.m */; };
+		E314D5F33622A05A538B40AB2D1D5BB8 /* RIPEMD160+StackOveflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8EFCB3B5CC72F8DCA85FBA3A807E7BF3 /* RIPEMD160+StackOveflow.swift */; };
 		E3E672F192E082DDFEA9C6655C46A498 /* Web3+ERC820.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDE046DBA6D69F2C17C06D6AA7AC8209 /* Web3+ERC820.swift */; };
 		E425FBEC27FF20E38E5F71856145D72C /* UIViewController+AnyPromise.h in Headers */ = {isa = PBXBuildFile; fileRef = 9E1F5C7B179FDBAC4E798BB04E640691 /* UIViewController+AnyPromise.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		E42F8F7F513AD8ED1D4A9AF625985EBB /* secp256k1_ec_mult_static_context.h in Headers */ = {isa = PBXBuildFile; fileRef = 7BEFB349B1CB6DC3D3314D7A78B9AEB4 /* secp256k1_ec_mult_static_context.h */; settings = {ATTRIBUTES = (Project, ); }; };
@@ -356,10 +358,10 @@
 		EFA9DCD6E6301DD84CCD18F7276273A6 /* IBAN.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3829511046BFE74550EFE6846AA144DE /* IBAN.swift */; };
 		F01D58F9C436D2FE023E9830F36FA4A0 /* EIP67Code.swift in Sources */ = {isa = PBXBuildFile; fileRef = 709FEDC71C2724D4089748F05D8FC059 /* EIP67Code.swift */; };
 		F13925E2206A7647AC326ECFA6ED2856 /* GCD.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0477CA0EC3CFA1FC34F687C39B6B5017 /* GCD.swift */; };
+		F15332196C834254FD765921073BA79E /* Web3ERROR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D8AE138991AF6587D20218C853FB3CB /* Web3ERROR.swift */; };
 		F2ECC28F037A8AB7F77F4B4886D40671 /* scalar.h in Headers */ = {isa = PBXBuildFile; fileRef = C0AC53BB5368BD7CB50EB10BF9F9C157 /* scalar.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		F3B9FF17CD827482C5FCDE987FCBA026 /* SHA1.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2CEAD49766B3CDBDA019FCB229083B1 /* SHA1.swift */; };
 		F44208FA90F7B7118E5A3CA21AB37A84 /* PKCS5.swift in Sources */ = {isa = PBXBuildFile; fileRef = 333BAE98449BEBFEE2D097231554307E /* PKCS5.swift */; };
-		F4D7C8BC5F86863EB2B3BB5EB7A6C8F6 /* NSRegularExpressionExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE40A37E6C4DA612524FA8B4D6C7D682 /* NSRegularExpressionExtension.swift */; };
 		F4DB8BAA8CC2482A2F0408BB78DC5636 /* Array+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A2E354D5D063A38BF19DB7F43A8622 /* Array+Extension.swift */; };
 		F4EB4FFB5BFE253769101209CBD7BA13 /* ChaCha20+Foundation.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34353602B6DFEA09807BA0545D7863C /* ChaCha20+Foundation.swift */; };
 		F5DAD08C684A315E58528FA2DDEFF803 /* Web3+ERC1400.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8509DCB1D462D37FC5CC7025C9AA99F2 /* Web3+ERC1400.swift */; };
@@ -368,9 +370,8 @@
 		F67E48B81E323CA1C9FDC920A087677B /* field_5x52_impl.h in Headers */ = {isa = PBXBuildFile; fileRef = EC8E36447193103FA64C655B9642E8A0 /* field_5x52_impl.h */; settings = {ATTRIBUTES = (Project, ); }; };
 		F7652BD09246D9A37B0544F79D6151E7 /* Web3+ERC777.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E6D486E39C6AE1FD91B33DB63B1457F /* Web3+ERC777.swift */; };
 		F8776D962B5C10219928259E01F60517 /* Promise+Web3+Personal+CreateAccount.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69C2CE729F92161CB231EC5C98736B36 /* Promise+Web3+Personal+CreateAccount.swift */; };
-		F8D198B95C44BE1C4F8B47CCFCD88325 /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF5D9E691312F0477F5BA45F2723A620 /* Base58.swift */; };
 		F929058932F58B384482845F19DD882C /* epochInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 666E2FEF244AFB2187052A9E2036EDFF /* epochInfo.swift */; };
-		FA3850DF41841E2438760B387B75697E /* Web3ERROR.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B8E0E65694742F93279B9F7F3FD08E6 /* Web3ERROR.swift */; };
+		FACB74DBC1C0CA619D795D084E751C3D /* Base58.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE7DF61D8D0C50011E6DAC8C36AD3DF5 /* Base58.swift */; };
 		FB6A649C8B762C719C5767F49082EFA6 /* Promise+Web3+Eth+Call.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9F0D821499467233AD9987D96AF5FA1 /* Promise+Web3+Eth+Call.swift */; };
 		FB797FAA96B41ACE7474B8ADEF8107EC /* firstly.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F1B9F99112E7C74389A003D1FE12CFE /* firstly.swift */; };
 		FC380F439D913681D738F1BE7B739646 /* ZeroPadding.swift in Sources */ = {isa = PBXBuildFile; fileRef = 456349091EECB067F8B6A088ECADDC9B /* ZeroPadding.swift */; };
@@ -378,18 +379,10 @@
 		FD1BFDE126C5C5ADEB1336BBD42285BA /* Web3+MutatingTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = FF8417C24BB41EF6C328D2D5C4F8A427 /* Web3+MutatingTransaction.swift */; };
 		FDF12428281F08B3F5F2B7DB68E3925D /* NSTask+AnyPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = E4FA17D6ED2072499ECFFEA5711E5081 /* NSTask+AnyPromise.m */; };
 		FED8C9BB577D35DBB6E5347B750C184C /* hang.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57BBB739C303C79C4CE56FC55B58540E /* hang.swift */; };
-		FEDB871A9D9F5D9C40399E80FB8E768A /* JSONRPCRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8811685CCF83BD3013F3AE0D3F52E746 /* JSONRPCRequest.swift */; };
 		FFF7E224F5F3094210837EC8C7FE4960 /* BigInt-dummy.m in Sources */ = {isa = PBXBuildFile; fileRef = 264AE184523013AB1C2A219A7C1A4AC6 /* BigInt-dummy.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		0F70B91EF88C2FDCBCAD3630BD6F139E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 7C579CE66A1E7A9AA33CA5F97F9C22C5;
-			remoteInfo = PromiseKit;
-		};
 		16AE42361FE4E4C791D425477A3723C9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
@@ -481,6 +474,13 @@
 			remoteGlobalIDString = 161C26511FC920CB146236AB7295D5E0;
 			remoteInfo = secp256k1.c;
 		};
+		8BE2544DCEA1C54E38F26FE1A13D4D76 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7C579CE66A1E7A9AA33CA5F97F9C22C5;
+			remoteInfo = PromiseKit;
+		};
 		949A9EBA4366C12A326009F43733D6DC /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
@@ -488,19 +488,19 @@
 			remoteGlobalIDString = 7C579CE66A1E7A9AA33CA5F97F9C22C5;
 			remoteInfo = PromiseKit;
 		};
-		9FF73BA81DF203429A1AEE752D141E52 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 3744C58A953D980BCF08B0FEAE449C91;
-			remoteInfo = "Torus-fetchNodeDetails";
-		};
 		A8DB6700482CEAD472F140EA60FE657A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 9B78EE4AF6AE03E79D88886319853FF7;
 			remoteInfo = Starscream;
+		};
+		B44C3D09F7E46E066ADD8D928EC3FF03 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = BFDFE7DC352907FC980B868725387E98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3744C58A953D980BCF08B0FEAE449C91;
+			remoteInfo = "Torus-fetchNodeDetails";
 		};
 		CBA5E3AD8F20EFA1DEDCB9E38604492E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -563,6 +563,7 @@
 		027E70B47BCC0153B713FAB202E2487A /* num_gmp_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = num_gmp_impl.h; path = secp256k1/num_gmp_impl.h; sourceTree = "<group>"; };
 		02DCDE4C51A10474C03CB89D470FD811 /* afterlife.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = afterlife.swift; path = Extensions/Foundation/Sources/afterlife.swift; sourceTree = "<group>"; };
 		033990F3CB2918F215AF16591B3F0520 /* Blowfish.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Blowfish.swift; path = Sources/CryptoSwift/Blowfish.swift; sourceTree = "<group>"; };
+		04346AEE9365C3D779E41D6106BB5362 /* Dictionary+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Dictionary+Extension.swift"; sourceTree = "<group>"; };
 		0477CA0EC3CFA1FC34F687C39B6B5017 /* GCD.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GCD.swift; path = Sources/GCD.swift; sourceTree = "<group>"; };
 		04C519C969F931E051E4970F81C756FE /* Padding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Padding.swift; path = Sources/CryptoSwift/Padding.swift; sourceTree = "<group>"; };
 		05161FF5C8464204D7F4F0055A80F007 /* ETHRegistrarController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ETHRegistrarController.swift; path = Sources/web3swift/Utils/ENS/ETHRegistrarController.swift; sourceTree = "<group>"; };
@@ -578,9 +579,7 @@
 		08876CA8D7AA06120409D1F4EEF42729 /* BIP32HDNode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BIP32HDNode.swift; path = Sources/web3swift/KeystoreManager/BIP32HDNode.swift; sourceTree = "<group>"; };
 		08EFA7DF0E5D16B3993B0D9578C23E3A /* UIView+AnyPromise.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "UIView+AnyPromise.m"; path = "Extensions/UIKit/Sources/UIView+AnyPromise.m"; sourceTree = "<group>"; };
 		0A331E88415E2CDEAED4B22A95AE7D89 /* Addition.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Addition.swift; path = Sources/Addition.swift; sourceTree = "<group>"; };
-		0B8E0E65694742F93279B9F7F3FD08E6 /* Web3ERROR.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Web3ERROR.swift; sourceTree = "<group>"; };
 		0CD29F342DC9A4751A56D7794A18C9A6 /* Starscream-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Starscream-umbrella.h"; sourceTree = "<group>"; };
-		0D0B8EA93217BD348C67F84D56001553 /* TorusUtils.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TorusUtils.swift; path = Sources/TorusUtils/TorusUtils.swift; sourceTree = "<group>"; };
 		0D29C9C138595DA93E0F1688B90FDCF3 /* after.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = after.swift; path = Sources/after.swift; sourceTree = "<group>"; };
 		0D4BC7B5883078EF1F3B3357FBF25BE1 /* when.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = when.swift; path = Sources/when.swift; sourceTree = "<group>"; };
 		0D736A970CA5F4A0DE25B1485A58A6A0 /* AES.Cryptors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AES.Cryptors.swift; path = Sources/CryptoSwift/AES.Cryptors.swift; sourceTree = "<group>"; };
@@ -593,19 +592,22 @@
 		120662CE355FC5BE537358276D9C23D2 /* ENS.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ENS.swift; path = Sources/web3swift/Utils/ENS/ENS.swift; sourceTree = "<group>"; };
 		12C414D282A1EAA64E5D29111F05EC90 /* Promise+Web3+Eth+GetBlockByHash.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+GetBlockByHash.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+GetBlockByHash.swift"; sourceTree = "<group>"; };
 		131E97EC1F80233BBBEEA152CED2375B /* EthereumTransaction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EthereumTransaction.swift; path = Sources/web3swift/Transaction/EthereumTransaction.swift; sourceTree = "<group>"; };
-		13A7C9F03F472D4F401960A589701AEA /* Torus-utils.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Torus-utils.modulemap"; sourceTree = "<group>"; };
 		14BE4746B567116E86B99E27D271BD0A /* Web3+ERC1594.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+ERC1594.swift"; path = "Sources/web3swift/Tokens/ERC1594/Web3+ERC1594.swift"; sourceTree = "<group>"; };
 		151955E45CC7160931371F2E03DFB4F3 /* Rabbit+Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Rabbit+Foundation.swift"; path = "Sources/CryptoSwift/Foundation/Rabbit+Foundation.swift"; sourceTree = "<group>"; };
 		154BE5D486AEFE6808BEA04AC9A0FBC6 /* PromiseKit.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = PromiseKit.modulemap; sourceTree = "<group>"; };
 		15D30C2741A8F578B9CE300CCC0A7B9F /* WebSocket.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WebSocket.swift; path = Sources/Starscream/WebSocket.swift; sourceTree = "<group>"; };
+		1649CDF6067929F5BB34B39B54837C07 /* String+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		1684FC8741A3DFEFD7D6467867B6FCC6 /* NSRegularExpressionExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NSRegularExpressionExtension.swift; path = Sources/web3swift/Convenience/NSRegularExpressionExtension.swift; sourceTree = "<group>"; };
 		1764C73C5A2BAF6D7920A5164D0CD86C /* Pods-TestApplication-TestApplicationTests-frameworks.sh */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.script.sh; path = "Pods-TestApplication-TestApplicationTests-frameworks.sh"; sourceTree = "<group>"; };
 		179A77641607AF0C4DC570BB659F3AEF /* Cryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Cryptor.swift; path = Sources/CryptoSwift/Cryptor.swift; sourceTree = "<group>"; };
 		17C04A3E750A7380B3BB9E80D8631895 /* Web3+ERC1644.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+ERC1644.swift"; path = "Sources/web3swift/Tokens/ERC1644/Web3+ERC1644.swift"; sourceTree = "<group>"; };
 		18BE1689AEEBBC10C162D133E2FB3041 /* Web3+InfuraProviders.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+InfuraProviders.swift"; path = "Sources/web3swift/Web3/Web3+InfuraProviders.swift"; sourceTree = "<group>"; };
+		18DD3DB0847B35E911C8B70D0402CFDA /* Torus-utils-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Torus-utils-prefix.pch"; sourceTree = "<group>"; };
 		1923971B98159149BBCB95EF6928C895 /* EthereumContract.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EthereumContract.swift; path = Sources/web3swift/Contract/EthereumContract.swift; sourceTree = "<group>"; };
+		1969F4601864D0D8CFA9CEB68DA9CC34 /* Torus-utils.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Torus-utils.modulemap"; sourceTree = "<group>"; };
 		1D3C23B38C29A52BAB50135B9F3166F3 /* scratch_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = scratch_impl.h; path = secp256k1/scratch_impl.h; sourceTree = "<group>"; };
-		1DF591611649E57BAD4B7DC3765FB10E /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
+		1D3E34B8FE7ADF55F83948BAA01F5887 /* License.md */ = {isa = PBXFileReference; includeInIndex = 1; path = License.md; sourceTree = "<group>"; };
+		1D8AE138991AF6587D20218C853FB3CB /* Web3ERROR.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Web3ERROR.swift; sourceTree = "<group>"; };
 		1E026237C81050E719B314126E949143 /* ABIDecoding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ABIDecoding.swift; path = Sources/web3swift/EthereumABI/ABIDecoding.swift; sourceTree = "<group>"; };
 		1F35ACAD54CA4C8BA1628EEC5C9C803A /* Pods-TestApplication-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Pods-TestApplication-umbrella.h"; sourceTree = "<group>"; };
 		1FE369068B749EE235ED5F5AA1F90061 /* ECB.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ECB.swift; path = Sources/CryptoSwift/BlockMode/ECB.swift; sourceTree = "<group>"; };
@@ -641,7 +643,6 @@
 		33864D4AAF3EA8144D57F7FCD75B8BFD /* PBKDF1.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PBKDF1.swift; path = Sources/CryptoSwift/PKCS/PBKDF1.swift; sourceTree = "<group>"; };
 		341DC9A0E6CBDAC634260032311FD634 /* Web3+ERC1155.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+ERC1155.swift"; path = "Sources/web3swift/Tokens/ERC1155/Web3+ERC1155.swift"; sourceTree = "<group>"; };
 		34324D8D1EA9D27A655FD1E41B8BE0A6 /* secp256k1.c-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "secp256k1.c-prefix.pch"; sourceTree = "<group>"; };
-		347717266D737AFAF6E73F6173B49C5F /* Torus-utils.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Torus-utils.debug.xcconfig"; sourceTree = "<group>"; };
 		348D3A822056DA9F758CE88C8BCF4AFC /* Scrypt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Scrypt.swift; path = Sources/CryptoSwift/Scrypt.swift; sourceTree = "<group>"; };
 		35C3632D8B9C52CB3A6195495FFF0C38 /* DigestType.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DigestType.swift; path = Sources/CryptoSwift/DigestType.swift; sourceTree = "<group>"; };
 		361622BAEDB246B9ED9D2A9761C23953 /* Prime Test.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Prime Test.swift"; path = "Sources/Prime Test.swift"; sourceTree = "<group>"; };
@@ -652,7 +653,7 @@
 		378A5FD7EF699961502B1C5E0D0749EF /* Promise+Web3+Eth+GetGasPrice.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+GetGasPrice.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+GetGasPrice.swift"; sourceTree = "<group>"; };
 		3829511046BFE74550EFE6846AA144DE /* IBAN.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = IBAN.swift; path = Sources/web3swift/KeystoreManager/IBAN.swift; sourceTree = "<group>"; };
 		38966AA6D0DBF781DD324C2FCE96C71F /* String.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = String.swift; path = Sources/FetchNodeDetails/extensions/String.swift; sourceTree = "<group>"; };
-		3936ADAF803ACF9C9AF43E3304CF7768 /* Torus_utils.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Torus_utils.framework; path = "Torus-utils.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3936ADAF803ACF9C9AF43E3304CF7768 /* TorusUtils.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = TorusUtils.framework; path = "Torus-utils.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		3970226F99AFD2A6191DA974A46ADBF6 /* Compression.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Compression.swift; path = Sources/Starscream/Compression.swift; sourceTree = "<group>"; };
 		398B00B6CA1DE96C5FB20FC231F827DB /* web3swift.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = web3swift.modulemap; sourceTree = "<group>"; };
 		39EB4057D49ED7C8CA5F4F0156AFDA25 /* Web3+SecurityToken.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+SecurityToken.swift"; path = "Sources/web3swift/Tokens/ST20/Web3+SecurityToken.swift"; sourceTree = "<group>"; };
@@ -671,14 +672,16 @@
 		41B3B10C15F9BB97836857280BA865F7 /* ABIEncoding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ABIEncoding.swift; path = Sources/web3swift/EthereumABI/ABIEncoding.swift; sourceTree = "<group>"; };
 		421F491B9F8AB1BC9C6616B284D46A65 /* Pods-TestApplication.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TestApplication.release.xcconfig"; sourceTree = "<group>"; };
 		424DF34C18B1DEDF0D573AE6F7A0A620 /* web3swift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = web3swift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		425EBAEC1454E127BDEFA73D6C167DBB /* TorusUtils.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TorusUtils.swift; path = Sources/TorusUtils/TorusUtils.swift; sourceTree = "<group>"; };
 		426634B0857D8E92D1DB1FA29688C7E4 /* PBKDF2.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PBKDF2.swift; path = Sources/CryptoSwift/PKCS/PBKDF2.swift; sourceTree = "<group>"; };
+		42BB7EB0197789B0D9D42B89443A0977 /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; path = README.md; sourceTree = "<group>"; };
 		42C0737BB5CF9A595309FF758DEC9694 /* Starscream-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Starscream-Info.plist"; sourceTree = "<group>"; };
+		44DFA27979A87DD4EDB7BC22A592BBE4 /* torus+extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "torus+extension.swift"; sourceTree = "<group>"; };
 		452B84AB1A45BC321F24CACE0CBC1833 /* ecdsa.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ecdsa.h; path = secp256k1/ecdsa.h; sourceTree = "<group>"; };
 		454D0E97BD0A49033EC6C54BEFFA9490 /* num_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = num_impl.h; path = secp256k1/num_impl.h; sourceTree = "<group>"; };
 		456349091EECB067F8B6A088ECADDC9B /* ZeroPadding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ZeroPadding.swift; path = Sources/CryptoSwift/ZeroPadding.swift; sourceTree = "<group>"; };
 		46DA9A29620E8DDE37A6116268E9B38A /* String+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "String+Extension.swift"; path = "Sources/CryptoSwift/String+Extension.swift"; sourceTree = "<group>"; };
 		47982AF68D00A817208CFF6D24882F02 /* PromiseKit-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "PromiseKit-dummy.m"; sourceTree = "<group>"; };
-		47FF7DCB7DF23AB1573FB36DDE3DFF63 /* Array+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Array+Extension.swift"; sourceTree = "<group>"; };
 		481750D584F13F093DB9255BA800EC67 /* NameHash.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NameHash.swift; path = Sources/web3swift/Utils/ENS/NameHash.swift; sourceTree = "<group>"; };
 		4840269C6FAC1110501067A6F371BF30 /* SECP256k1.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SECP256k1.swift; path = Sources/web3swift/Convenience/SECP256k1.swift; sourceTree = "<group>"; };
 		4890FE4BE03F677972A4CCB72DFC4196 /* Data Conversion.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Data Conversion.swift"; path = "Sources/Data Conversion.swift"; sourceTree = "<group>"; };
@@ -686,6 +689,7 @@
 		49311B48DD477BCE76019FBEC7E46E2E /* Encodable+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Encodable+Extensions.swift"; path = "Sources/web3swift/Convenience/Encodable+Extensions.swift"; sourceTree = "<group>"; };
 		49AD3B8C455F9118AFBF3008173879C5 /* FetchNodeDetails.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = FetchNodeDetails.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		4C35273E12E37C2A219BC4E20AD7280E /* Web3+ST20.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+ST20.swift"; path = "Sources/web3swift/Tokens/ST20/Web3+ST20.swift"; sourceTree = "<group>"; };
+		4CB307D1DEA70D4195E42FB9FCFF6150 /* Torus-utils-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Torus-utils-umbrella.h"; sourceTree = "<group>"; };
 		4DCEBA75FE8B2457CDF75D94DF52033F /* NoPadding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = NoPadding.swift; path = Sources/CryptoSwift/NoPadding.swift; sourceTree = "<group>"; };
 		4DEB8418AD24A3500EEE6565E4B0BA75 /* NSURLSession+AnyPromise.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSURLSession+AnyPromise.h"; path = "Extensions/Foundation/Sources/NSURLSession+AnyPromise.h"; sourceTree = "<group>"; };
 		4E3960E268984162FF5DDA0F17BCE57F /* Pods-TestApplication-acknowledgements.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TestApplication-acknowledgements.plist"; sourceTree = "<group>"; };
@@ -708,6 +712,7 @@
 		5A03B102F391CAD3F337E882B6E8015F /* Strideable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Strideable.swift; path = Sources/Strideable.swift; sourceTree = "<group>"; };
 		5A36FD6F5ABA3597CEA4DDF16D3AA76D /* Thenable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Thenable.swift; path = Sources/Thenable.swift; sourceTree = "<group>"; };
 		5BBFB6CCD645BC2E887CF405F8D1F3D9 /* BlockModeOptions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockModeOptions.swift; path = Sources/CryptoSwift/BlockMode/BlockModeOptions.swift; sourceTree = "<group>"; };
+		5C427F7580A49CDFC8882CCA8456A48B /* Torus-utils.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Torus-utils.debug.xcconfig"; sourceTree = "<group>"; };
 		5C509D623C6D494613908ACADE568B2D /* Promise+Web3+Personal+UnlockAccount.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Personal+UnlockAccount.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Personal+UnlockAccount.swift"; sourceTree = "<group>"; };
 		5C9CE25EDDFA5034DE9D742DBD58BF3F /* ecmult_gen.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ecmult_gen.h; path = secp256k1/ecmult_gen.h; sourceTree = "<group>"; };
 		5CE427F7624AA8581A3C0FB5B40A23B8 /* Authenticator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Authenticator.swift; path = Sources/CryptoSwift/Authenticator.swift; sourceTree = "<group>"; };
@@ -715,12 +720,10 @@
 		5D27C0FCC4D9FF36D935F9F6735DF777 /* abi.json */ = {isa = PBXFileReference; includeInIndex = 1; name = abi.json; path = Sources/FetchNodeDetails/contract/abi.json; sourceTree = "<group>"; };
 		5EA73FB0C7D908F6ABDD1A7981DE979A /* PromiseKit-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "PromiseKit-prefix.pch"; sourceTree = "<group>"; };
 		5F11BD60838A693B918012537979FFEA /* Web3+Eventloop.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+Eventloop.swift"; path = "Sources/web3swift/Web3/Web3+Eventloop.swift"; sourceTree = "<group>"; };
-		5F7377E1F4C420B0ABB0617809D2A635 /* CryptoExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CryptoExtensions.swift; sourceTree = "<group>"; };
 		602D6CE424D551D2CF448436AC5EF89E /* UInt8+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "UInt8+Extension.swift"; path = "Sources/CryptoSwift/UInt8+Extension.swift"; sourceTree = "<group>"; };
 		60ED77367B75C45DBB7A016033082BFE /* Starscream.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Starscream.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		61050EE1AC2CF58323F9B63517F22D78 /* BigInt.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = BigInt.modulemap; sourceTree = "<group>"; };
 		611351298C748F409FA7C65B86929889 /* RandomBytesSequence.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RandomBytesSequence.swift; path = Sources/CryptoSwift/RandomBytesSequence.swift; sourceTree = "<group>"; };
-		613A09533C1159F371DFB1FB7A1CBBB8 /* Torus-utils-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Torus-utils-prefix.pch"; sourceTree = "<group>"; };
 		6241701C4453BC0488262B3DDFF6B7E4 /* PKCS7Padding.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PKCS7Padding.swift; path = Sources/CryptoSwift/PKCS/PKCS7Padding.swift; sourceTree = "<group>"; };
 		636F14D1D805465AFBED7A23DCC80AF4 /* Pods-TestApplication-TestApplicationTests-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TestApplication-TestApplicationTests-Info.plist"; sourceTree = "<group>"; };
 		661CB68E789A91D68BBB0720F432F28A /* field_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = field_impl.h; path = secp256k1/field_impl.h; sourceTree = "<group>"; };
@@ -728,8 +731,10 @@
 		68346DC09EF63BE1F07F92102BFA8162 /* ecmult.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ecmult.h; path = secp256k1/ecmult.h; sourceTree = "<group>"; };
 		68F3760BCD4DA47B0801E2E92EBBF0CE /* Catchable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Catchable.swift; path = Sources/Catchable.swift; sourceTree = "<group>"; };
 		69C2CE729F92161CB231EC5C98736B36 /* Promise+Web3+Personal+CreateAccount.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Personal+CreateAccount.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Personal+CreateAccount.swift"; sourceTree = "<group>"; };
+		6A019206697FB9163BA5C922BC9D5141 /* Decodable+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Decodable+Extensions.swift"; sourceTree = "<group>"; };
 		6ACFA49746A0BF38913CB23CD4252316 /* PublicKey.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PublicKey.swift; path = Sources/web3swift/Utils/ENS/PublicKey.swift; sourceTree = "<group>"; };
 		6B027BABC2AC6B6A40C06841172054BC /* StreamDecryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StreamDecryptor.swift; path = Sources/CryptoSwift/StreamDecryptor.swift; sourceTree = "<group>"; };
+		6B2E5672416382292CE0F779B86E171D /* Torus-utils.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Torus-utils.release.xcconfig"; sourceTree = "<group>"; };
 		6BBF1B77CE728CFD8CF49FF449A40D42 /* ecmult_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ecmult_impl.h; path = secp256k1/ecmult_impl.h; sourceTree = "<group>"; };
 		6CED1312CE63E006654DE2EBAACF75BE /* Starscream.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = Starscream.debug.xcconfig; sourceTree = "<group>"; };
 		6D32A9CE91D56119FFEAC4575FF84B47 /* Promise+Web3+Eth+GetTransactionReceipt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+GetTransactionReceipt.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+GetTransactionReceipt.swift"; sourceTree = "<group>"; };
@@ -744,12 +749,12 @@
 		707A7039661D0432C2AE23CFD4506B46 /* Web3+ReadingTransaction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+ReadingTransaction.swift"; path = "Sources/web3swift/Web3/Web3+ReadingTransaction.swift"; sourceTree = "<group>"; };
 		709FEDC71C2724D4089748F05D8FC059 /* EIP67Code.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EIP67Code.swift; path = Sources/web3swift/Utils/EIP/EIP67Code.swift; sourceTree = "<group>"; };
 		70D5B88E97375A7BAAB3F2C6B695528C /* Torus-fetchNodeDetails-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Torus-fetchNodeDetails-prefix.pch"; sourceTree = "<group>"; };
-		70DEA4CC91AF6C7761DD95AD8422CE74 /* Torus-utils-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Torus-utils-Info.plist"; sourceTree = "<group>"; };
 		710E4F626E068B4DA8D82B7ECFFF45FC /* Web3+TxPool.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+TxPool.swift"; path = "Sources/web3swift/Web3/Web3+TxPool.swift"; sourceTree = "<group>"; };
 		720ACA72088A80964CF63A2327C103F8 /* Web3+Protocols.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+Protocols.swift"; path = "Sources/web3swift/Web3/Web3+Protocols.swift"; sourceTree = "<group>"; };
 		7221A63829342A43344D57C14335E934 /* Deprecations.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Deprecations.swift; path = Sources/Deprecations.swift; sourceTree = "<group>"; };
 		727DA4D37C78819C840FFC569AC5F869 /* AnyPromise.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AnyPromise.swift; path = Sources/AnyPromise.swift; sourceTree = "<group>"; };
 		735B8559AE6ED677A4E2830494784F35 /* group.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = group.h; path = secp256k1/group.h; sourceTree = "<group>"; };
+		73E92BE5400506F6EA630A3A8B645078 /* Torus-utils.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = "Torus-utils.podspec"; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		74CBC033A580CE647D7F27D41313D37F /* web3swift.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = web3swift.release.xcconfig; sourceTree = "<group>"; };
 		74F9436D309E5C0320E2BF39B33369DC /* Pods-TestApplication-TestApplicationTests.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = "Pods-TestApplication-TestApplicationTests.modulemap"; sourceTree = "<group>"; };
 		7523D93DAA4DF9851A8CCEB913C4D588 /* NativeTypesEncoding+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "NativeTypesEncoding+Extensions.swift"; path = "Sources/web3swift/Convenience/NativeTypesEncoding+Extensions.swift"; sourceTree = "<group>"; };
@@ -758,16 +763,14 @@
 		75F90685A4E4396C423683507A560DF5 /* join.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = join.m; path = Sources/join.m; sourceTree = "<group>"; };
 		762A5143D7F35C5B8DA0E18A02951F67 /* RIPEMD160+StackOveflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "RIPEMD160+StackOveflow.swift"; path = "Sources/web3swift/Convenience/RIPEMD160+StackOveflow.swift"; sourceTree = "<group>"; };
 		764D3252D99C42C89100360733DE0928 /* scalar_low_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = scalar_low_impl.h; path = secp256k1/scalar_low_impl.h; sourceTree = "<group>"; };
-		77B7F94F5ADE579AFC40FB2F2C179F2C /* Encodable+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Encodable+Extensions.swift"; sourceTree = "<group>"; };
+		777CF2D1B29AE69C4299BC3AAFA8523C /* NativeTypesEncoding+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeTypesEncoding+Extensions.swift"; sourceTree = "<group>"; };
 		77E60B046A95AF54274672B52DFCFA68 /* Torus-fetchNodeDetails.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Torus-fetchNodeDetails.debug.xcconfig"; sourceTree = "<group>"; };
 		78A1BF472A70058555C4694A2EAFF13A /* AEADChaCha20Poly1305.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AEADChaCha20Poly1305.swift; path = Sources/CryptoSwift/AEAD/AEADChaCha20Poly1305.swift; sourceTree = "<group>"; };
 		78E5C370C981CA6FA5A433F83582C547 /* field_5x52.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = field_5x52.h; path = secp256k1/field_5x52.h; sourceTree = "<group>"; };
-		78FCDD9F28E7952E65EE0ECF673BFCD8 /* SECP256k1.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SECP256k1.swift; sourceTree = "<group>"; };
 		798A59187454779CC39E71EFE076A2D7 /* race.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = race.m; path = Sources/race.m; sourceTree = "<group>"; };
 		79B0E90A570AAF03C24160E7C16E8CC2 /* Rabbit.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Rabbit.swift; path = Sources/CryptoSwift/Rabbit.swift; sourceTree = "<group>"; };
 		79D36585D28C45FED26C36F08A6CDBC5 /* web3swift.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = web3swift.debug.xcconfig; sourceTree = "<group>"; };
 		7A63CA77814FF01A9F46FB73383403D3 /* EthereumFilterEncodingExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EthereumFilterEncodingExtensions.swift; path = Sources/web3swift/Contract/EthereumFilterEncodingExtensions.swift; sourceTree = "<group>"; };
-		7AB59500D493EA8832763BC4A8B999C1 /* Dictionary+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Dictionary+Extension.swift"; sourceTree = "<group>"; };
 		7AFDC99531CCC2C97473968B6EEF69D6 /* scalar_4x64.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = scalar_4x64.h; path = secp256k1/scalar_4x64.h; sourceTree = "<group>"; };
 		7BA853D6B5DC1948C9F20D73E1312D4F /* Promise+Web3+Eth+GetTransactionDetails.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+GetTransactionDetails.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+GetTransactionDetails.swift"; sourceTree = "<group>"; };
 		7BEFB349B1CB6DC3D3314D7A78B9AEB4 /* secp256k1_ec_mult_static_context.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = secp256k1_ec_mult_static_context.h; path = secp256k1/secp256k1_ec_mult_static_context.h; sourceTree = "<group>"; };
@@ -780,6 +783,7 @@
 		7F1B9F99112E7C74389A003D1FE12CFE /* firstly.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = firstly.swift; path = Sources/firstly.swift; sourceTree = "<group>"; };
 		7F2A61CB10844D503451E920C6B5746E /* Bitwise Ops.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Bitwise Ops.swift"; path = "Sources/Bitwise Ops.swift"; sourceTree = "<group>"; };
 		7F673FD14D4ABF76640791855FBB0BB6 /* Pods-TestApplication-TestApplicationTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TestApplication-TestApplicationTests.release.xcconfig"; sourceTree = "<group>"; };
+		8038C2493D3965EED7C48E9B1F8DFA7D /* BigUInt+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "BigUInt+Extensions.swift"; sourceTree = "<group>"; };
 		806C903F7210C678D5DF4EB3952E1AE7 /* CryptoSwift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CryptoSwift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		80C3C7F4D0E81863A10B2F79F75E12A9 /* BatchedCollection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BatchedCollection.swift; path = Sources/CryptoSwift/BatchedCollection.swift; sourceTree = "<group>"; };
 		80DED8FF2D166DED089ABA84ADE221B4 /* UIView+AnyPromise.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIView+AnyPromise.h"; path = "Extensions/UIKit/Sources/UIView+AnyPromise.h"; sourceTree = "<group>"; };
@@ -797,7 +801,6 @@
 		86F9A0DF77689E557B9617774C370A7F /* Random.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Random.swift; path = Sources/Random.swift; sourceTree = "<group>"; };
 		877632C2B3EF50372E0A0313C06005A6 /* BlockDecryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockDecryptor.swift; path = Sources/CryptoSwift/BlockDecryptor.swift; sourceTree = "<group>"; };
 		87AFEFBDDD3D3BE68C415BDEF2F94499 /* Promise+Web3+Eth+GetAccounts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+GetAccounts.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+GetAccounts.swift"; sourceTree = "<group>"; };
-		8811685CCF83BD3013F3AE0D3F52E746 /* JSONRPCRequest.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JSONRPCRequest.swift; sourceTree = "<group>"; };
 		88A85235F06553A008F2B393ACE25096 /* AES.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AES.swift; path = Sources/CryptoSwift/AES.swift; sourceTree = "<group>"; };
 		891B2270823847ED23F2ECFC28F935EC /* Starscream.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Starscream.framework; path = Starscream.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8A2449DF78D58AD33A7C7504BB3F38A0 /* web3swift.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = web3swift.framework; path = web3swift.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -807,6 +810,8 @@
 		8D61C896261C4B47228AABF8CCD7256D /* CBC.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CBC.swift; path = Sources/CryptoSwift/BlockMode/CBC.swift; sourceTree = "<group>"; };
 		8DD7295144C0DBB26561EBC4970E8904 /* Promise+Batching.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Batching.swift"; path = "Sources/web3swift/Promises/Promise+Batching.swift"; sourceTree = "<group>"; };
 		8EC41AE1F293D0C9A149E95AD3B5C0EF /* fetchNodeDetails+promise.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "fetchNodeDetails+promise.swift"; path = "Sources/FetchNodeDetails/fetchNodeDetails+promise.swift"; sourceTree = "<group>"; };
+		8EFCB3B5CC72F8DCA85FBA3A807E7BF3 /* RIPEMD160+StackOveflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "RIPEMD160+StackOveflow.swift"; sourceTree = "<group>"; };
+		8F139583D3FEE7F622EEB805F72C78FE /* Torus-utils-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Torus-utils-Info.plist"; sourceTree = "<group>"; };
 		8F22C6C4039354E4BBA30C80C4B66534 /* secp256k1.c */ = {isa = PBXFileReference; includeInIndex = 1; name = secp256k1.c; path = secp256k1/secp256k1.c; sourceTree = "<group>"; };
 		8FB3E84CB8245C0C94F09EB7CC49F744 /* CompactMap.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CompactMap.swift; path = Sources/CryptoSwift/CompactMap.swift; sourceTree = "<group>"; };
 		8FCBE27D8B2C9DE92EC9F7647B956FBF /* field_10x26.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = field_10x26.h; path = secp256k1/field_10x26.h; sourceTree = "<group>"; };
@@ -818,6 +823,7 @@
 		91BB24BA472AF523E913108C9AA301F2 /* BigInt.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = BigInt.framework; path = BigInt.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		91D4948373AB59AED62B61BAC3215AC9 /* SHA3.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SHA3.swift; path = Sources/CryptoSwift/SHA3.swift; sourceTree = "<group>"; };
 		92B2AB1F9DBFE8346779001FC9089F4E /* ENSRegistry.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ENSRegistry.swift; path = Sources/web3swift/Utils/ENS/ENSRegistry.swift; sourceTree = "<group>"; };
+		92DFE1D4E56822E63E6F3FB42C0263F1 /* Encodable+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Encodable+Extensions.swift"; sourceTree = "<group>"; };
 		92F4F651152F668CA741F5AC4ACAD601 /* NSNotificationCenter+AnyPromise.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "NSNotificationCenter+AnyPromise.h"; path = "Extensions/Foundation/Sources/NSNotificationCenter+AnyPromise.h"; sourceTree = "<group>"; };
 		931626D07ED948C47CDFA30F560792EF /* BlockEncryptor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockEncryptor.swift; path = Sources/CryptoSwift/BlockEncryptor.swift; sourceTree = "<group>"; };
 		933A2B0E37DA34C56B3093D2BABA4AF5 /* ecmult_const_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ecmult_const_impl.h; path = secp256k1/ecmult_const_impl.h; sourceTree = "<group>"; };
@@ -833,11 +839,11 @@
 		97241BE1FCAA933EA8779E01EEA25CB6 /* Pods_TestApplication_TestApplicationTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = Pods_TestApplication_TestApplicationTests.framework; path = "Pods-TestApplication-TestApplicationTests.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9741B94C8459FD9626BAA54EB6B7642D /* Shifts.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Shifts.swift; path = Sources/Shifts.swift; sourceTree = "<group>"; };
 		97C3BBFDFB592A71190ED047090BB849 /* recovery_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = recovery_impl.h; path = secp256k1/recovery_impl.h; sourceTree = "<group>"; };
-		9960CCF70180CA584988083B64321824 /* Torus-utils.podspec */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; path = "Torus-utils.podspec"; sourceTree = "<group>"; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		99862F932B6F210EC2E908DFC556357C /* PromiseKit.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PromiseKit.h; path = Sources/PromiseKit.h; sourceTree = "<group>"; };
 		99BE0F3D73BA4259816C4729754B378B /* CryptoSwift.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = CryptoSwift.modulemap; sourceTree = "<group>"; };
 		9A866FEF44DAA52BA4EDF371E64C68DA /* ENSResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ENSResolver.swift; path = Sources/web3swift/Utils/ENS/ENSResolver.swift; sourceTree = "<group>"; };
 		9ACBFB530B52ECD81FCE69D18CD7EF5B /* Web3+BrowserFunctions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+BrowserFunctions.swift"; path = "Sources/web3swift/HookedFunctions/Web3+BrowserFunctions.swift"; sourceTree = "<group>"; };
+		9AE0E2E8C807F21917ABB15AD35E9EEA /* JSONRPCRequest.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = JSONRPCRequest.swift; sourceTree = "<group>"; };
 		9B34106F010D087143E51E6F6AE9163C /* EventFiltering.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EventFiltering.swift; path = Sources/web3swift/Contract/EventFiltering.swift; sourceTree = "<group>"; };
 		9B386825F575B0A60AD9656DFFA5D030 /* BlockMode.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockMode.swift; path = Sources/CryptoSwift/BlockMode/BlockMode.swift; sourceTree = "<group>"; };
 		9B57E11568A6E0132B3678A3DC164151 /* scalar_8x32_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = scalar_8x32_impl.h; path = secp256k1/scalar_8x32_impl.h; sourceTree = "<group>"; };
@@ -845,10 +851,10 @@
 		9CFDD5869408C8D88CC8981B71D2EFBA /* AES+Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "AES+Foundation.swift"; path = "Sources/CryptoSwift/Foundation/AES+Foundation.swift"; sourceTree = "<group>"; };
 		9D107BD320D4200FF1B61B5120EAAF81 /* BlockCipher.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BlockCipher.swift; path = Sources/CryptoSwift/BlockCipher.swift; sourceTree = "<group>"; };
 		9D940727FF8FB9C785EB98E56350EF41 /* Podfile */ = {isa = PBXFileReference; explicitFileType = text.script.ruby; includeInIndex = 1; indentWidth = 2; lastKnownFileType = text; name = Podfile; path = ../Podfile; sourceTree = SOURCE_ROOT; tabWidth = 2; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
+		9DA25FE648E5DF04F4CF034E0110EC2B /* Error.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		9E1947D068746359F9156375E3588D66 /* Blowfish+Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Blowfish+Foundation.swift"; path = "Sources/CryptoSwift/Foundation/Blowfish+Foundation.swift"; sourceTree = "<group>"; };
 		9E1F5C7B179FDBAC4E798BB04E640691 /* UIViewController+AnyPromise.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = "UIViewController+AnyPromise.h"; path = "Extensions/UIKit/Sources/UIViewController+AnyPromise.h"; sourceTree = "<group>"; };
 		9F9343E75375F71F74DF79E5837F7727 /* String Conversion.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "String Conversion.swift"; path = "Sources/String Conversion.swift"; sourceTree = "<group>"; };
-		A04ED6C7236D5041902CA41A284BB742 /* Decodable+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Decodable+Extensions.swift"; sourceTree = "<group>"; };
 		A19B92DE5C0293AFB53C29AE3B280C58 /* Starscream-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Starscream-prefix.pch"; sourceTree = "<group>"; };
 		A2BEB1DF04ABD98F621646230BB61B4F /* LogEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LogEvent.swift; path = Sources/LogEvent.swift; sourceTree = "<group>"; };
 		A2DB67DD3A7459D6650DE9920CA7B85F /* Web3+Eth+Websocket.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+Eth+Websocket.swift"; path = "Sources/web3swift/Web3/Web3+Eth+Websocket.swift"; sourceTree = "<group>"; };
@@ -857,7 +863,6 @@
 		A4C13F506D17D19A61795B36A1077687 /* NSNotificationCenter+AnyPromise.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "NSNotificationCenter+AnyPromise.m"; path = "Extensions/Foundation/Sources/NSNotificationCenter+AnyPromise.m"; sourceTree = "<group>"; };
 		A4E161F000D70361BE459254C6FE7646 /* ABI.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ABI.swift; path = Sources/web3swift/EthereumABI/ABI.swift; sourceTree = "<group>"; };
 		A4FA2E1F43D0A77E276AF618AA7ACCBD /* Checksum.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Checksum.swift; path = Sources/CryptoSwift/Checksum.swift; sourceTree = "<group>"; };
-		A622C973D6CDE344C63681F95DDFB5B0 /* Data+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Data+Extension.swift"; sourceTree = "<group>"; };
 		A7F11C83DFE313CBEF2438110EC21BA8 /* Promise+Web3+Eth+SendRawTransaction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+SendRawTransaction.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+SendRawTransaction.swift"; sourceTree = "<group>"; };
 		AA423AC964D4BCFF13C2D9EA7399941B /* ecmult_gen_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = ecmult_gen_impl.h; path = secp256k1/ecmult_gen_impl.h; sourceTree = "<group>"; };
 		AC5843651A1C1FB7E4F6186668DF5DB2 /* num_gmp.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = num_gmp.h; path = secp256k1/num_gmp.h; sourceTree = "<group>"; };
@@ -869,6 +874,8 @@
 		B50E3C30AEA0902D3773C4FEEEAE4731 /* Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Extensions.swift; path = Sources/web3swift/EthereumAddress/Extensions.swift; sourceTree = "<group>"; };
 		B5359F2F46F8C6AC35F1007EE324CE53 /* Pods-TestApplication.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Pods-TestApplication.debug.xcconfig"; sourceTree = "<group>"; };
 		B6CBE9B1ED26B7BFDACA2950AE8D647D /* SHA2.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SHA2.swift; path = Sources/CryptoSwift/SHA2.swift; sourceTree = "<group>"; };
+		B716ABFA4CD2EE98BA8501A8833EFA90 /* Array+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Array+Extension.swift"; sourceTree = "<group>"; };
+		B797AAF03B6F15DB184AE767CF4A33AC /* SECP256k1.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SECP256k1.swift; sourceTree = "<group>"; };
 		B79C885942769BAEBEC3F911F825AE75 /* Web3+ERC1410.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+ERC1410.swift"; path = "Sources/web3swift/Tokens/ERC1410/Web3+ERC1410.swift"; sourceTree = "<group>"; };
 		B899E8BF3ED4C2D51D886519F1C38866 /* NSObject+Promise.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "NSObject+Promise.swift"; path = "Extensions/Foundation/Sources/NSObject+Promise.swift"; sourceTree = "<group>"; };
 		B8D4D8B47749AEFB144C14E5CFD3516A /* PMKUIKit.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = PMKUIKit.h; path = Extensions/UIKit/Sources/PMKUIKit.h; sourceTree = "<group>"; };
@@ -887,27 +894,24 @@
 		BEDB8E9E0F88E243F6F860203BAED9D8 /* AEAD.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AEAD.swift; path = Sources/CryptoSwift/AEAD/AEAD.swift; sourceTree = "<group>"; };
 		C0458D125F5E8C8B91C707CC84EB3D9A /* Promise+Web3+Contract+GetIndexedEvents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Contract+GetIndexedEvents.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Contract+GetIndexedEvents.swift"; sourceTree = "<group>"; };
 		C04EF666A28AA0512208F6794236CFCF /* group_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = group_impl.h; path = secp256k1/group_impl.h; sourceTree = "<group>"; };
-		C069D39F913826D6C73513656BA22DAB /* Torus-utils.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Torus-utils.release.xcconfig"; sourceTree = "<group>"; };
+		C09D2D5ECF2259C3386F14D5A6D88E9A /* CryptoExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CryptoExtensions.swift; sourceTree = "<group>"; };
 		C0AC53BB5368BD7CB50EB10BF9F9C157 /* scalar.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = scalar.h; path = secp256k1/scalar.h; sourceTree = "<group>"; };
 		C0DC3A779718CD1E4051E2A669BE7C94 /* KeystoreV3JSONStructure.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = KeystoreV3JSONStructure.swift; path = Sources/web3swift/KeystoreManager/KeystoreV3JSONStructure.swift; sourceTree = "<group>"; };
 		C0F44A48A73DEEC7E13EE70D84415AC2 /* fetchNodeDetails.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = fetchNodeDetails.swift; path = Sources/FetchNodeDetails/fetchNodeDetails.swift; sourceTree = "<group>"; };
+		C11C5048B9DBC421FA08704E53422D23 /* NSRegularExpressionExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NSRegularExpressionExtension.swift; sourceTree = "<group>"; };
 		C179DA458DCEF8E7DEA026308108B83B /* CryptoExtensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CryptoExtensions.swift; path = Sources/web3swift/Convenience/CryptoExtensions.swift; sourceTree = "<group>"; };
 		C2542342C3F42ABDF7E05B47400A6AD6 /* PromiseKit-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "PromiseKit-Info.plist"; sourceTree = "<group>"; };
 		C2CEAD49766B3CDBDA019FCB229083B1 /* SHA1.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SHA1.swift; path = Sources/CryptoSwift/SHA1.swift; sourceTree = "<group>"; };
-		C332C981A8A0796D27A2A0338C8BB138 /* Error.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Error.swift; sourceTree = "<group>"; };
 		C33FDCA1A4A51C1C27EEEDE534E27810 /* HMAC+Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "HMAC+Foundation.swift"; path = "Sources/CryptoSwift/Foundation/HMAC+Foundation.swift"; sourceTree = "<group>"; };
 		C3C2CCE95868538C7138EA94BC2AB896 /* Web3+EventParser.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+EventParser.swift"; path = "Sources/web3swift/Web3/Web3+EventParser.swift"; sourceTree = "<group>"; };
 		C45BCFA1AFA4CA1901514BAEC1746C0A /* secp256k1.c.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = secp256k1.c.debug.xcconfig; sourceTree = "<group>"; };
 		C48E1B2389ABD7719FB2E56B9FC913AB /* Web3+ERC165.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+ERC165.swift"; path = "Sources/web3swift/Tokens/ERC165/Web3+ERC165.swift"; sourceTree = "<group>"; };
 		C566C5AA3E8548DEAAC0B769C093F4B3 /* Comparable.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Comparable.swift; path = Sources/Comparable.swift; sourceTree = "<group>"; };
-		C581A8E1E5857DB457F155257532935A /* RIPEMD160+StackOveflow.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "RIPEMD160+StackOveflow.swift"; sourceTree = "<group>"; };
-		C609B1B1531FC439B71DE72B523CF964 /* Torus-utils-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "Torus-utils-umbrella.h"; sourceTree = "<group>"; };
 		C656EF10F980770720D0B0BDD2D0F8B7 /* BigInt.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = BigInt.debug.xcconfig; sourceTree = "<group>"; };
 		C8DB56C647F36920C4995C519D4AF200 /* Array+Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Array+Foundation.swift"; path = "Sources/CryptoSwift/Foundation/Array+Foundation.swift"; sourceTree = "<group>"; };
 		C96B62268EA206ABAA0E10EE5E9E0B34 /* hash.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = hash.h; path = secp256k1/hash.h; sourceTree = "<group>"; };
 		C9D748E7EF722F6152D652D479481FC0 /* SSLClientCertificate.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SSLClientCertificate.swift; path = Sources/Starscream/SSLClientCertificate.swift; sourceTree = "<group>"; };
 		CA38481A10469E72124DD89F5DC85BDD /* Pods-TestApplication-TestApplicationTests-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Pods-TestApplication-TestApplicationTests-dummy.m"; sourceTree = "<group>"; };
-		CB324B5FDA98DEEB8DEB64A7D3800322 /* String+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "String+Extension.swift"; sourceTree = "<group>"; };
 		CB3E5F6DC07278505A589C45BD5F2032 /* ABIElements.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ABIElements.swift; path = Sources/web3swift/EthereumABI/ABIElements.swift; sourceTree = "<group>"; };
 		CC233F4280C2F58DFA033DE27EB30F11 /* secp256k1.c.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = secp256k1.c.release.xcconfig; sourceTree = "<group>"; };
 		CC4B5E503790C51B7FE6755CC647CEE3 /* CipherModeWorker.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CipherModeWorker.swift; path = Sources/CryptoSwift/BlockMode/CipherModeWorker.swift; sourceTree = "<group>"; };
@@ -941,7 +945,6 @@
 		DD5AA529AC6D95FB9C5306623ECBABEB /* Web3+Instance.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+Instance.swift"; path = "Sources/web3swift/Web3/Web3+Instance.swift"; sourceTree = "<group>"; };
 		DD930F8A01F6B24F4F7A31EF12A46692 /* secp256k1.c-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "secp256k1.c-Info.plist"; sourceTree = "<group>"; };
 		DE064D9B6BF8A6F4226EAD54246787A5 /* BigInt-umbrella.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "BigInt-umbrella.h"; sourceTree = "<group>"; };
-		DE40A37E6C4DA612524FA8B4D6C7D682 /* NSRegularExpressionExtension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NSRegularExpressionExtension.swift; sourceTree = "<group>"; };
 		E377898FCE58F59C3D49C9FA685673DC /* Data+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Data+Extension.swift"; path = "Sources/CryptoSwift/Foundation/Data+Extension.swift"; sourceTree = "<group>"; };
 		E3988CBB319BF10EA7A17D19C11AD2AB /* Promise+Web3+Personal+Sign.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Personal+Sign.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Personal+Sign.swift"; sourceTree = "<group>"; };
 		E4082356A96273BF111AEE028EF3F5FA /* CryptoSwift-prefix.pch */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = "CryptoSwift-prefix.pch"; sourceTree = "<group>"; };
@@ -950,6 +953,7 @@
 		E4FA17D6ED2072499ECFFEA5711E5081 /* NSTask+AnyPromise.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = "NSTask+AnyPromise.m"; path = "Extensions/Foundation/Sources/NSTask+AnyPromise.m"; sourceTree = "<group>"; };
 		E511A35F378F4BD31AB29F2E0EF43479 /* PromiseKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = PromiseKit.release.xcconfig; sourceTree = "<group>"; };
 		E5B758DA7CB70E29855D6676AD3B243F /* Promise+Web3+Eth+SendTransaction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+SendTransaction.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+SendTransaction.swift"; sourceTree = "<group>"; };
+		E671EF4E9A91FE45C3BE6722E7155C70 /* Data+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Data+Extension.swift"; sourceTree = "<group>"; };
 		E6E95A405B90C18A38C436F38570B6C0 /* Utils+Foundation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Utils+Foundation.swift"; path = "Sources/CryptoSwift/Foundation/Utils+Foundation.swift"; sourceTree = "<group>"; };
 		E80D22CAD68ADDCBF9A2BE9D149AF83B /* String+Extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "String+Extension.swift"; path = "Sources/web3swift/Convenience/String+Extension.swift"; sourceTree = "<group>"; };
 		E8448DCB3504FB29A8EFFBA42A928F21 /* web3swift-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "web3swift-dummy.m"; sourceTree = "<group>"; };
@@ -959,15 +963,12 @@
 		ED54D8F2DEE6E28EE9C012F37B13C465 /* hang.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = hang.m; path = Sources/hang.m; sourceTree = "<group>"; };
 		EDA63948F0FD9F42947C766A8237F374 /* CryptoSwift-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "CryptoSwift-dummy.m"; sourceTree = "<group>"; };
 		EDD2742FB21EEDA55B50310F9CEEEAE4 /* EthereumKeystoreV3.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = EthereumKeystoreV3.swift; path = Sources/web3swift/KeystoreManager/EthereumKeystoreV3.swift; sourceTree = "<group>"; };
+		EE01E62BADFFFB00D81014C15279D096 /* Torus-utils-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Torus-utils-dummy.m"; sourceTree = "<group>"; };
 		EE455560A9B64F30271FC749F6CE0D9A /* RLP.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RLP.swift; path = Sources/web3swift/SwiftRLP/RLP.swift; sourceTree = "<group>"; };
-		EF24D35116A94BE6128674C6D47493E6 /* torus+extension.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "torus+extension.swift"; sourceTree = "<group>"; };
 		F1D4C4A563C6131B3E9B470931AD0F27 /* Web3+Utils.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+Utils.swift"; path = "Sources/web3swift/Web3/Web3+Utils.swift"; sourceTree = "<group>"; };
 		F2B439FABFEA4E6093FFD0E9EB22E3FD /* Error.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Error.swift; path = Sources/Error.swift; sourceTree = "<group>"; };
 		F39B9C1518AEEE1320C383DE7547FB56 /* Pods-TestApplication-Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = "Pods-TestApplication-Info.plist"; sourceTree = "<group>"; };
-		F3EE2096BF4539278418DB26E8D91E77 /* NativeTypesEncoding+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "NativeTypesEncoding+Extensions.swift"; sourceTree = "<group>"; };
 		F422A2419C7E4B425E5D5B10653F8F0D /* Exponentiation.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Exponentiation.swift; path = Sources/Exponentiation.swift; sourceTree = "<group>"; };
-		F560D5B1674FCA2B32CE2D1767E25F4D /* BigUInt+Extensions.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "BigUInt+Extensions.swift"; sourceTree = "<group>"; };
-		F5DD464C9D6D787E18B398D16875A327 /* Torus-utils-dummy.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; path = "Torus-utils-dummy.m"; sourceTree = "<group>"; };
 		F5E6AAC4E7DB756FB4D094E2F56B5E25 /* Torus-fetchNodeDetails.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; path = "Torus-fetchNodeDetails.release.xcconfig"; sourceTree = "<group>"; };
 		F6280C05AA9E6BDA04A991ADAF94A683 /* Promise+Web3+TxPool.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+TxPool.swift"; path = "Sources/web3swift/Promises/Promise+Web3+TxPool.swift"; sourceTree = "<group>"; };
 		F7DD3115E7FF01ABCD7D6D9BDB3BB10B /* CTR.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CTR.swift; path = Sources/CryptoSwift/BlockMode/CTR.swift; sourceTree = "<group>"; };
@@ -977,10 +978,10 @@
 		FCF4AA6B0B1B899F7D5FA52F2DB50BB7 /* Poly1305.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Poly1305.swift; path = Sources/CryptoSwift/Poly1305.swift; sourceTree = "<group>"; };
 		FD07885C979841272C9BB63226246FD1 /* Starscream.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = Starscream.modulemap; sourceTree = "<group>"; };
 		FD10892D11E93B6294A8EDE9324F472C /* eckey_impl.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; name = eckey_impl.h; path = secp256k1/eckey_impl.h; sourceTree = "<group>"; };
+		FE7DF61D8D0C50011E6DAC8C36AD3DF5 /* Base58.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
 		FEC7FDBE619C8CBFB88E1E6BEA2A1EF8 /* after.m */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.objc; name = after.m; path = Sources/after.m; sourceTree = "<group>"; };
 		FED42005FBCD3B10960346EFCB2CE0D5 /* BIP32Keystore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BIP32Keystore.swift; path = Sources/web3swift/KeystoreManager/BIP32Keystore.swift; sourceTree = "<group>"; };
 		FF07A5184853B663B8DC62AB43177BB6 /* Promise+Web3+Eth+GetTransactionCount.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+Web3+Eth+GetTransactionCount.swift"; path = "Sources/web3swift/Promises/Promise+Web3+Eth+GetTransactionCount.swift"; sourceTree = "<group>"; };
-		FF5D9E691312F0477F5BA45F2723A620 /* Base58.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Base58.swift; sourceTree = "<group>"; };
 		FF8417C24BB41EF6C328D2D5C4F8A427 /* Web3+MutatingTransaction.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Web3+MutatingTransaction.swift"; path = "Sources/web3swift/Web3/Web3+MutatingTransaction.swift"; sourceTree = "<group>"; };
 		FFFD9E34CA44566EFEAD98E34B2C3874 /* Promise+HttpProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = "Promise+HttpProvider.swift"; path = "Sources/web3swift/Promises/Promise+HttpProvider.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -1058,13 +1059,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		CF4B7FA6C6CC1616CA26A64CA9930E79 /* Frameworks */ = {
+		C5C59FA290078DAD05B550F157DE2806 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				11EBB901CBF77ED7D16D0E692E8DE07A /* FetchNodeDetails.framework in Frameworks */,
-				3D42EEB955442E43D945BEA5B66C59F1 /* Foundation.framework in Frameworks */,
-				8B09D96D06D95DA50A6EDF246700D327 /* PromiseKit.framework in Frameworks */,
+				91389C00487EAFF259D07187A4F0A92C /* FetchNodeDetails.framework in Frameworks */,
+				B6D7EB83498A6EF10A389583637327FC /* Foundation.framework in Frameworks */,
+				E2EE23BD79D3F96E9BA05EA09C33B4BA /* PromiseKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1105,27 +1106,6 @@
 			path = "Target Support Files/Pods-TestApplication-TestApplicationTests";
 			sourceTree = "<group>";
 		};
-		0DBB66E328F7BD2333DD509E57956357 /* Convenience */ = {
-			isa = PBXGroup;
-			children = (
-				47FF7DCB7DF23AB1573FB36DDE3DFF63 /* Array+Extension.swift */,
-				FF5D9E691312F0477F5BA45F2723A620 /* Base58.swift */,
-				F560D5B1674FCA2B32CE2D1767E25F4D /* BigUInt+Extensions.swift */,
-				5F7377E1F4C420B0ABB0617809D2A635 /* CryptoExtensions.swift */,
-				A622C973D6CDE344C63681F95DDFB5B0 /* Data+Extension.swift */,
-				A04ED6C7236D5041902CA41A284BB742 /* Decodable+Extensions.swift */,
-				7AB59500D493EA8832763BC4A8B999C1 /* Dictionary+Extension.swift */,
-				77B7F94F5ADE579AFC40FB2F2C179F2C /* Encodable+Extensions.swift */,
-				F3EE2096BF4539278418DB26E8D91E77 /* NativeTypesEncoding+Extensions.swift */,
-				DE40A37E6C4DA612524FA8B4D6C7D682 /* NSRegularExpressionExtension.swift */,
-				C581A8E1E5857DB457F155257532935A /* RIPEMD160+StackOveflow.swift */,
-				78FCDD9F28E7952E65EE0ECF673BFCD8 /* SECP256k1.swift */,
-				CB324B5FDA98DEEB8DEB64A7D3800322 /* String+Extension.swift */,
-			);
-			name = Convenience;
-			path = Sources/TorusUtils/Convenience;
-			sourceTree = "<group>";
-		};
 		107724DD8126119AAE8209B3F5FDB4C2 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
@@ -1139,6 +1119,16 @@
 			);
 			name = "Support Files";
 			path = "../Target Support Files/Torus-fetchNodeDetails";
+			sourceTree = "<group>";
+		};
+		1D48E974E2429E9D49A8E80C642D762A /* Pod */ = {
+			isa = PBXGroup;
+			children = (
+				1D3E34B8FE7ADF55F83948BAA01F5887 /* License.md */,
+				42BB7EB0197789B0D9D42B89443A0977 /* README.md */,
+				73E92BE5400506F6EA630A3A8B645078 /* Torus-utils.podspec */,
+			);
+			name = Pod;
 			sourceTree = "<group>";
 		};
 		1D99C16691CA1D05A7507FB84D7C09B0 /* Support Files */ = {
@@ -1156,21 +1146,6 @@
 			path = "../Target Support Files/BigInt";
 			sourceTree = "<group>";
 		};
-		3216FBB9A4E336FFA63AFF38D4567CA5 /* Support Files */ = {
-			isa = PBXGroup;
-			children = (
-				13A7C9F03F472D4F401960A589701AEA /* Torus-utils.modulemap */,
-				F5DD464C9D6D787E18B398D16875A327 /* Torus-utils-dummy.m */,
-				70DEA4CC91AF6C7761DD95AD8422CE74 /* Torus-utils-Info.plist */,
-				613A09533C1159F371DFB1FB7A1CBBB8 /* Torus-utils-prefix.pch */,
-				C609B1B1531FC439B71DE72B523CF964 /* Torus-utils-umbrella.h */,
-				347717266D737AFAF6E73F6173B49C5F /* Torus-utils.debug.xcconfig */,
-				C069D39F913826D6C73513656BA22DAB /* Torus-utils.release.xcconfig */,
-			);
-			name = "Support Files";
-			path = "Example/TestApplication/Pods/Target Support Files/Torus-utils";
-			sourceTree = "<group>";
-		};
 		4201188DE9CC5D6F8F879562AB840C15 /* Support Files */ = {
 			isa = PBXGroup;
 			children = (
@@ -1184,6 +1159,23 @@
 			);
 			name = "Support Files";
 			path = "../Target Support Files/secp256k1.c";
+			sourceTree = "<group>";
+		};
+		44A8BBEBCB33A06362E56E779EB95125 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				91BB24BA472AF523E913108C9AA301F2 /* BigInt.framework */,
+				F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift.framework */,
+				36B22267AF4D657854BDCBC896BAA6BE /* FetchNodeDetails.framework */,
+				8B075CA53091CACB97CA1EC16B1B8CAC /* Pods_TestApplication.framework */,
+				97241BE1FCAA933EA8779E01EEA25CB6 /* Pods_TestApplication_TestApplicationTests.framework */,
+				002B1E88BA14EBF633CD66EBFBA107E9 /* PromiseKit.framework */,
+				332A47430CFF99501D563788C7AAF1D2 /* secp256k1.framework */,
+				891B2270823847ED23F2ECFC28F935EC /* Starscream.framework */,
+				3936ADAF803ACF9C9AF43E3304CF7768 /* TorusUtils.framework */,
+				8A2449DF78D58AD33A7C7504BB3F38A0 /* web3swift.framework */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		56FB5EF22EBED6BFB52C876C93116B22 /* secp256k1.c */ = {
@@ -1238,20 +1230,6 @@
 			);
 			name = secp256k1.c;
 			path = secp256k1.c;
-			sourceTree = "<group>";
-		};
-		5959603B4108D3838E78EF7A46422287 /* Torus-utils */ = {
-			isa = PBXGroup;
-			children = (
-				0D0B8EA93217BD348C67F84D56001553 /* TorusUtils.swift */,
-				0DBB66E328F7BD2333DD509E57956357 /* Convenience */,
-				C49DDDC8846B5531157025D7E4729490 /* Extensions */,
-				A483E72685F6AAC7DB1659A2A7511E72 /* Helpers */,
-				E06860C847049AA721993A198FBFF82B /* Pod */,
-				3216FBB9A4E336FFA63AFF38D4567CA5 /* Support Files */,
-			);
-			name = "Torus-utils";
-			path = ../../..;
 			sourceTree = "<group>";
 		};
 		6CE42D860BFA610505BD77FE1B8BAD07 /* Support Files */ = {
@@ -1395,17 +1373,6 @@
 			path = "../Target Support Files/web3swift";
 			sourceTree = "<group>";
 		};
-		A483E72685F6AAC7DB1659A2A7511E72 /* Helpers */ = {
-			isa = PBXGroup;
-			children = (
-				C332C981A8A0796D27A2A0338C8BB138 /* Error.swift */,
-				8811685CCF83BD3013F3AE0D3F52E746 /* JSONRPCRequest.swift */,
-				0B8E0E65694742F93279B9F7F3FD08E6 /* Web3ERROR.swift */,
-			);
-			name = Helpers;
-			path = Sources/TorusUtils/Helpers;
-			sourceTree = "<group>";
-		};
 		A51FA448A7BD8F83A56E344ABBC612E2 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -1433,9 +1400,24 @@
 		B5C78F9FEB38B25961E119267F32DFAB /* Development Pods */ = {
 			isa = PBXGroup;
 			children = (
-				5959603B4108D3838E78EF7A46422287 /* Torus-utils */,
+				D92D7F02CFBF2E734756B3BBBC15E8BE /* Torus-utils */,
 			);
 			name = "Development Pods";
+			sourceTree = "<group>";
+		};
+		BB10EE9DDA81AE7AD0B9BF777C631044 /* Support Files */ = {
+			isa = PBXGroup;
+			children = (
+				1969F4601864D0D8CFA9CEB68DA9CC34 /* Torus-utils.modulemap */,
+				EE01E62BADFFFB00D81014C15279D096 /* Torus-utils-dummy.m */,
+				8F139583D3FEE7F622EEB805F72C78FE /* Torus-utils-Info.plist */,
+				18DD3DB0847B35E911C8B70D0402CFDA /* Torus-utils-prefix.pch */,
+				4CB307D1DEA70D4195E42FB9FCFF6150 /* Torus-utils-umbrella.h */,
+				5C427F7580A49CDFC8882CCA8456A48B /* Torus-utils.debug.xcconfig */,
+				6B2E5672416382292CE0F779B86E171D /* Torus-utils.release.xcconfig */,
+			);
+			name = "Support Files";
+			path = "Example/TestApplication/Pods/Target Support Files/Torus-utils";
 			sourceTree = "<group>";
 		};
 		BE03878F49CE6833B0F503948B266E55 /* Starscream */ = {
@@ -1470,15 +1452,6 @@
 			path = "Torus-fetchNodeDetails";
 			sourceTree = "<group>";
 		};
-		C49DDDC8846B5531157025D7E4729490 /* Extensions */ = {
-			isa = PBXGroup;
-			children = (
-				EF24D35116A94BE6128674C6D47493E6 /* torus+extension.swift */,
-			);
-			name = Extensions;
-			path = Sources/TorusUtils/Extensions;
-			sourceTree = "<group>";
-		};
 		CE20C3ECE17CF20A5A5B954B9707825C /* UIKit */ = {
 			isa = PBXGroup;
 			children = (
@@ -1500,35 +1473,23 @@
 				B5C78F9FEB38B25961E119267F32DFAB /* Development Pods */,
 				984B7BB2B2CF6AE30557C3754D8EFC94 /* Frameworks */,
 				A51FA448A7BD8F83A56E344ABBC612E2 /* Pods */,
-				D8003A051D6FE1A3E05256A9E190CE71 /* Products */,
+				44A8BBEBCB33A06362E56E779EB95125 /* Products */,
 				02C5ECEA382E41FB54FF5DA325E18878 /* Targets Support Files */,
 			);
 			sourceTree = "<group>";
 		};
-		D8003A051D6FE1A3E05256A9E190CE71 /* Products */ = {
+		D92D7F02CFBF2E734756B3BBBC15E8BE /* Torus-utils */ = {
 			isa = PBXGroup;
 			children = (
-				91BB24BA472AF523E913108C9AA301F2 /* BigInt.framework */,
-				F81274EDB681F11E7CB05F7DCA2BB33C /* CryptoSwift.framework */,
-				36B22267AF4D657854BDCBC896BAA6BE /* FetchNodeDetails.framework */,
-				8B075CA53091CACB97CA1EC16B1B8CAC /* Pods_TestApplication.framework */,
-				97241BE1FCAA933EA8779E01EEA25CB6 /* Pods_TestApplication_TestApplicationTests.framework */,
-				002B1E88BA14EBF633CD66EBFBA107E9 /* PromiseKit.framework */,
-				332A47430CFF99501D563788C7AAF1D2 /* secp256k1.framework */,
-				891B2270823847ED23F2ECFC28F935EC /* Starscream.framework */,
-				3936ADAF803ACF9C9AF43E3304CF7768 /* Torus_utils.framework */,
-				8A2449DF78D58AD33A7C7504BB3F38A0 /* web3swift.framework */,
+				425EBAEC1454E127BDEFA73D6C167DBB /* TorusUtils.swift */,
+				F52F523425132CA7A51FC2F1F4D1DB32 /* Convenience */,
+				F18ED8B0637102911A9878E18DCA245C /* Extensions */,
+				E36DC4E7DDCB5FF17F617AD671F79F0E /* Helpers */,
+				1D48E974E2429E9D49A8E80C642D762A /* Pod */,
+				BB10EE9DDA81AE7AD0B9BF777C631044 /* Support Files */,
 			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		E06860C847049AA721993A198FBFF82B /* Pod */ = {
-			isa = PBXGroup;
-			children = (
-				1DF591611649E57BAD4B7DC3765FB10E /* README.md */,
-				9960CCF70180CA584988083B64321824 /* Torus-utils.podspec */,
-			);
-			name = Pod;
+			name = "Torus-utils";
+			path = ../../..;
 			sourceTree = "<group>";
 		};
 		E352753A037CD5FD0BD066BC7388CB2D /* BigInt */ = {
@@ -1560,6 +1521,17 @@
 			);
 			name = BigInt;
 			path = BigInt;
+			sourceTree = "<group>";
+		};
+		E36DC4E7DDCB5FF17F617AD671F79F0E /* Helpers */ = {
+			isa = PBXGroup;
+			children = (
+				9DA25FE648E5DF04F4CF034E0110EC2B /* Error.swift */,
+				9AE0E2E8C807F21917ABB15AD35E9EEA /* JSONRPCRequest.swift */,
+				1D8AE138991AF6587D20218C853FB3CB /* Web3ERROR.swift */,
+			);
+			name = Helpers;
+			path = Sources/TorusUtils/Helpers;
 			sourceTree = "<group>";
 		};
 		E9A56E4D6EFE346CCF5B120C82DDBBDE /* CryptoSwift */ = {
@@ -1644,6 +1616,36 @@
 			);
 			name = CryptoSwift;
 			path = CryptoSwift;
+			sourceTree = "<group>";
+		};
+		F18ED8B0637102911A9878E18DCA245C /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				44DFA27979A87DD4EDB7BC22A592BBE4 /* torus+extension.swift */,
+			);
+			name = Extensions;
+			path = Sources/TorusUtils/Extensions;
+			sourceTree = "<group>";
+		};
+		F52F523425132CA7A51FC2F1F4D1DB32 /* Convenience */ = {
+			isa = PBXGroup;
+			children = (
+				B716ABFA4CD2EE98BA8501A8833EFA90 /* Array+Extension.swift */,
+				FE7DF61D8D0C50011E6DAC8C36AD3DF5 /* Base58.swift */,
+				8038C2493D3965EED7C48E9B1F8DFA7D /* BigUInt+Extensions.swift */,
+				C09D2D5ECF2259C3386F14D5A6D88E9A /* CryptoExtensions.swift */,
+				E671EF4E9A91FE45C3BE6722E7155C70 /* Data+Extension.swift */,
+				6A019206697FB9163BA5C922BC9D5141 /* Decodable+Extensions.swift */,
+				04346AEE9365C3D779E41D6106BB5362 /* Dictionary+Extension.swift */,
+				92DFE1D4E56822E63E6F3FB42C0263F1 /* Encodable+Extensions.swift */,
+				777CF2D1B29AE69C4299BC3AAFA8523C /* NativeTypesEncoding+Extensions.swift */,
+				C11C5048B9DBC421FA08704E53422D23 /* NSRegularExpressionExtension.swift */,
+				8EFCB3B5CC72F8DCA85FBA3A807E7BF3 /* RIPEMD160+StackOveflow.swift */,
+				B797AAF03B6F15DB184AE767CF4A33AC /* SECP256k1.swift */,
+				1649CDF6067929F5BB34B39B54837C07 /* String+Extension.swift */,
+			);
+			name = Convenience;
+			path = Sources/TorusUtils/Convenience;
 			sourceTree = "<group>";
 		};
 		F8AB77B33B39010AA1781823A31811F1 /* Support Files */ = {
@@ -1786,6 +1788,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		03E6A9AE0B62E9BE2A91B46BFE4659EA /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				87962404D43CD4F435D00EBA334DC6B2 /* Torus-utils-umbrella.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		161A02771B21A722138EE16CEDF4ECF9 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1888,14 +1898,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		9D804778FE8F8713EB8BE925A18C9D3B /* Headers */ = {
-			isa = PBXHeadersBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				18B046E69D8A6D6982DA8BFE4A8C7F6F /* Torus-utils-umbrella.h in Headers */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		ABD37AF9B9F78580D159AE761C456202 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -1980,22 +1982,22 @@
 		};
 		50BD5410DB90F893AE68CE9925FD066E /* Torus-utils */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D4593B2CCEBB7653ACA0D36689F591F0 /* Build configuration list for PBXNativeTarget "Torus-utils" */;
+			buildConfigurationList = 2B9B5052C2BA54DD6EE0390F0BAF63CA /* Build configuration list for PBXNativeTarget "Torus-utils" */;
 			buildPhases = (
-				9D804778FE8F8713EB8BE925A18C9D3B /* Headers */,
-				467062AE9149BA7BAAE70BB90239AD31 /* Sources */,
-				CF4B7FA6C6CC1616CA26A64CA9930E79 /* Frameworks */,
-				8295F750730E4FDB21C3994B2DB27E84 /* Resources */,
+				03E6A9AE0B62E9BE2A91B46BFE4659EA /* Headers */,
+				819EEACDB49C70CBFD6B75F67370ED1F /* Sources */,
+				C5C59FA290078DAD05B550F157DE2806 /* Frameworks */,
+				81F9279475D32F4D5C057001821E3E3C /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				CE66DA7EDB221E4B227DF163718DFA2D /* PBXTargetDependency */,
-				4753EF64278D32EA595842F7F282CB9B /* PBXTargetDependency */,
+				41E373AACBBBC0D398EEDC34E5C298B7 /* PBXTargetDependency */,
+				628F483DF4BB11F694900F77BCD8FC08 /* PBXTargetDependency */,
 			);
 			name = "Torus-utils";
 			productName = "Torus-utils";
-			productReference = 3936ADAF803ACF9C9AF43E3304CF7768 /* Torus_utils.framework */;
+			productReference = 3936ADAF803ACF9C9AF43E3304CF7768 /* TorusUtils.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 		7C579CE66A1E7A9AA33CA5F97F9C22C5 /* PromiseKit */ = {
@@ -2137,7 +2139,7 @@
 				LastUpgradeCheck = 1100;
 			};
 			buildConfigurationList = 4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */;
-			compatibilityVersion = "Xcode 9.3";
+			compatibilityVersion = "Xcode 10.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -2145,7 +2147,7 @@
 				Base,
 			);
 			mainGroup = CF1408CF629C7361332E53B88F7BD30C;
-			productRefGroup = D8003A051D6FE1A3E05256A9E190CE71 /* Products */;
+			productRefGroup = 44A8BBEBCB33A06362E56E779EB95125 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -2206,7 +2208,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		8295F750730E4FDB21C3994B2DB27E84 /* Resources */ = {
+		81F9279475D32F4D5C057001821E3E3C /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -2272,32 +2274,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		467062AE9149BA7BAAE70BB90239AD31 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				31FE45129EFC3CCCDF76CDAD4CBCCF87 /* Array+Extension.swift in Sources */,
-				F8D198B95C44BE1C4F8B47CCFCD88325 /* Base58.swift in Sources */,
-				BE5348E5E3C8BCCE72D4535C11F8576A /* BigUInt+Extensions.swift in Sources */,
-				5F7D7860E942ADC38C7A12FCE1BC4E40 /* CryptoExtensions.swift in Sources */,
-				B90167499F2FD2AF78A1B992881A6D94 /* Data+Extension.swift in Sources */,
-				A7A92CB191008D7F63EA2200E5CDB71A /* Decodable+Extensions.swift in Sources */,
-				577818023493C85F80DBFCF9D6DE00EA /* Dictionary+Extension.swift in Sources */,
-				1B8D413D1080C530DA7420D053AB6F7A /* Encodable+Extensions.swift in Sources */,
-				2A06A55349E71D7BC5FE4C0475EB03FA /* Error.swift in Sources */,
-				FEDB871A9D9F5D9C40399E80FB8E768A /* JSONRPCRequest.swift in Sources */,
-				14CA02E4D11631E4DDE761C4757011AB /* NativeTypesEncoding+Extensions.swift in Sources */,
-				F4D7C8BC5F86863EB2B3BB5EB7A6C8F6 /* NSRegularExpressionExtension.swift in Sources */,
-				42BF40667AD381D8EB34CF05C9243F78 /* RIPEMD160+StackOveflow.swift in Sources */,
-				439CF4658A6537FA91A1DBD7F970E97B /* SECP256k1.swift in Sources */,
-				4BAEA081FF4032BC619CF01C889EBC06 /* String+Extension.swift in Sources */,
-				B7F137EF9B3853BA32AEAE7C11C4FED6 /* torus+extension.swift in Sources */,
-				16D30C7AA0C024EE016919D8F11BF3B5 /* Torus-utils-dummy.m in Sources */,
-				A08F6FCB7159B31A34F61E2E270953D8 /* TorusUtils.swift in Sources */,
-				FA3850DF41841E2438760B387B75697E /* Web3ERROR.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		5A06FE26386690231C18D109DAB17A85 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2359,6 +2335,32 @@
 				8B3350D96B15B975184C8EE0819F9623 /* SSLSecurity.swift in Sources */,
 				294D61E8A195B6A1F6AEDCF0F73599A5 /* Starscream-dummy.m in Sources */,
 				C02D9FEB295BDA1359D2F52C80F8E75A /* WebSocket.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		819EEACDB49C70CBFD6B75F67370ED1F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1ABB2ABE6C99DE7B5EC24D6159EB663F /* Array+Extension.swift in Sources */,
+				FACB74DBC1C0CA619D795D084E751C3D /* Base58.swift in Sources */,
+				7333D98B7A047C4E5E7B8122ADCB8DF0 /* BigUInt+Extensions.swift in Sources */,
+				4F0251B8F9B993B2A9F2FE3393D60604 /* CryptoExtensions.swift in Sources */,
+				20FA0240E049467DC32BC1A13173DC41 /* Data+Extension.swift in Sources */,
+				480935654425EADB2D0A91701670E8B4 /* Decodable+Extensions.swift in Sources */,
+				67781A8BBE26A31A11EE9C55C288EDBA /* Dictionary+Extension.swift in Sources */,
+				9F5FF2CBD570CA94030B8D5E7866C201 /* Encodable+Extensions.swift in Sources */,
+				A2A95BAB22939877C24B760E903A33A9 /* Error.swift in Sources */,
+				6CB45CEDB7319C118A2A297AECC7AD78 /* JSONRPCRequest.swift in Sources */,
+				AF01E2575175D797014025E592F9B769 /* NativeTypesEncoding+Extensions.swift in Sources */,
+				4DFDE503209F698FFC5695AC6835C410 /* NSRegularExpressionExtension.swift in Sources */,
+				E314D5F33622A05A538B40AB2D1D5BB8 /* RIPEMD160+StackOveflow.swift in Sources */,
+				4CA962F76751D11AC4EDFAE2F8541BF3 /* SECP256k1.swift in Sources */,
+				9B6DA90A8C37A09D71C3550F0BDE5258 /* String+Extension.swift in Sources */,
+				920EE75EEE406C4C5FC62D1B6E1D3C0D /* torus+extension.swift in Sources */,
+				D221DF64489CBC1011C96A52250D877F /* Torus-utils-dummy.m in Sources */,
+				68ABA0203AB2120FC3B5FF5F89FBEC0F /* TorusUtils.swift in Sources */,
+				F15332196C834254FD765921073BA79E /* Web3ERROR.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2629,23 +2631,29 @@
 			target = 7C579CE66A1E7A9AA33CA5F97F9C22C5 /* PromiseKit */;
 			targetProxy = 949A9EBA4366C12A326009F43733D6DC /* PBXContainerItemProxy */;
 		};
+		41E373AACBBBC0D398EEDC34E5C298B7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = PromiseKit;
+			target = 7C579CE66A1E7A9AA33CA5F97F9C22C5 /* PromiseKit */;
+			targetProxy = 8BE2544DCEA1C54E38F26FE1A13D4D76 /* PBXContainerItemProxy */;
+		};
 		457354E29B7C33E4345C4A84DF6482E3 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = secp256k1.c;
 			target = 161C26511FC920CB146236AB7295D5E0 /* secp256k1.c */;
 			targetProxy = 73B9D895557B65999B71C0FE8E3BBFBC /* PBXContainerItemProxy */;
 		};
-		4753EF64278D32EA595842F7F282CB9B /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = "Torus-fetchNodeDetails";
-			target = 3744C58A953D980BCF08B0FEAE449C91 /* Torus-fetchNodeDetails */;
-			targetProxy = 9FF73BA81DF203429A1AEE752D141E52 /* PBXContainerItemProxy */;
-		};
 		60667B42A1F6D9EE813D4AD42530F5B2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = "Torus-fetchNodeDetails";
 			target = 3744C58A953D980BCF08B0FEAE449C91 /* Torus-fetchNodeDetails */;
 			targetProxy = CBA5E3AD8F20EFA1DEDCB9E38604492E /* PBXContainerItemProxy */;
+		};
+		628F483DF4BB11F694900F77BCD8FC08 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "Torus-fetchNodeDetails";
+			target = 3744C58A953D980BCF08B0FEAE449C91 /* Torus-fetchNodeDetails */;
+			targetProxy = B44C3D09F7E46E066ADD8D928EC3FF03 /* PBXContainerItemProxy */;
 		};
 		7033A312CA76744C5179BF763F954C71 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2731,12 +2739,6 @@
 			target = 99364D9FB07EF3FA5DFE1237001805EC /* web3swift */;
 			targetProxy = 6DF74F2F2CDC5A62FBEF110780EF3BA0 /* PBXContainerItemProxy */;
 		};
-		CE66DA7EDB221E4B227DF163718DFA2D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = PromiseKit;
-			target = 7C579CE66A1E7A9AA33CA5F97F9C22C5 /* PromiseKit */;
-			targetProxy = 0F70B91EF88C2FDCBCAD3630BD6F139E /* PBXContainerItemProxy */;
-		};
 		F5DFD10C6BAFE772054EF357362E0BBB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = CryptoSwift;
@@ -2819,45 +2821,6 @@
 			};
 			name = Release;
 		};
-		1815318D76869ECAAA1C8185CF9A7284 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 7F673FD14D4ABF76640791855FBB0BB6 /* Pods-TestApplication-TestApplicationTests.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
 		23DAA796EA37EA24566495280E748F06 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 6CED1312CE63E006654DE2EBAACF75BE /* Starscream.debug.xcconfig */;
@@ -2929,45 +2892,6 @@
 			};
 			name = Release;
 		};
-		2E94EA321BA326B678BF3990397FF2B4 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 421F491B9F8AB1BC9C6616B284D46A65 /* Pods-TestApplication.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
 		35BC321697BA712E466815924337D1AA /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 59021C24158CE748D1DEC23EA7D02DF8 /* Starscream.release.xcconfig */;
@@ -2993,43 +2917,6 @@
 				MODULEMAP_FILE = "Target Support Files/Starscream/Starscream.modulemap";
 				PRODUCT_MODULE_NAME = Starscream;
 				PRODUCT_NAME = Starscream;
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VALIDATE_PRODUCT = YES;
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		36B89EE31D9AB64B7213D281E307BD00 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = C069D39F913826D6C73513656BA22DAB /* Torus-utils.release.xcconfig */;
-			buildSettings = {
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				GCC_PREFIX_HEADER = "Target Support Files/Torus-utils/Torus-utils-prefix.pch";
-				INFOPLIST_FILE = "Target Support Files/Torus-utils/Torus-utils-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MODULEMAP_FILE = "Target Support Files/Torus-utils/Torus-utils.modulemap";
-				PRODUCT_MODULE_NAME = Torus_utils;
-				PRODUCT_NAME = Torus_utils;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
@@ -3076,9 +2963,47 @@
 			};
 			name = Debug;
 		};
-		56C40C80B56052DE0FD1DB77BFEB9065 /* Debug */ = {
+		682639440DB180B0805EFAFEE6CDCCF2 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 347717266D737AFAF6E73F6173B49C5F /* Torus-utils.debug.xcconfig */;
+			baseConfigurationReference = A3ABFE3667AA01A217809D9BE0B80D1F /* Pods-TestApplication-TestApplicationTests.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		6A658455BFA2B24862D8F5F624066784 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 5C427F7580A49CDFC8882CCA8456A48B /* Torus-utils.debug.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_OBJC_WEAK = NO;
 				CODE_SIGN_IDENTITY = "";
@@ -3100,8 +3025,8 @@
 					"@loader_path/Frameworks",
 				);
 				MODULEMAP_FILE = "Target Support Files/Torus-utils/Torus-utils.modulemap";
-				PRODUCT_MODULE_NAME = Torus_utils;
-				PRODUCT_NAME = Torus_utils;
+				PRODUCT_MODULE_NAME = TorusUtils;
+				PRODUCT_NAME = TorusUtils;
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
@@ -3112,41 +3037,67 @@
 			};
 			name = Debug;
 		};
-		664E1851FDD5299CBAAA35445FAA8D49 /* Debug */ = {
+		6C61D818ACD3C2C116FED6A9C67E91B4 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = B5359F2F46F8C6AC35F1007EE324CE53 /* Pods-TestApplication.debug.xcconfig */;
 			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
-				LD_RUNPATH_SEARCH_PATHS = (
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_DEBUG=1",
+					"DEBUG=1",
 					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
 				);
-				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				SYMROOT = "${SRCROOT}/../build";
 			};
 			name = Debug;
 		};
@@ -3179,6 +3130,44 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		6E225C6E39D38630B09EAE80C2606BF8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = B5359F2F46F8C6AC35F1007EE324CE53 /* Pods-TestApplication.debug.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
@@ -3256,6 +3245,105 @@
 			};
 			name = Debug;
 		};
+		7DC5F11AFBEAE473E8D3C24A2D11338D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"POD_CONFIGURATION_RELEASE=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRIP_INSTALLED_PRODUCT = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				SYMROOT = "${SRCROOT}/../build";
+			};
+			name = Release;
+		};
+		A0DE49AD0FA757CDAD6DC1BA26C65AA2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 421F491B9F8AB1BC9C6616B284D46A65 /* Pods-TestApplication.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication/Pods-TestApplication.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		B143110717EBC9F38F12AC7E7D725364 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 59E8DD0DC4315D26BD22ADCE12C7A231 /* PromiseKit.debug.xcconfig */;
@@ -3327,44 +3415,6 @@
 			};
 			name = Release;
 		};
-		C41F401B2538E98F0BF6BEAFEBDF4BA4 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = A3ABFE3667AA01A217809D9BE0B80D1F /* Pods-TestApplication-TestApplicationTests.debug.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
-				CLANG_ENABLE_OBJC_WEAK = NO;
-				CODE_SIGN_IDENTITY = "";
-				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
-				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
-				CURRENT_PROJECT_VERSION = 1;
-				DEFINES_MODULE = YES;
-				DYLIB_COMPATIBILITY_VERSION = 1;
-				DYLIB_CURRENT_VERSION = 1;
-				DYLIB_INSTALL_NAME_BASE = "@rpath";
-				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests-Info.plist";
-				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				MACH_O_TYPE = staticlib;
-				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests.modulemap";
-				OTHER_LDFLAGS = "";
-				OTHER_LIBTOOLFLAGS = "";
-				PODS_ROOT = "$(SRCROOT)";
-				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
-				SDKROOT = iphoneos;
-				SKIP_INSTALL = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				VERSIONING_SYSTEM = "apple-generic";
-				VERSION_INFO_PREFIX = "";
-			};
-			name = Debug;
-		};
 		C8551F75578DA89291CF7AC856F3C726 /* Release */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = CC233F4280C2F58DFA033DE27EB30F11 /* secp256k1.c.release.xcconfig */;
@@ -3401,69 +3451,81 @@
 			};
 			name = Release;
 		};
-		DFD9D19FEEBF98DE271D7FBABCB845B5 /* Debug */ = {
+		CE89386A5910D20B88227809ACF392DE /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 6B2E5672416382292CE0F779B86E171D /* Torus-utils.release.xcconfig */;
 			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"POD_CONFIGURATION_DEBUG=1",
-					"DEBUG=1",
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREFIX_HEADER = "Target Support Files/Torus-utils/Torus-utils-prefix.pch";
+				INFOPLIST_FILE = "Target Support Files/Torus-utils/Torus-utils-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
 				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				ONLY_ACTIVE_ARCH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				MODULEMAP_FILE = "Target Support Files/Torus-utils/Torus-utils.modulemap";
+				PRODUCT_MODULE_NAME = TorusUtils;
+				PRODUCT_NAME = TorusUtils;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) ";
 				SWIFT_VERSION = 5.0;
-				SYMROOT = "${SRCROOT}/../build";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
 			};
-			name = Debug;
+			name = Release;
+		};
+		D3AA47FF82B828F45B544B92A81DDD92 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 7F673FD14D4ABF76640791855FBB0BB6 /* Pods-TestApplication-TestApplicationTests.release.xcconfig */;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = NO;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_IDENTITY = "";
+				"CODE_SIGN_IDENTITY[sdk=appletvos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "";
+				"CODE_SIGN_IDENTITY[sdk=watchos*]" = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests-Info.plist";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 13.4;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MACH_O_TYPE = staticlib;
+				MODULEMAP_FILE = "Target Support Files/Pods-TestApplication-TestApplicationTests/Pods-TestApplication-TestApplicationTests.modulemap";
+				OTHER_LDFLAGS = "";
+				OTHER_LIBTOOLFLAGS = "";
+				PODS_ROOT = "$(SRCROOT)";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocoapods.${PRODUCT_NAME:rfc1034identifier}";
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
 		};
 		F0A25FEB2864DD44A44646205C4DD7A8 /* Release */ = {
 			isa = XCBuildConfiguration;
@@ -3498,66 +3560,6 @@
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
-			};
-			name = Release;
-		};
-		F5F04600F5626DC980F02790D1ED2C19 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
-				CLANG_CXX_LIBRARY = "libc++";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_ARC = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
-				CLANG_WARN_BOOL_CONVERSION = YES;
-				CLANG_WARN_COMMA = YES;
-				CLANG_WARN_CONSTANT_CONVERSION = YES;
-				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
-				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_EMPTY_BODY = YES;
-				CLANG_WARN_ENUM_CONVERSION = YES;
-				CLANG_WARN_INFINITE_RECURSION = YES;
-				CLANG_WARN_INT_CONVERSION = YES;
-				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
-				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
-				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
-				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
-				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
-				CLANG_WARN_STRICT_PROTOTYPES = YES;
-				CLANG_WARN_SUSPICIOUS_MOVE = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CLANG_WARN_UNREACHABLE_CODE = YES;
-				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				COPY_PHASE_STRIP = NO;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				ENABLE_NS_ASSERTIONS = NO;
-				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu11;
-				GCC_NO_COMMON_BLOCKS = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"POD_CONFIGURATION_RELEASE=1",
-					"$(inherited)",
-				);
-				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
-				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
-				GCC_WARN_UNDECLARED_SELECTOR = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
-				GCC_WARN_UNUSED_FUNCTION = YES;
-				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 13.5;
-				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_FAST_MATH = YES;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRIP_INSTALLED_PRODUCT = NO;
-				SWIFT_COMPILATION_MODE = wholemodule;
-				SWIFT_OPTIMIZATION_LEVEL = "-O";
-				SWIFT_VERSION = 5.0;
-				SYMROOT = "${SRCROOT}/../build";
 			};
 			name = Release;
 		};
@@ -3608,11 +3610,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		2B9B5052C2BA54DD6EE0390F0BAF63CA /* Build configuration list for PBXNativeTarget "Torus-utils" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6A658455BFA2B24862D8F5F624066784 /* Debug */,
+				CE89386A5910D20B88227809ACF392DE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4821239608C13582E20E6DA73FD5F1F9 /* Build configuration list for PBXProject "Pods" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				DFD9D19FEEBF98DE271D7FBABCB845B5 /* Debug */,
-				F5F04600F5626DC980F02790D1ED2C19 /* Release */,
+				6C61D818ACD3C2C116FED6A9C67E91B4 /* Debug */,
+				7DC5F11AFBEAE473E8D3C24A2D11338D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3638,8 +3649,8 @@
 		6BDB690633010F0EF9E1B99A5CDA8539 /* Build configuration list for PBXNativeTarget "Pods-TestApplication-TestApplicationTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C41F401B2538E98F0BF6BEAFEBDF4BA4 /* Debug */,
-				1815318D76869ECAAA1C8185CF9A7284 /* Release */,
+				682639440DB180B0805EFAFEE6CDCCF2 /* Debug */,
+				D3AA47FF82B828F45B544B92A81DDD92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
@@ -3671,20 +3682,11 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		D4593B2CCEBB7653ACA0D36689F591F0 /* Build configuration list for PBXNativeTarget "Torus-utils" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				56C40C80B56052DE0FD1DB77BFEB9065 /* Debug */,
-				36B89EE31D9AB64B7213D281E307BD00 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		DD5FC4A0E10DB7F0FD45AA042E1366C5 /* Build configuration list for PBXNativeTarget "Pods-TestApplication" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				664E1851FDD5299CBAAA35445FAA8D49 /* Debug */,
-				2E94EA321BA326B678BF3990397FF2B4 /* Release */,
+				6E225C6E39D38630B09EAE80C2606BF8 /* Debug */,
+				A0DE49AD0FA757CDAD6DC1BA26C65AA2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

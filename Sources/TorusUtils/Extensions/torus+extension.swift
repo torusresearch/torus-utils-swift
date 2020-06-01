@@ -7,14 +7,10 @@
 
 import Foundation
 import PromiseKit
-#if canImport(FetchNodeDetails)
-    import FetchNodeDetails
-    import PMKFoundation
-#elseif canImport(Torus_fetchNodeDetails)
-    import Torus_fetchNodeDetails
+import FetchNodeDetails
+#if canImport(PMKFoundation)
+import PMKFoundation
 #endif
-//import Torus_fetchNodeDetails
-//import FetchNodeDetails
 import secp256k1
 import BigInt
 import CryptoSwift
@@ -62,6 +58,7 @@ extension TorusUtils {
         return pubKey2
     }
     
+    // MARK:- commitment request
     func commitmentRequest(endpoints : Array<String>, verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) -> Promise<[[String:String]]>{
         
         // Todo: Add try catch for encoding block
@@ -120,6 +117,7 @@ extension TorusUtils {
         
     }
     
+    // MARK:- retrieve each node shares
     func retrieveIndividualNodeShare(endpoints : Array<String>, extraParams: Data, verifier: String, tokenCommitment:String, nodeSignatures: [[String:String]], verifierId: String) -> Promise<[Int:[String:String]]>{
         
         // Rebuild extraParams
@@ -197,6 +195,7 @@ extension TorusUtils {
         }
     }
     
+    // MARK:- decrypt shares
     func decryptIndividualShares(shares: [Int:[String:String]], privateKey: String) -> Promise<[Int:String]>{
         let (tempPromise, seal) = Promise<[Int:String]>.pending()
         
@@ -297,7 +296,7 @@ extension TorusUtils {
         return tempPromise
     }
     
-    
+    // MARK:- keylookup
     public func keyLookup(endpoints : Array<String>, verifier : String, verifierId : String) -> Promise<[String:String]>{
         let (tempPromise, seal) = Promise<[String:String]>.pending()
         
@@ -344,10 +343,9 @@ extension TorusUtils {
         return tempPromise
     }
     
+    // MARK:- key assignment
     public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String) -> Promise<JSONRPCresponse> {
-        
         let (tempPromise, seal) = Promise<JSONRPCresponse>.pending()
-        
         var newEndpoints = endpoints
         newEndpoints.shuffle() // To avoid overloading a single node
         // print("newEndpoints", newEndpoints)
@@ -405,6 +403,7 @@ extension TorusUtils {
         
     }
     
+    // MARK:- Helper functions
     func privateKeyToPublicKey4(privateKey: Data) -> secp256k1_pubkey? {
         if (privateKey.count != 32) {return nil}
         var publicKey = secp256k1_pubkey()

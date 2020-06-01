@@ -124,6 +124,7 @@ extension FetchNodeDetails {
     
     public func getNodeDetailsPromise() throws -> Promise<Bool>{
         var currentEpoch: Int = -1;
+        var torusIndexes:[BigInt] = Array()
         
         let returnPromise = Promise<Bool> { seal in
             let currentEpochPromise = try self.getCurrentEpochPromise();
@@ -132,7 +133,6 @@ extension FetchNodeDetails {
                 return try self.getEpochInfoPromise(epoch: response)
             }.then{epochInfo -> Guarantee<[Result<NodeInfo>]> in
                 let nodelist = epochInfo.getNodeList();
-                var torusIndexes:[BigInt] = Array()
                 var getNodeInfoPromisesArray:[Promise<NodeInfo>] = Array()
                 for i in 0..<nodelist.count{
                     torusIndexes.append(BigInt(i+1))
@@ -159,11 +159,7 @@ extension FetchNodeDetails {
                     
                 }
                 
-                self.nodeDetails.setNodeListAddress(nodeListAddress: self.proxyAddress.address);
-                self.nodeDetails.setCurrentEpoch(currentEpoch: String(currentEpoch));
-                self.nodeDetails.setTorusNodeEndpoints(torusNodeEndpoints: updatedEndpoints);
-                self.nodeDetails.setTorusNodePub(torusNodePub: updatedNodePub);
-                self.nodeDetails.setUpdated(updated: true);
+                self.nodeDetails = NodeDetails(_currentEpoch: "\(currentEpoch)", _nodeListAddress: self.proxyAddress.address, _torusNodeEndpoints: updatedEndpoints, _torusIndexes: torusIndexes, _torusNodePub: updatedNodePub, _updated: true)
                 
                 seal.fulfill(true)
             }.catch { error in

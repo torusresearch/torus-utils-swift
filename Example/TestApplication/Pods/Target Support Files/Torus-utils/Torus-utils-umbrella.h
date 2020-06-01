@@ -11,6 +11,6 @@
 #endif
 
 
-FOUNDATION_EXPORT double Torus_utilsVersionNumber;
-FOUNDATION_EXPORT const unsigned char Torus_utilsVersionString[];
+FOUNDATION_EXPORT double TorusUtilsVersionNumber;
+FOUNDATION_EXPORT const unsigned char TorusUtilsVersionString[];
 

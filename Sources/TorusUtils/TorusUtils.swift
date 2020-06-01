@@ -4,11 +4,7 @@
  */
 
 import Foundation
-#if canImport(FetchNodeDetails)
 import FetchNodeDetails
-#elseif canImport(Torus_fetchNodeDetails)
-import Torus_fetchNodeDetails
-#endif
 import web3swift
 import PromiseKit
 import secp256k1

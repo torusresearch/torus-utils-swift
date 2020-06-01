@@ -202,7 +202,7 @@ if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/PromiseKit/PromiseKit.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Starscream/Starscream.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-fetchNodeDetails/FetchNodeDetails.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/Torus-utils/Torus_utils.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/Torus-utils/TorusUtils.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/secp256k1.c/secp256k1.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/web3swift/web3swift.framework"
 fi
@@ -212,7 +212,7 @@ if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/PromiseKit/PromiseKit.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Starscream/Starscream.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-fetchNodeDetails/FetchNodeDetails.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/Torus-utils/Torus_utils.framework"
+  install_framework "${BUILT_PRODUCTS_DIR}/Torus-utils/TorusUtils.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/secp256k1.c/secp256k1.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/web3swift/web3swift.framework"
 fi

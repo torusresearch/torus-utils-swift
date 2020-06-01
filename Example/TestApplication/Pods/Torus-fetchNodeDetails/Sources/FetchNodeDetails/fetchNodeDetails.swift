@@ -5,10 +5,6 @@
 //  Created by Shubham on 13/3/20.
 //
 
-
-/// todo
-/// Fix getpubkeyX and getpubkeyY
-
 import Foundation
 import web3swift
 import BigInt
@@ -21,13 +17,13 @@ public final class FetchNodeDetails {
      var walletAddress : EthereumAddress = EthereumAddress("0x5F7A02a42bF621da3211aCE9c120a47AA5229fBA")!
      let yourContractABI: String = contractABIString
      var contract : web3.web3contract
-     var nodeDetails : NodeDetails
+     var nodeDetails : NodeDetails?
     
     
     public init(){
         self.web3 = Web3.InfuraMainnetWeb3()
         self.contract = web3.contract(yourContractABI, at: proxyAddress, abiVersion: 2)!
-        self.nodeDetails = NodeDetails() //Initialize with default values
+        // self.nodeDetails = NodeDetails() //Initialize with default values
     }
     
     public func getCurrentEpoch() -> Int{
@@ -44,7 +40,7 @@ public final class FetchNodeDetails {
             extraData: extraData,
             transactionOptions: options)!
         
-        let result : [String:Any] = try! tx.call() // Explicit Conversion from Any? -> Any -> String -> Int
+        let result:[String:Any] = try! tx.call() // Explicit Conversion from Any? -> Any -> String -> Int
         let epoch = result.first?.value
         
         // Explicit Conversion from Any? -> Any -> String -> Int
@@ -125,7 +121,7 @@ public final class FetchNodeDetails {
     }
     
     public func getNodeDetails() -> NodeDetails{
-        if(self.nodeDetails.getUpdated()) { return self.nodeDetails }
+        if((self.nodeDetails?.getUpdated()) != nil) { return self.nodeDetails! }
         
         let currentEpoch = self.getCurrentEpoch();
         let epochInfo = try! getEpochInfo(epoch: currentEpoch);
@@ -152,12 +148,13 @@ public final class FetchNodeDetails {
             updatedNodePub.append(TorusNodePub(_X: hexPubX, _Y: hexPubY))
         }
         
-        self.nodeDetails.setNodeListAddress(nodeListAddress: self.proxyAddress.address);
-        self.nodeDetails.setCurrentEpoch(currentEpoch: String(currentEpoch));
-        self.nodeDetails.setTorusNodeEndpoints(torusNodeEndpoints: updatedEndpoints);
-        self.nodeDetails.setTorusNodePub(torusNodePub: updatedNodePub);
-        self.nodeDetails.setUpdated(updated: true);
-        return self.nodeDetails
+        self.nodeDetails = NodeDetails(_currentEpoch: "\(currentEpoch)", _nodeListAddress: self.proxyAddress.address, _torusNodeEndpoints: updatedEndpoints, _torusIndexes: torusIndexes, _torusNodePub: updatedNodePub, _updated: true)
+//        self.nodeDetails.setNodeListAddress(nodeListAddress: self.proxyAddress.address);
+//        self.nodeDetails.setCurrentEpoch(currentEpoch: String(currentEpoch));
+//        self.nodeDetails.setTorusNodeEndpoints(torusNodeEndpoints: updatedEndpoints);
+//        self.nodeDetails.setTorusNodePub(torusNodePub: updatedNodePub);
+//        self.nodeDetails.setUpdated(updated: true);
+        return self.nodeDetails!
     }
     
     private func getProxyUrl() -> String{

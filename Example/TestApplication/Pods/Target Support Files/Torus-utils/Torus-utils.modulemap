@@ -1,4 +1,4 @@
-framework module Torus_utils {
+framework module TorusUtils {
   umbrella header "Torus-utils-umbrella.h"
 
   export *
