@@ -126,6 +126,61 @@ final class torus_utils_swiftTests: XCTestCase {
         wait(for: [exp1], timeout: 10)
     }
     
+    // 8b288671081621975c9d4af918a15a5358a793c7bea4c066c37effe2f0c8d1ee unused private key
+    
+//    generateMetadataParams(message, privateKey) {
+//        const key = this.ec.keyFromPrivate(privateKey.toString('hex', 64))
+//        const setData = {
+//            data: message,
+//            timestamp: new BN(Date.now()).toString(16),
+//        }
+//        const sig = key.sign(keccak256(JSON.stringify(setData)).slice(2))
+//        return {
+//            pub_key_X: key.getPublic().getX().toString('hex'),
+//            pub_key_Y: key.getPublic().getY().toString('hex'),
+//            set_data: setData,
+//            signature: Buffer.from(sig.r.toString(16, 64) + sig.s.toString(16, 64) + new BN(sig.v).toString(16, 2), 'hex').toString('base64'),
+//        }
+//    }
+    
+    func testSetMetadata(){
+        
+        let keystore = try! EthereumKeystoreV3(privateKey: Data(hex: "8b288671081621975c9d4af918a15a5358a793c7bea4c066c37effe2f0c8d1ee"))
+        let setData = [
+            "data": "8",
+            "timestamp":  String(Int(Date().timeIntervalSince1970))
+        ]
+        // print(try! JSONSerialization.data(withJSONObject: setData, options: []))
+        let setDataString = try! JSONSerialization.data(withJSONObject: setData, options: [])
+        let hash = setDataString.sha3(.keccak256)
+        let sign = SECP256K1.signForRecovery(hash: hash, privateKey: Data(hex: "8b288671081621975c9d4af918a15a5358a793c7bea4c066c37effe2f0c8d1ee"))
+        let unmarshallSig = SECP256K1.unmarshalSignature(signatureData: sign.serializedSignature!)!
+        print(String(data: unmarshallSig.r, encoding: .utf8))
+        
+        let newData = [
+            "pub_key_X": "83ebc5515a6f3ad8d1d83c53b324afb7f88edc499e3bdbbd149492e460018292",
+            "pub_key_Y": "a0de020d476f558d69e0b54ce83277df5f6305dbe065e337be313a51ad397958",
+            "set_data": setData,
+            "signature": "SECP256K1.unmarshalSignature(signatureData: sign)"
+        ]
+        
+//
+//        let encoded = try! JSONSerialization.data(withJSONObject: dictionary, options: [])
+//        let rq = self.makeUrlRequest(url: "https://metadata.tor.us/set");
+//        let request = URLSession.shared.uploadTask(.promise, with: rq, from: encoded)
+//
+//        let (tempPromise, seal) = Promise<BigInt>.pending()
+//
+//        request.compactMap {
+//            try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
+//        }.done{ data in
+//            print("metdata response", data)
+//            seal.fulfill(BigInt(data["message"] as! String, radix: 16)!)
+//        }.catch{ err in
+//            seal.fulfill(BigInt("1", radix: 16)!)
+//        }
+    }
+    
     var allTests = [
         ("testKeyLookup", testKeyLookup),
         ("testKeyAssign", testKeyAssign),

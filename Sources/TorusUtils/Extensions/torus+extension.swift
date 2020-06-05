@@ -14,6 +14,7 @@ import PMKFoundation
 import secp256k1
 import BigInt
 import CryptoSwift
+import web3swift
 
 @available(iOS 9.0, *)
 extension TorusUtils {
@@ -57,6 +58,39 @@ extension TorusUtils {
         }
         return pubKey2
     }
+    
+    func privateKeyToAddress(key: Data) -> Data{
+        print(key)
+        let publicKey = SECP256K1.privateToPublic(privateKey: key)!
+        let address = Data(publicKey.sha3(.keccak256).suffix(20))
+        return address
+    }
+    
+    // MARK: metadata API
+    func getMetadata(dictionary: [String:String]) -> Promise<BigInt>{
+        
+        // Enode data
+        let encoded = try! JSONSerialization.data(withJSONObject: dictionary, options: [])
+        let rq = self.makeUrlRequest(url: "https://metadata.tor.us/get");
+        let request = URLSession.shared.uploadTask(.promise, with: rq, from: encoded)
+        
+        let (tempPromise, seal) = Promise<BigInt>.pending()
+        
+        request.compactMap {
+            try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
+        }.done{ data in
+            print("metdata response", data)
+            seal.fulfill(BigInt(data["message"] as! String, radix: 16)!)
+        }.catch{ err in
+            seal.fulfill(BigInt("0", radix: 16)!)
+        }
+        
+        return tempPromise
+    }
+//    
+//    func addMetaData() -> Promise<BigInt>{
+//        
+//    }
     
     // MARK:- commitment request
     func commitmentRequest(endpoints : Array<String>, verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) -> Promise<[[String:String]]>{
@@ -385,6 +419,7 @@ extension TorusUtils {
                     return URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
                 }.done{ data, response in
                     let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    print(decodedData)
                     seal.fulfill(decodedData)
                     
                     semaphore.signal() // Signal to start again
@@ -457,6 +492,14 @@ extension String {
         return self
     }
     
+    func strip0xPrefix() -> String {
+        if self.hasPrefix("0x") {
+            let indexStart = self.index(self.startIndex, offsetBy: 2)
+            return String(self[indexStart...])
+        }
+        return self
+    }
+    
     func addLeading0sForLength64() -> String{
         if self.count < 64 {
             let toAdd = String(repeating: "0", count: 64 - self.count)
@@ -464,6 +507,7 @@ extension String {
         }else {
             return self
         }
+        // String(format: "%064d", self)
     }
 }
 
@@ -500,6 +544,10 @@ extension Data {
             }
         }
         self = data
+    }
+    
+    func addLeading0sForLength64() -> Data{
+        Data(hex: self.toHexString().addLeading0sForLength64())
     }
 }
 

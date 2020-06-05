@@ -21,10 +21,6 @@ public class TorusUtils{
         
     }
     
-    func getMetadata() -> Promise<BigInt>{
-        return Promise<BigInt>.value(BigInt(0))
-    }
-    
     public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
         
         let (tempPromise, seal) = Promise<[String:String]>.pending()
@@ -45,13 +41,24 @@ public class TorusUtils{
             }else{
                 return Promise<[String: String]>.value(lookupData)
             }
-        }.done{ data in
+        }.then{ data in
+            return self.getMetadata(dictionary: ["pub_key_X":data["pub_key_X"]!, "pub_key_Y": data["pub_key_Y"]!]).map{ ($0, data) } // Tuple
+        }.done{ nonce, data in
+            var newData = data
+                        
+            if(nonce != BigInt(0)) {
+                let address = self.privateKeyToAddress(key: nonce.serialize().addLeading0sForLength64())
+                let newAddress = BigInt(address.toHexString(), radix: 16)! + BigInt(data["address"]!.strip0xPrefix(), radix: 16)!
+                print(newAddress, "newAddress")
+                newData["address"] = newAddress.serialize().toHexString()
+            }
             
             if(!isExtended){
-                seal.fulfill(["address": data["address"]!])
+                seal.fulfill(["address": newData["address"]!])
             }else{
-                seal.fulfill(data)
+                seal.fulfill(newData)
             }
+            
         }.catch{err in
             print("err", err)
             seal.reject(TorusError.decodingError)
@@ -102,24 +109,30 @@ public class TorusUtils{
             }.then{ data -> Promise<String> in
                 print("individual shares array", data)
                 return self.lagrangeInterpolation(shares: data)
-            }.done{ data in
-                let publicKey = SECP256K1.privateToPublic(privateKey: Data.init(hex: data) , compressed: false)?.suffix(64) // take last 64
+            }.then{ data -> Promise<(String, String, String)> in
                 
                 // Split key in 2 parts, X and Y
-                // let publicKeyHex = publicKey?.toHexString()
+                let publicKey = SECP256K1.privateToPublic(privateKey: Data.init(hex: data) , compressed: false)?.suffix(64) // take last 64
                 let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
                 let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
+                print("private key rebuild", data, pubKeyX as Any, pubKeyY as Any)
                 
-                print("private key rebuild", data, pubKeyX, pubKeyY)
-
                 // Verify
                 if( pubKeyX == nodeReturnedPubKeyX && pubKeyY == nodeReturnedPubKeyY) {
-                    self.privateKey = data
-                    seal.fulfill(data)
-
+                    return Promise<(String, String, String)>.value((pubKeyX!, pubKeyY!, data)) //Tuple
                 }else{
                     throw "could not derive private key"
                 }
+            }.then{ x, y, key in
+                return self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map{ ($0, key) } // Tuple
+            }.done{ nonce, key in
+                if(nonce != BigInt(0)) {
+                    let newKey = nonce + BigInt(key, radix: 16)!
+                    print(newKey)
+                    seal.fulfill(newKey.serialize().suffix(64).toHexString())
+                }
+                seal.fulfill(key)
+                
             }.catch{ err in
                 // print(err)
                 seal.reject(err)
