@@ -67,22 +67,22 @@ extension TorusUtils {
     }
     
     // MARK: metadata API
-    func getMetadata(dictionary: [String:String]) -> Promise<BigInt>{
+    func getMetadata(dictionary: [String:String]) -> Promise<BigUInt>{
         
         // Enode data
         let encoded = try! JSONSerialization.data(withJSONObject: dictionary, options: [])
         let rq = self.makeUrlRequest(url: "https://metadata.tor.us/get");
         let request = URLSession.shared.uploadTask(.promise, with: rq, from: encoded)
         
-        let (tempPromise, seal) = Promise<BigInt>.pending()
+        let (tempPromise, seal) = Promise<BigUInt>.pending()
         
         request.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
         }.done{ data in
             print("metdata response", data)
-            seal.fulfill(BigInt(data["message"] as! String, radix: 16)!)
+            seal.fulfill(BigUInt(data["message"] as! String, radix: 16)!)
         }.catch{ err in
-            seal.fulfill(BigInt("0", radix: 16)!)
+            seal.fulfill(BigUInt("0", radix: 16)!)
         }
         
         return tempPromise

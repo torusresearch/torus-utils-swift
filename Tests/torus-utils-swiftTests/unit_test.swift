@@ -162,7 +162,7 @@ final class torus_utils_swiftTests: XCTestCase {
             "pub_key_Y": "a0de020d476f558d69e0b54ce83277df5f6305dbe065e337be313a51ad397958",
             "set_data": setData,
             "signature": "SECP256K1.unmarshalSignature(signatureData: sign)"
-        ]
+            ] as [String : Any]
         
 //
 //        let encoded = try! JSONSerialization.data(withJSONObject: dictionary, options: [])

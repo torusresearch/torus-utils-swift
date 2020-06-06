@@ -46,10 +46,10 @@ public class TorusUtils{
         }.done{ nonce, data in
             var newData = data
                         
-            if(nonce != BigInt(0)) {
+            if(nonce != BigUInt(0)) {
                 let address = self.privateKeyToAddress(key: nonce.serialize().addLeading0sForLength64())
-                let newAddress = BigInt(address.toHexString(), radix: 16)! + BigInt(data["address"]!.strip0xPrefix(), radix: 16)!
-                print(newAddress, "newAddress")
+                let newAddress = BigUInt(address.toHexString(), radix: 16)! + BigUInt(data["address"]!.strip0xPrefix(), radix: 16)!
+                // print(newAddress, "newAddress")
                 newData["address"] = newAddress.serialize().toHexString()
             }
             
@@ -126,8 +126,8 @@ public class TorusUtils{
             }.then{ x, y, key in
                 return self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map{ ($0, key) } // Tuple
             }.done{ nonce, key in
-                if(nonce != BigInt(0)) {
-                    let newKey = nonce + BigInt(key, radix: 16)!
+                if(nonce != BigUInt(0)) {
+                    let newKey = nonce + BigUInt(key, radix: 16)!
                     print(newKey)
                     seal.fulfill(newKey.serialize().suffix(64).toHexString())
                 }
