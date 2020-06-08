@@ -7,7 +7,9 @@ import Foundation
 import FetchNodeDetails
 import web3swift
 import PromiseKit
+#if canImport(secp256k1)
 import secp256k1
+#endif
 import CryptoSwift
 import BigInt
 

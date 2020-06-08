@@ -1,6 +1,6 @@
 {
   "name": "Torus-utils",
-  "version": "0.0.17",
+  "version": "0.0.19",
   "platforms": {
     "ios": "10.0"
   },
@@ -17,7 +17,7 @@
   "module_name": "TorusUtils",
   "source": {
     "git": "https://github.com/torusresearch/torus-utils-swift.git",
-    "tag": "0.0.17"
+    "tag": "0.0.19"
   },
   "source_files": [
     "Sources/TorusUtils/*.{swift,json}",

@@ -10,6 +10,9 @@
 #endif
 #endif
 
+#import "secp256k1.h"
+#import "secp256k1_ecdh.h"
+#import "secp256k1_recovery.h"
 
 FOUNDATION_EXPORT double web3swiftVersionNumber;
 FOUNDATION_EXPORT const unsigned char web3swiftVersionString[];

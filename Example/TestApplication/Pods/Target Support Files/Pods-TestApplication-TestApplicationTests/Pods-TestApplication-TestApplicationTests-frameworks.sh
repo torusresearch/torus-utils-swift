@@ -204,7 +204,6 @@ if [[ "$CONFIGURATION" == "Debug" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-fetchNodeDetails/FetchNodeDetails.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-utils/TorusUtils.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-web3swift/web3swift.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/secp256k1.c/secp256k1.framework"
 fi
 if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/BigInt/BigInt.framework"
@@ -214,7 +213,6 @@ if [[ "$CONFIGURATION" == "Release" ]]; then
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-fetchNodeDetails/FetchNodeDetails.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-utils/TorusUtils.framework"
   install_framework "${BUILT_PRODUCTS_DIR}/Torus-web3swift/web3swift.framework"
-  install_framework "${BUILT_PRODUCTS_DIR}/secp256k1.c/secp256k1.framework"
 fi
 if [ "${COCOAPODS_PARALLEL_CODE_SIGN}" == "true" ]; then
   wait

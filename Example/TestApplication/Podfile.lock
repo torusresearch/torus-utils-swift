@@ -10,18 +10,16 @@ PODS:
     - PromiseKit/CorePromise
   - PromiseKit/UIKit (6.13.1):
     - PromiseKit/CorePromise
-  - secp256k1.c (0.1.2)
   - Starscream (3.1.1)
   - Torus-fetchNodeDetails (0.0.13):
     - Torus-web3swift (~> 3.0.2)
-  - Torus-utils (0.0.17):
+  - Torus-utils (0.0.19):
     - PromiseKit/Foundation (~> 6.0)
     - Torus-fetchNodeDetails (~> 0.0.1)
-  - Torus-web3swift (3.0.2):
+  - Torus-web3swift (3.0.6):
     - BigInt (~> 5.0)
     - CryptoSwift (~> 1.0.0)
     - PromiseKit (~> 6.13.1)
-    - secp256k1.c (~> 0.1)
     - Starscream (~> 3.1.0)
 
 DEPENDENCIES:
@@ -32,7 +30,6 @@ SPEC REPOS:
     - BigInt
     - CryptoSwift
     - PromiseKit
-    - secp256k1.c
     - Starscream
     - Torus-fetchNodeDetails
     - Torus-web3swift
@@ -45,12 +42,11 @@ SPEC CHECKSUMS:
   BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
   CryptoSwift: d81eeaa59dc5a8d03720fe919a6fd07b51f7439f
   PromiseKit: 28fda91c973cc377875d8c0ea4f973013c05b6db
-  secp256k1.c: db47b726585d80f027423682eb369729e61b3b20
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   Torus-fetchNodeDetails: e9d596dc68bd38f05b3c84f15a9890ab480e9f5e
-  Torus-utils: 229d051300981509683973ea3a5ed6ec5d68e884
-  Torus-web3swift: 6f09b3201b309f8ee216a66c704c1ea6d6dfbaa4
+  Torus-utils: 8e4f6154b6e5300925f932aecbc927d01b4d2d8d
+  Torus-web3swift: 793aa9b84ce7eaaf8212624db9a01d2bff74b96d
 
-PODFILE CHECKSUM: d40941a2f2c4cf9dd1a1c23b8eb6d4d696181357
+PODFILE CHECKSUM: 2415f5e3cacc76a9b2ae97d67c198fa0edca2187
 
 COCOAPODS: 1.9.3
