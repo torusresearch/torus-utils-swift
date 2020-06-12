@@ -81,7 +81,7 @@ extension TorusUtils {
         request.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
         }.done{ data in
-            print("metdata response", data)
+            self.logger.info("metdata response", data)
             seal.fulfill(BigUInt(data["message"] as! String, radix: 16)!)
         }.catch{ err in
             seal.fulfill(BigUInt("0", radix: 16)!)
@@ -108,7 +108,6 @@ extension TorusUtils {
                      "verifieridentifier":verifier,
                      "timestamp": timestamp]
         ))
-        print( String(data: rpcdata, encoding: .utf8)!)
         
         // Build promises array
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
@@ -128,6 +127,7 @@ extension TorusUtils {
                     
                     let encoder = JSONEncoder()
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                    self.logger.info(decoded)
                     
                     if(decoded.error != nil) {
                          print(try! JSONSerialization.jsonObject(with: data, options: []))
@@ -146,6 +146,7 @@ extension TorusUtils {
                         seal.fulfill(nodeSignatures)
                     }
                 }.catch{ err in
+                    self.logger.error(err)
                     seal.reject(err)
                 }
             }
@@ -171,10 +172,9 @@ extension TorusUtils {
                                       "params": ["encrypted": "yes",
                                                  "item": [keepingCurrent]]] as [String : Any]
                 rpcdata = try! JSONSerialization.data(withJSONObject: dataForRequest)
-                print( String(data: rpcdata, encoding: .utf8)!)
             }
         } catch {
-            print("Couldn't read file.")
+            self.logger.error("Couldn't read file.")
         }
         
         // Build promises array
@@ -196,7 +196,7 @@ extension TorusUtils {
                     let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                     // print("share responses", decoded)
                     if(decoded.error != nil) {
-                        print(try! JSONSerialization.jsonObject(with: data, options: []))
+                        self.logger.info(try! JSONSerialization.jsonObject(with: data, options: []))
                         throw TorusError.decodingError
                         
                     }
@@ -224,7 +224,7 @@ extension TorusUtils {
                         seal.fulfill(resultArray)
                     }
                 }.catch{ err in
-                    // print(err)
+                    self.logger.error(err)
                     seal.reject(err)
                 }
             }
@@ -286,7 +286,7 @@ extension TorusUtils {
         // Convert shares to BigInt(Shares)
         var shareList = [BigInt:BigInt]()
         _ = shares.map { shareList[BigInt($0.key+1)] = BigInt($0.value, radix: 16)}
-        print(shares, shareList)
+        self.logger.info(shares, shareList)
         
         var secret = BigUInt("0") // to support BigInt 4.0 dependency on cocoapods
         let serialQueue = DispatchQueue(label: "lagrange.serial.queue")
@@ -421,7 +421,7 @@ extension TorusUtils {
                     return URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
                 }.done{ data, response in
                     let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                    print(decodedData)
+                    self.logger.info(decodedData)
                     seal.fulfill(decodedData)
                     
                     semaphore.signal() // Signal to start again
