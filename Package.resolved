@@ -65,6 +65,15 @@
         }
       },
       {
+        "package": "BestLogger",
+        "repositoryURL": "https://github.com/rathishubham7/swift-logger",
+        "state": {
+          "branch": null,
+          "revision": "e1e2fa0a6ee9f572432835b70f980a8b36449575",
+          "version": "0.0.3"
+        }
+      },
+      {
         "package": "swift-nio-zlib-support",
         "repositoryURL": "https://github.com/apple/swift-nio-zlib-support.git",
         "state": {

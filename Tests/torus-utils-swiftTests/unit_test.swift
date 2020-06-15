@@ -69,7 +69,7 @@ final class torus_utils_swiftTests: XCTestCase {
     
     func testKeyAssign(){
         let exp1 = XCTestExpectation(description: "Do keyAssign success")
-        let obj = TorusUtils()
+        let obj = TorusUtils(nodePubKeys: nodePubKeys)
         let keyAssign = obj.keyAssign(endpoints: self.nodeList, torusNodePubs: nodePubKeys, verifier: verifier, verifierId: self.verifierId)
         keyAssign.done{ data in
             // print(data)
@@ -85,7 +85,7 @@ final class torus_utils_swiftTests: XCTestCase {
     
     func testGetPublicAddress(){
         let exp1 = XCTestExpectation(description: "testing get public address")
-        let obj = TorusUtils()
+        let obj = TorusUtils(nodePubKeys: nodePubKeys)
         let getpublicaddress = obj.getPublicAddress(endpoints: self.nodeList, torusNodePubs: nodePubKeys, verifier: "google", verifierId: self.verifierId, isExtended: true)
         getpublicaddress.done{ data in
             print("data", data)
@@ -102,7 +102,7 @@ final class torus_utils_swiftTests: XCTestCase {
     
     func testRetreiveShares(){
         let exp1 = XCTestExpectation(description: "reterive privatekey")
-        let obj = TorusUtils()
+        let obj = TorusUtils(nodePubKeys: nodePubKeys)
         
         let extraParams = ["verifieridentifier": verifier, "verifier_id":verifierId, "sub_verifier_ids":["google-shubs"], "verify_params": [["verifier_id": verifierId, "idtoken": token]]] as [String : Any]
         let extraParams2 = ["verifieridentifier": verifier, "verifier_id":verifierId] as [String : Any]

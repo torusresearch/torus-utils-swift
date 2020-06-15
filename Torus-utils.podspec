@@ -12,4 +12,5 @@ Pod::Spec.new do |spec|
   spec.source_files = "Sources/TorusUtils/*.{swift,json}","Sources/TorusUtils/**/*.{swift,json}"
   spec.dependency 'Torus-fetchNodeDetails', '~> 0.0.1'
   spec.dependency 'PromiseKit/Foundation', '~> 6.0'
+  spec.dependency 'BestLogger', '~> 0.0.1'
 end

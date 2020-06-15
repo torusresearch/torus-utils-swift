@@ -1,6 +1,6 @@
 {
   "name": "Torus-utils",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "platforms": {
     "ios": "10.0"
   },
@@ -17,7 +17,7 @@
   "module_name": "TorusUtils",
   "source": {
     "git": "https://github.com/torusresearch/torus-utils-swift.git",
-    "tag": "0.0.19"
+    "tag": "0.0.20"
   },
   "source_files": [
     "Sources/TorusUtils/*.{swift,json}",
@@ -29,6 +29,9 @@
     ],
     "PromiseKit/Foundation": [
       "~> 6.0"
+    ],
+    "BestLogger": [
+      "~> 0.0.1"
     ]
   },
   "swift_version": "5.0"

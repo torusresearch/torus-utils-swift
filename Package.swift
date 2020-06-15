@@ -12,6 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/rathishubham7/web3swift", from:"2.2.2"),
+        .package(url: "https://github.com/rathishubham7/swift-logger", from:"0.0.1"),
         .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from:"0.0.5"),
         .package(url: "https://github.com/PromiseKit/Foundation.git", from: "3.0.0"),
         .package(url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
@@ -21,7 +22,7 @@ let package = Package(
         // Targets can depend on other targets in this package, and on products in packages which this package depends on.
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "web3swift", "PMKFoundation", "CryptorECC"]),
+            dependencies: ["FetchNodeDetails", "web3swift", "PMKFoundation", "CryptorECC", "BestLogger"]),
         .testTarget(
             name: "torus-utils-swiftTests",
             dependencies: ["TorusUtils"]),

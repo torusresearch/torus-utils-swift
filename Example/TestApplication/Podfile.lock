@@ -1,4 +1,5 @@
 PODS:
+  - BestLogger (0.0.3)
   - BigInt (5.0.0)
   - CryptoSwift (1.0.0)
   - PromiseKit (6.13.1):
@@ -13,7 +14,8 @@ PODS:
   - Starscream (3.1.1)
   - Torus-fetchNodeDetails (0.0.13):
     - Torus-web3swift (~> 3.0.2)
-  - Torus-utils (0.0.19):
+  - Torus-utils (0.0.20):
+    - BestLogger (~> 0.0.1)
     - PromiseKit/Foundation (~> 6.0)
     - Torus-fetchNodeDetails (~> 0.0.1)
   - Torus-web3swift (3.0.6):
@@ -27,6 +29,7 @@ DEPENDENCIES:
 
 SPEC REPOS:
   trunk:
+    - BestLogger
     - BigInt
     - CryptoSwift
     - PromiseKit
@@ -39,12 +42,13 @@ EXTERNAL SOURCES:
     :path: "../../"
 
 SPEC CHECKSUMS:
+  BestLogger: 70475db073dfab3ec1ba9b58b0bb78126b068eee
   BigInt: 74b4d88367b0e819d9f77393549226d36faeb0d8
   CryptoSwift: d81eeaa59dc5a8d03720fe919a6fd07b51f7439f
   PromiseKit: 28fda91c973cc377875d8c0ea4f973013c05b6db
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   Torus-fetchNodeDetails: e9d596dc68bd38f05b3c84f15a9890ab480e9f5e
-  Torus-utils: 8e4f6154b6e5300925f932aecbc927d01b4d2d8d
+  Torus-utils: c2f95700c18073db951e877bbabd140ecb8a61dc
   Torus-web3swift: 793aa9b84ce7eaaf8212624db9a01d2bff74b96d
 
 PODFILE CHECKSUM: 2415f5e3cacc76a9b2ae97d67c198fa0edca2187
