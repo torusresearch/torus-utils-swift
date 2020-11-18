@@ -59,10 +59,10 @@
                   Identifier = "torus_utils_swiftTests/testKeyAssign()">
                </Test>
                <Test
-                  Identifier = "torus_utils_swiftTests/testKeyLookup()">
+                  Identifier = "torus_utils_swiftTests/testRetreiveShares()">
                </Test>
                <Test
-                  Identifier = "torus_utils_swiftTests/testRetreiveShares()">
+                  Identifier = "torus_utils_swiftTests/testSetMetadata()">
                </Test>
             </SkippedTests>
          </TestableReference>

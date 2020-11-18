@@ -64,8 +64,8 @@ public class TorusUtils{
             }
             
         }.catch{err in
-            self.logger.error(err)
-            seal.reject(TorusError.decodingError)
+            self.logger.error("getPublicAddress: err: ", err)
+            seal.reject(err)
         }
         
         return tempPromise
@@ -93,7 +93,7 @@ public class TorusUtils{
         var nodeReturnedPubKeyX:String = ""
         var nodeReturnedPubKeyY:String = ""
         
-        self.logger.info(privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, hashedOnce)
+        self.logger.debug("RetrieveShares: ", privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, hashedOnce)
         
         return Promise<String>{ seal in
             
