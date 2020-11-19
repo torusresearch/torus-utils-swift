@@ -62,22 +62,6 @@ public struct KeyAssignRequest: Encodable{
     }
     
     public func encode(to encoder: Encoder) throws {
-//        var container = encoder.singleValueContainer()
-//        try container.encode(self.id)
-//        try container.encode(self.jsonrpc)
-//        try container.encode(self.method)
-//
-//        if let newParams = self.params as? [String:String] {
-//            try container.encode(newParams as! [String:String])
-//        }
-//        if let newParams = self.params as? [String: [String:[String:String]]] {
-//            try container.encode(newParams as! [String: [String:[String:String]]])
-//        }
-//
-//        try container.encode(self.id)
-//
-//        try container.encode(self.id)
-
         var container = encoder.container(keyedBy: KeyAssignRequestKeys.self)
         try container.encode(id, forKey: .id)
 
