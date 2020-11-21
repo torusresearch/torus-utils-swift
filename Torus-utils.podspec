@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "Torus-utils"
-  spec.version      = "0.0.21"
+  spec.version      = "0.0.22"
   spec.platform = :ios, "10.0"
   spec.summary      = "Retrieve user shares"
   spec.homepage     = "https://github.com/torusresearch/torus-utils-swift"
@@ -13,4 +13,6 @@ Pod::Spec.new do |spec|
   spec.dependency 'Torus-fetchNodeDetails', '~> 0.0.1'
   spec.dependency 'PromiseKit/Foundation', '~> 6.0'
   spec.dependency 'BestLogger', '~> 0.0.1'
+  spec.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
+  spec.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
 end
