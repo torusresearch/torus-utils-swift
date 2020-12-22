@@ -163,22 +163,36 @@ final class torus_utils_swiftTests: XCTestCase {
             "set_data": setData,
             "signature": "SECP256K1.unmarshalSignature(signatureData: sign)"
             ] as [String : Any]
+       
+    }
+    
+    func testSECPLib(){
+        let secp256k1N = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!;
+
         
-//
-//        let encoded = try! JSONSerialization.data(withJSONObject: dictionary, options: [])
-//        let rq = self.makeUrlRequest(url: "https://metadata.tor.us/set");
-//        let request = URLSession.shared.uploadTask(.promise, with: rq, from: encoded)
-//
-//        let (tempPromise, seal) = Promise<BigInt>.pending()
-//
-//        request.compactMap {
-//            try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
-//        }.done{ data in
-//            print("metdata response", data)
-//            seal.fulfill(BigInt(data["message"] as! String, radix: 16)!)
-//        }.catch{ err in
-//            seal.fulfill(BigInt("1", radix: 16)!)
-//        }
+        let privkey1 = "60a9a56b271e94cc2e8b52107fcb7c4698e7e2d0a4525a797dbe2330a074fdf6"
+        let privkey2 = "f730f0a92f8d2b97bc7a1937afad3d2bb47f41418d697de8001797472225ee94"
+        let privkey1Data = Data(hex: privkey1)
+        let privkey2Data = Data(hex: privkey2)
+        let publicKey1 = SECP256K1.privateToPublic(privateKey: privkey1Data, compressed: false)
+        let publicKey2 = SECP256K1.privateToPublic(privateKey: privkey2Data, compressed: false)
+        var keys: [Data] = []
+        
+        keys.append(publicKey2!)
+        keys.append(publicKey1!)
+        
+        let added = SECP256K1.combineSerializedPublicKeys(keys: keys)
+        print(publicKey1?.toHexString(), publicKey2?.toHexString(), added?.toHexString())
+        
+        let bigInt1 = BigInt(privkey1, radix: 16)!
+        let bigInt2 = BigInt(privkey2, radix: 16)!
+        let addedKeys = bigInt1 + bigInt2
+        let mod = BigUInt(addedKeys.modulus(secp256k1N))
+        let modData = mod.serialize()
+        let publickey3 = SECP256K1.privateToPublic(privateKey: modData, compressed: false)
+        
+        print(publickey3?.toHexString())
+        
     }
     
     var allTests = [

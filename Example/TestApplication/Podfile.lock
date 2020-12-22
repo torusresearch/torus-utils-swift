@@ -14,7 +14,7 @@ PODS:
   - Starscream (3.1.1)
   - Torus-fetchNodeDetails (0.0.13):
     - Torus-web3swift (~> 3.0.2)
-  - Torus-utils (0.0.22):
+  - Torus-utils (0.1.0):
     - BestLogger (~> 0.0.1)
     - PromiseKit/Foundation (~> 6.0)
     - Torus-fetchNodeDetails (~> 0.0.1)
@@ -48,9 +48,9 @@ SPEC CHECKSUMS:
   PromiseKit: 28fda91c973cc377875d8c0ea4f973013c05b6db
   Starscream: 4bb2f9942274833f7b4d296a55504dcfc7edb7b0
   Torus-fetchNodeDetails: e9d596dc68bd38f05b3c84f15a9890ab480e9f5e
-  Torus-utils: c8b3bd3a8573d944f60a6d8d21795a5e886819bb
+  Torus-utils: 61d4851eef84fb41597bb00c4a185c1f48ec3910
   Torus-web3swift: 793aa9b84ce7eaaf8212624db9a01d2bff74b96d
 
 PODFILE CHECKSUM: 06ce0718f4492f3ce5d67cd4472ed09aacc8b3e0
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.0
