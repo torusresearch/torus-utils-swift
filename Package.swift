@@ -11,9 +11,9 @@ let package = Package(
             targets: ["TorusUtils"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/rathishubham7/web3swift", from:"2.2.2"),
+        .package(url: "https://github.com/rathishubham7/web3swift", from:"2.0.0"),
         .package(url: "https://github.com/rathishubham7/swift-logger", from:"0.0.1"),
-        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from:"0.0.15"),
+        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from:"0.0.1"),
         .package(url: "https://github.com/PromiseKit/Foundation.git", from: "3.0.0"),
         .package(url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
     ],
