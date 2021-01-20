@@ -111,7 +111,6 @@ extension TorusUtils {
         var rpcdata : Data = Data.init()
         do {
             if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String:Any] {
-                // print(loadedStrings)
                 let newValue = ["verifieridentifier":verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures, "idtoken": tokenCommitment] as [String:AnyObject]
                 let keepingCurrent = loadedStrings.merging(newValue) { (current, _) in current }
                 
@@ -138,9 +137,6 @@ extension TorusUtils {
         
         var ShareResponses = Array<[String:String]?>.init(repeating: nil, count: promisesArrayReq.count)
         var resultArray = [Int:[String:String]]()
-        // var nodeReturnedPubKeyX:String = ""
-        // var nodeReturnedPubKeyY:String = ""
-        // var finalPrivateKey: Data
         
         for (i, pr) in promisesArrayReq.enumerated(){
             pr.then{ data, response -> Promise<[Int:String]> in
