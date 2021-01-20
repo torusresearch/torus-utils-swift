@@ -21,6 +21,28 @@ import web3swift
 @available(iOS 9.0, *)
 extension TorusUtils {
     
+    // MARK:- torus utils
+    func combinations<T>(elements: ArraySlice<T>, k: Int) -> [[T]] {
+        if k == 0 {
+            return [[]]
+        }
+        
+        guard let first = elements.first else {
+            return []
+        }
+        
+        let head = [first]
+        let subcombos = combinations(elements: elements.dropFirst(), k: k - 1)
+        var ret = subcombos.map { head + $0 }
+        ret += combinations(elements: elements.dropFirst(), k: k)
+        
+        return ret
+    }
+    
+    func combinations<T>(elements: Array<T>, k: Int) -> [[T]] {
+        return combinations(elements: ArraySlice(elements), k: k)
+    }
+    
     func makeUrlRequest(url: String) -> URLRequest {
         var rq = URLRequest(url: URL(string: url)!)
         rq.httpMethod = "POST"
@@ -82,11 +104,119 @@ extension TorusUtils {
         
         return tempPromise
     }
-//    
-//    func addMetaData() -> Promise<BigInt>{
-//        
-//    }
     
+    // MARK:- retreiveDecryptAndReconstuct
+    func retrieveDecryptAndReconstuct(endpoints : Array<String>, extraParams: Data, verifier: String, tokenCommitment:String, nodeSignatures: [[String:String]], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) -> Promise<(String, String, String)>{
+        // Rebuild extraParams
+        var rpcdata : Data = Data.init()
+        do {
+            if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String:Any] {
+                // print(loadedStrings)
+                let newValue = ["verifieridentifier":verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures, "idtoken": tokenCommitment] as [String:AnyObject]
+                let keepingCurrent = loadedStrings.merging(newValue) { (current, _) in current }
+                
+                // todo : look into hetrogeneous array encoding
+                let dataForRequest = ["jsonrpc": "2.0",
+                                      "id":10,
+                                      "method": "ShareRequest",
+                                      "params": ["encrypted": "yes",
+                                                 "item": [keepingCurrent]]] as [String : Any]
+                rpcdata = try! JSONSerialization.data(withJSONObject: dataForRequest)
+            }
+        } catch {
+            self.logger.error("RetrieveIndividualNodeShare: Couldn't read file.")
+        }
+        
+        // Build promises array
+        var promisesArrayReq = Array<Promise<(data: Data, response: URLResponse)> >()
+        for el in endpoints {
+            let rq = self.makeUrlRequest(url: el);
+            promisesArrayReq.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+        }
+        
+        let (tempPromise, seal) = Promise<(String, String, String)>.pending()
+        
+        var ShareResponses = Array<[String:String]?>.init(repeating: nil, count: promisesArrayReq.count)
+        var resultArray = [Int:[String:String]]()
+        // var nodeReturnedPubKeyX:String = ""
+        // var nodeReturnedPubKeyY:String = ""
+        // var finalPrivateKey: Data
+        
+        for (i, pr) in promisesArrayReq.enumerated(){
+            pr.then{ data, response -> Promise<[Int:String]> in
+                self.logger.info("retrieveDecryptAndReconstuct: ",String(decoding: data, as: UTF8.self))
+                let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                if(decoded.error != nil) {
+                    self.logger.info("retrieveDecryptAndReconstuct: err: ", decoded)
+                    throw TorusError.decodingError
+                }
+                
+                let decodedResult = decoded.result as? [String:Any]
+                let keyObj = decodedResult!["keys"] as? [[String:Any]]
+                
+                // Due to multiple keyAssign
+                if let temp = keyObj?.first{
+                    let metadata = temp["Metadata"] as! [String : String]
+                    let share = temp["Share"] as! String
+                    let publicKey = temp["PublicKey"] as! [String : String]
+                    
+                    ShareResponses[i] = publicKey //For threshold
+                    
+                    resultArray[i] = ["iv": metadata["iv"]!, "ephermalPublicKey": metadata["ephemPublicKey"]!, "share": share, "pubKeyX": publicKey["X"]!, "pubKeyY": publicKey["Y"]!]
+                }
+                
+                let lookupShares = ShareResponses.filter{ $0 != nil } // Nonnil elements
+                
+                // Comparing dictionaries, so the order of keys doesn't matter
+                let keyResult = self.thresholdSame(arr: lookupShares.map{$0}, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
+                if(keyResult != nil && !tempPromise.isFulfilled){
+                    self.logger.info("retreiveIndividualNodeShares: fulfill: ", resultArray)
+                    return self.decryptIndividualShares(shares: resultArray, privateKey: privateKey)
+                }else{
+                    throw TorusError.thresholdError
+                }
+            }.done{ data in
+                self.logger.trace("retrieveDecryptAndReconstuct: data after decryptIndividualShares", data)
+                let filteredData = data.filter{$0.value != TorusError.decodingError.debugDescription}
+                if(filteredData.count < Int(endpoints.count/2)+1){ throw TorusError.thresholdError }
+                
+                // all possible combinations of share indexes to interpolate
+                let shareCombinations = self.combinations(elements: Array(filteredData.keys), k: Int(endpoints.count/2)+1)
+                for shareIndexSet in shareCombinations{
+                    var sharesToInterpolate: [Int:String] = [:]
+                    shareIndexSet.forEach{ sharesToInterpolate[$0] = filteredData[$0]}
+                    if(tempPromise.isFulfilled) { throw "fulfilled" }
+                    self.lagrangeInterpolation(shares: sharesToInterpolate).done{data -> Void in
+                        // Split key in 2 parts, X and Y
+                        let finalPrivateKey = Data.init(hex: data)
+                        let publicKey = SECP256K1.privateToPublic(privateKey: finalPrivateKey , compressed: false)?.suffix(64)
+                        let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
+                        let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
+                        self.logger.trace("retrieveDecryptAndReconstuct: private key rebuild", data, pubKeyX as Any, pubKeyY as Any)
+                        
+                        // Verify
+                        if( pubKeyX == lookupPubkeyX && pubKeyY == lookupPubkeyY) {
+                            seal.fulfill((pubKeyX!, pubKeyY!, data)) //Tuple
+                        }else{
+                            self.logger.error("retrieveDecryptAndReconstuct: verification failed")
+                        }
+                    }.catch{err in
+                        self.logger.error("retrieveDecryptAndReconstuct: lagrangeInterpolation: err: ", err)
+                    }
+                }
+                
+            }.catch{ err in
+                if(err as! TorusError == TorusError.thresholdError){
+                    // swallow
+                }else{
+                    self.logger.error("retrieveDecryptAndReconstuct: errReject: ", err)
+                }
+            }
+        }
+        return tempPromise
+    }
+    
+
     // MARK:- commitment request
     func commitmentRequest(endpoints : Array<String>, verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) -> Promise<[[String:String]]>{
         
@@ -257,16 +387,17 @@ extension TorusUtils {
                 let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv!), padding: .pkcs7)
                 let decrypt = try aes.decrypt(share)
                 result[nodeIndex] = decrypt.hexa
-                if(shares.count == result.count) {
-                    seal.fulfill(result) // Resolve if all shares decrypt
-                }
             }catch{
-                seal.reject(TorusError.decryptionFailed)
+                result[nodeIndex] = TorusError.decodingError.debugDescription
+            }
+            if(shares.count == result.count) {
+                seal.fulfill(result) // Resolve if all shares decrypt
             }
         }
         return tempPromise
     }
     
+    // MARK:- Lagrange interpolation
     func lagrangeInterpolation(shares: [Int:String]) -> Promise<String>{
         let (tempPromise, seal) = Promise<String>.pending()
         let secp256k1N = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!;
@@ -274,7 +405,7 @@ extension TorusUtils {
         // Convert shares to BigInt(Shares)
         var shareList = [BigInt:BigInt]()
         _ = shares.map { shareList[BigInt($0.key+1)] = BigInt($0.value, radix: 16)}
-        self.logger.info(shares, shareList)
+        // self.logger.info(shares, shareList)
         
         var secret = BigUInt("0") // to support BigInt 4.0 dependency on cocoapods
         let serialQueue = DispatchQueue(label: "lagrange.serial.queue")

@@ -90,45 +90,43 @@ public class TorusUtils{
         let hashedOnce = idToken.sha3(.keccak256)
         // let tokenCommitment = hashedOnce.sha3(.keccak256)
         let timestamp = String(Int(Date().timeIntervalSince1970))
-        
-        var nodeReturnedPubKeyX:String = ""
-        var nodeReturnedPubKeyY:String = ""
         var publicAddress: String = ""
+        var lookupPubkeyX: String = ""
+        var lookupPubkeyY: String = ""
         
         self.logger.debug("RetrieveShares: ", privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, hashedOnce)
         
         return Promise<[String:String]>{ seal in
             
+            // Reject if not resolved in 30 seconds
+            after(.seconds(30)).done {
+                seal.reject(TorusError.timeout)
+            }
+            
+            // In case none of the nodes respond
+            conf.logHandler = { event in
+                switch event {
+                    case .waitOnMainThread:
+                        self.logger.info("PromiseKit: warning: `wait()` called on main thread!")
+                    case .pendingPromiseDeallocated:
+                        self.logger.info("PromiseKit: warning: pending promise deallocated")
+                        seal.reject(TorusError.unableToDerive)
+                    case .pendingGuaranteeDeallocated:
+                        self.logger.info("PromiseKit: warning: pending guarantee deallocated")
+                        seal.reject(TorusError.unableToDerive)
+                    case .cauterized (let error):
+                        self.logger.info("PromiseKit:cauterized-error: \(error)")
+                }
+            }
+            
             getPublicAddress(endpoints: endpoints, torusNodePubs: nodePubKeys, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true).then{ data -> Promise<[[String:String]]> in
                 publicAddress = data["address"] ?? ""
+                lookupPubkeyX = data["pub_key_X"]!.addLeading0sForLength64()
+                lookupPubkeyY = data["pub_key_Y"]!.addLeading0sForLength64()
                 return self.commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: hashedOnce)
-            }.then{ data -> Promise<[Int:[String:String]]> in
-                self.logger.info("retrieveShares: data after commitment request", data)
-                return self.retrieveIndividualNodeShare(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId)
-            }.then{ data -> Promise<[Int:String]> in
-                self.logger.trace("retrieveShares: data after retrieveIndividualNodeShare", data)
-                if let temp  = data.first{
-                    nodeReturnedPubKeyX = temp.value["pubKeyX"]!.addLeading0sForLength64()
-                    nodeReturnedPubKeyY = temp.value["pubKeyY"]!.addLeading0sForLength64()
-                }
-                return self.decryptIndividualShares(shares: data, privateKey: privateKey!.toHexString())
-            }.then{ data -> Promise<String> in
-                self.logger.trace("retrieveShares: data after decryptIndividualShares", data)
-                return self.lagrangeInterpolation(shares: data)
             }.then{ data -> Promise<(String, String, String)> in
-                
-                // Split key in 2 parts, X and Y
-                let publicKey = SECP256K1.privateToPublic(privateKey: Data.init(hex: data) , compressed: false)?.suffix(64) // take last 64
-                let pubKeyX = publicKey?.prefix(publicKey!.count/2).toHexString()
-                let pubKeyY = publicKey?.suffix(publicKey!.count/2).toHexString()
-                self.logger.trace("retrieveShares: private key rebuild", data, pubKeyX as Any, pubKeyY as Any)
-                
-                // Verify
-                if( pubKeyX == nodeReturnedPubKeyX && pubKeyY == nodeReturnedPubKeyY) {
-                    return Promise<(String, String, String)>.value((pubKeyX!, pubKeyY!, data)) //Tuple
-                }else{
-                    throw "could not derive private key"
-                }
+                self.logger.info("retrieveShares: data after commitment request", data)
+                return self.retrieveDecryptAndReconstuct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: (privateKey?.toHexString())!)
             }.then{ x, y, key in
                 return self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map{ ($0, key) } // Tuple
             }.done{ nonce, key in

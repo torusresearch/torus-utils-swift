@@ -13,6 +13,10 @@ public enum TorusError: Error{
     case decodingError
     case commitmentRequestFailed
     case decryptionFailed
+    case thresholdError
+    case promiseFulfilled
+    case timeout
+    case unableToDerive
 }
 
 extension TorusError: CustomDebugStringConvertible{
@@ -28,7 +32,22 @@ extension TorusError: CustomDebugStringConvertible{
             return "Decryption Failed"
         case .commitmentRequestFailed:
             return "commitment request failed"
+        case .thresholdError:
+            return "Threshold error"
+        case .promiseFulfilled:
+            return "Promise fulfilled"
+        case .timeout:
+            return "Timeout"
+        case .unableToDerive:
+            return "could not derive private key"
         }
-        
+    }
+    
+    static public func == (lhs: TorusError, rhs: TorusError) -> Bool {
+        guard type(of: lhs) == type(of: rhs) else { return false }
+        let error1 = lhs as NSError
+        let error2 = rhs as NSError
+        return error1.debugDescription == error2.debugDescription && "\(lhs)" == "\(rhs)"
     }
 }
+
