@@ -5,9 +5,6 @@ import PackageDescription
 
 let package = Package(
     name: "TorusUtils",
-    platforms: [
-        .iOS(.v12),
-    ],
     products: [
         .library(
             name: "TorusUtils",
