@@ -14,7 +14,7 @@ import CryptoSwift
 import BigInt
 import BestLogger
 
-@available(iOS 9.0, *)
+@available(iOS 12.0, *)
 public class TorusUtils{
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
     let nodePubKeys: Array<TorusNodePub>
