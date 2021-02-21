@@ -18,7 +18,6 @@ import BigInt
 import CryptoSwift
 import web3swift
 
-@available(iOS 12.0, *)
 extension TorusUtils {
     
     // MARK:- torus utils

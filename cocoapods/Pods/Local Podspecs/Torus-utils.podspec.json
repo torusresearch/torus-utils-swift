@@ -25,7 +25,7 @@
   ],
   "dependencies": {
     "Torus-fetchNodeDetails": [
-      "~> 0.1.0"
+      "~> 0.0.1"
     ],
     "PromiseKit/Foundation": [
       "~> 6.0"
