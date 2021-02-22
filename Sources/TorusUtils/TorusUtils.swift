@@ -65,7 +65,11 @@ public class TorusUtils{
             
         }.catch{err in
             self.logger.error("getPublicAddress: err: ", err)
-            seal.reject(err)
+            if let tmpError = err as? TorusError{
+                if(tmpError == TorusError.nodesUnavailable){
+                    seal.reject(TorusError.nodesUnavailable)
+                }
+            }
         }
         
         return tempPromise
@@ -95,55 +99,42 @@ public class TorusUtils{
         
         self.logger.debug("RetrieveShares: ", privateKey?.toHexString() as Any, publicKeyHex as Any, pubKeyX as Any, pubKeyY as Any, hashedOnce)
         
-        return Promise<[String:String]>{ seal in
-            
-            // Reject if not resolved in 30 seconds
-            after(.seconds(30)).done {
-                seal.reject(TorusError.timeout)
-            }
-            
-            // In case none of the nodes respond
-            conf.logHandler = { event in
-                switch event {
-                    case .waitOnMainThread:
-                        self.logger.info("PromiseKit: warning: `wait()` called on main thread!")
-                    case .pendingPromiseDeallocated:
-                        self.logger.info("PromiseKit: warning: pending promise deallocated")
-                        seal.reject(TorusError.unableToDerive)
-                    case .pendingGuaranteeDeallocated:
-                        self.logger.info("PromiseKit: warning: pending guarantee deallocated")
-                        seal.reject(TorusError.unableToDerive)
-                    case .cauterized (let error):
-                        self.logger.info("PromiseKit:cauterized-error: \(error)")
-                }
-            }
-            
-            getPublicAddress(endpoints: endpoints, torusNodePubs: nodePubKeys, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true).then{ data -> Promise<[[String:String]]> in
-                publicAddress = data["address"] ?? ""
-                lookupPubkeyX = data["pub_key_X"]!.addLeading0sForLength64()
-                lookupPubkeyY = data["pub_key_Y"]!.addLeading0sForLength64()
-                return self.commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: hashedOnce)
-            }.then{ data -> Promise<(String, String, String)> in
-                self.logger.info("retrieveShares: data after commitment request", data)
-                return self.retrieveDecryptAndReconstuct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: (privateKey?.toHexString())!)
-            }.then{ x, y, key in
-                return self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map{ ($0, key) } // Tuple
-            }.done{ nonce, key in
-                if(nonce != BigInt(0)) {
-                    let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
-                    let newKey = tempNewKey.modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
-                    self.logger.info(newKey)
-                    seal.fulfill(["privateKey": BigUInt(newKey).serialize().suffix(64).toHexString(), "publicAddress": publicAddress])
-                }
-                seal.fulfill(["privateKey":key, "publicAddress": publicAddress])
-                
-            }.catch{ err in
-                self.logger.error("retrieveShares: err: ",err)
-                seal.reject(err)
-            }
-            
+        let (tempPromise, seal) = Promise<[String:String]>.pending()
+        
+        // Reject if not resolved in 30 seconds
+        after(.seconds(300)).done {
+            seal.reject(TorusError.timeout)
         }
         
+        getPublicAddress(endpoints: endpoints, torusNodePubs: nodePubKeys, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true).then{ data -> Promise<[[String:String]]> in
+            publicAddress = data["address"] ?? ""
+            lookupPubkeyX = data["pub_key_X"]!.addLeading0sForLength64()
+            lookupPubkeyY = data["pub_key_Y"]!.addLeading0sForLength64()
+            return self.commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX!, pubKeyY: pubKeyY!, timestamp: timestamp, tokenCommitment: hashedOnce)
+        }.then{ data -> Promise<(String, String, String)> in
+            self.logger.info("retrieveShares: data after commitment request", data)
+            return self.retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: (privateKey?.toHexString())!)
+        }.then{ x, y, key in
+            return self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map{ ($0, key) } // Tuple
+        }.done{ nonce, key in
+            if(nonce != BigInt(0)) {
+                let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
+                let newKey = tempNewKey.modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
+                self.logger.info(newKey)
+                seal.fulfill(["privateKey": BigUInt(newKey).serialize().suffix(64).toHexString(), "publicAddress": publicAddress])
+            }
+            seal.fulfill(["privateKey":key, "publicAddress": publicAddress])
+            
+        }.catch{ err in
+            self.logger.error("retrieveShares: err: ",err)
+            seal.reject(err)
+        }.finally {
+            if(tempPromise.isPending){
+                seal.reject(TorusError.unableToDerive)
+            }
+        }
+        
+        return tempPromise
     }
     
 }
