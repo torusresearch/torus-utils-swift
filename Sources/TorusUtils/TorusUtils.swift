@@ -106,6 +106,8 @@ public class TorusUtils{
             seal.reject(TorusError.timeout)
         }
         
+        
+        
         getPublicAddress(endpoints: endpoints, torusNodePubs: nodePubKeys, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true).then{ data -> Promise<[[String:String]]> in
             publicAddress = data["address"] ?? ""
             lookupPubkeyX = data["pub_key_X"]!.addLeading0sForLength64()
