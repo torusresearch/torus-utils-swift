@@ -508,6 +508,7 @@ extension TorusUtils {
         var allowHostRequest = self.makeUrlRequest(url:  "https://signer.tor.us/api/allow")
         allowHostRequest.httpMethod = "GET"
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
+        allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
         URLSession.shared.dataTask(.promise, with: allowHostRequest).done{ data in
             // swallow
         }.catch{error in
