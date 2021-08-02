@@ -10,7 +10,7 @@ import Foundation
 public enum TorusError: Error{
     case apiRequestFailed
     case errInResponse(Any)
-    case decodingError
+    case decodingFailed
     case commitmentRequestFailed
     case decryptionFailed
     case thresholdError
@@ -28,7 +28,7 @@ extension TorusError: CustomDebugStringConvertible{
         switch self {
             case .apiRequestFailed:
                 return "API request failed or No response from the node"
-            case .decodingError:
+            case .decodingFailed:
                 return "JSON Decoding error"
             case .errInResponse(let str):
                 return "API response error \(str)"

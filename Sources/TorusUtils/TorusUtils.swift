@@ -85,7 +85,7 @@ public class TorusUtils{
             let privateKey = SECP256K1.generatePrivateKey(),
             let publicKey = SECP256K1.privateToPublic(privateKey: privateKey, compressed: false)?.suffix(64) // take last 64
         else {
-            seal.reject(TorusError.runtime("Failed to generate SECP256K1 keypair."))
+            seal.reject(TorusError.runtime("Unable to generate SECP256K1 keypair."))
             return promise
         }
         
