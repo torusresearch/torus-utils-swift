@@ -25,8 +25,7 @@ public class TorusUtils{
     }
     
     public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
-        
-        let (tempPromise, seal) = Promise<[String:String]>.pending()
+        let (promise, seal) = Promise<[String:String]>.pending()
         let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
         
         keyLookup.then{ lookupData -> Promise<[String: String]> in
@@ -38,7 +37,6 @@ public class TorusUtils{
                     // Do keylookup again
                     return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 }.then{ data -> Promise<[String: String]> in
-                    
                     return Promise<[String: String]>.value(data)
                 }
             }else{
@@ -48,10 +46,15 @@ public class TorusUtils{
             return self.getMetadata(dictionary: ["pub_key_X": data["pub_key_X"]!, "pub_key_Y": data["pub_key_Y"]!]).map{ ($0, data) } // Tuple
         }.done{ nonce, data in
             var newData = data
+            guard
+                let localPubkeyX = newData["pub_key_X"],
+                let localPubkeyY = newData["pub_key_Y"]
+            else { throw TorusError.runtime("Empty pubkey returned from getMetadata.") }
+            
             // Convert to BigInt for modulus
             let nonce2 = BigInt(nonce).modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
             if(nonce != BigInt(0)) {
-                let actualPublicKey = "04" + newData["pub_key_X"]!.addLeading0sForLength64() + newData["pub_key_Y"]!.addLeading0sForLength64()
+                let actualPublicKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
                 let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64())
                 let addedPublicKeys = self.combinePublicKeys(keys: [actualPublicKey, noncePublicKey!.toHexString()], compressed: false)
                 newData["address"] = self.publicKeyToAddress(key: addedPublicKeys)
@@ -62,18 +65,16 @@ public class TorusUtils{
             }else{
                 seal.fulfill(newData)
             }
-            
         }.catch{err in
             self.logger.error("getPublicAddress: err: ", err)
-            if let tmpError = err as? TorusError{
-                if(tmpError == TorusError.nodesUnavailable){
-                    seal.reject(TorusError.nodesUnavailable)
+            if let err = err as? TorusError{
+                if(err == TorusError.nodesUnavailable){
+                    seal.reject(err)
                 }
             }
         }
         
-        return tempPromise
-        
+        return promise
     }
     
     public func retrieveShares(endpoints : Array<String>, verifierIdentifier: String, verifierId:String, idToken: String, extraParams: Data) -> Promise<[String:String]>{
