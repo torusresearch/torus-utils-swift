@@ -19,6 +19,7 @@ public enum TorusError: Error{
     case unableToDerive
     case interpolationFailed
     case nodesUnavailable
+    case runtime(_ msg: String)
     case empty
 }
 
@@ -49,6 +50,8 @@ extension TorusError: CustomDebugStringConvertible{
                 return "One or more nodes unavailable"
             case .empty:
                 return ""
+            case .runtime(let msg):
+                return msg
         }
     }
     
