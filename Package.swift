@@ -13,7 +13,8 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/skywinder/web3swift", .branch("master")),
         .package(url: "https://github.com/rathishubham7/swift-logger", from:"0.0.1"),
-        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from:"0.1.0"),
+//        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from:"0.1.0"),
+        .package(path: "../fetch-node-details-swift"),
         .package(url: "https://github.com/PromiseKit/Foundation.git", from: "3.0.0"),
         .package(url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
     ],
