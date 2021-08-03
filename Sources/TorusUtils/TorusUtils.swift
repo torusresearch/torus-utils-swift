@@ -34,6 +34,10 @@ public class TorusUtils: AbstractTorusUtils{
         self.init(label: "Torus Utils", loglevel: .info, nodePubKeys: nodePubKeys )
     }
     
+    public convenience init(nodePubKeys: Array<TorusNodePub>, loglevel: BestLogger.Level){
+        self.init(label: "Torus Utils", loglevel: loglevel, nodePubKeys: nodePubKeys )
+    }
+    
     
     public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePub>){
         self.nodePubKeys = nodePubKeys
