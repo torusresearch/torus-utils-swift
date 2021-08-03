@@ -29,15 +29,6 @@
         }
       },
       {
-        "package": "FetchNodeDetails",
-        "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
-        "state": {
-          "branch": null,
-          "revision": "7d93d8c98d45c723d4836e9406282dda237e48cb",
-          "version": "0.1.2"
-        }
-      },
-      {
         "package": "PMKFoundation",
         "repositoryURL": "https://github.com/PromiseKit/Foundation.git",
         "state": {
@@ -84,11 +75,11 @@
       },
       {
         "package": "Web3swift",
-        "repositoryURL": "https://github.com/rathishubham7/web3swift",
+        "repositoryURL": "https://github.com/skywinder/web3swift",
         "state": {
-          "branch": null,
-          "revision": "95c8cb18bc8a664963f55e095318c1a180c3f5ec",
-          "version": "2.2.2"
+          "branch": "master",
+          "revision": "6eddd2c1d9072affd36d236f92a35ad79b6c559d",
+          "version": null
         }
       }
     ]
