@@ -49,7 +49,10 @@ func generateRandomEmail(of length: Int) -> String {
 func generateIdToken(email: String) throws -> String{
     let verifierPrivateKeyForSigning =
         """
-        PASTE PRIVATE KEY HERE
+        -----BEGIN PRIVATE KEY-----
+        MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCA3pdm53N0jlj3+7st1
+        kIxw9aogvHfbq09TlWKRFPGJjA==
+        -----END PRIVATE KEY-----
         """
     
     do{
@@ -72,3 +75,11 @@ func generateIdToken(email: String) throws -> String{
         throw error
     }
 }
+
+
+//key 2
+//
+//-----BEGIN PRIVATE KEY-----
+//MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCCTK9Ly1QItO9QLoX12
+//IJC5lTMiO+7eZXQDiYi8mGLMvg==
+//-----END PRIVATE KEY-----
