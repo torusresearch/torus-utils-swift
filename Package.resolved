@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "FetchNodeDetails",
+        "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
+        "state": {
+          "branch": "develop",
+          "revision": "92c50899f824040b6d22437db91e6b87e88a0605",
+          "version": null
+        }
+      },
+      {
         "package": "PMKFoundation",
         "repositoryURL": "https://github.com/PromiseKit/Foundation.git",
         "state": {

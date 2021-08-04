@@ -31,10 +31,11 @@ final class IntegrationTests: XCTestCase {
 //        IntegrationTests.endpoints = IntegrationTests.nodeDetails?.getTorusNodeEndpoints() ?? []
 //        IntegrationTests.nodePubKeys = IntegrationTests.nodeDetails?.getTorusNodePub() ?? []
             
+        // Faster logins by mocking data.
         IntegrationTests.endpoints = ROPSTEN_CONSTANTS.endpoints
         IntegrationTests.nodePubKeys = ROPSTEN_CONSTANTS.nodePubKeys
             
-        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, loglevel: .trace)
+        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, loglevel: .none)
     }
     
     func test_getPublicAddress(){
