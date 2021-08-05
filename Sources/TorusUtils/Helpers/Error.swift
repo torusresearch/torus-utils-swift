@@ -11,7 +11,7 @@ public enum TorusError: Error{
     case configurationError
     case apiRequestFailed
     case errInResponse(Any)
-    case decodingError
+    case decodingFailed
     case commitmentRequestFailed
     case decryptionFailed
     case thresholdError
@@ -20,6 +20,7 @@ public enum TorusError: Error{
     case unableToDerive
     case interpolationFailed
     case nodesUnavailable
+    case runtime(_ msg: String)
     case empty
 }
 
@@ -30,7 +31,7 @@ extension TorusError: CustomDebugStringConvertible{
                 return "SDK Configuration incorrect. Network is probably incorrect"
             case .apiRequestFailed:
                 return "API request failed or No response from the node"
-            case .decodingError:
+            case .decodingFailed:
                 return "JSON Decoding error"
             case .errInResponse(let str):
                 return "API response error \(str)"
@@ -52,6 +53,8 @@ extension TorusError: CustomDebugStringConvertible{
                 return "One or more nodes unavailable"
             case .empty:
                 return ""
+            case .runtime(let msg):
+                return msg
         }
     }
     
