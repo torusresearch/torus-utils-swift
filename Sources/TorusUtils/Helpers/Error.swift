@@ -8,6 +8,7 @@
 import Foundation
 
 public enum TorusError: Error{
+    case configurationError
     case apiRequestFailed
     case errInResponse(Any)
     case decodingFailed
@@ -26,6 +27,8 @@ public enum TorusError: Error{
 extension TorusError: CustomDebugStringConvertible{
     public var debugDescription: String{
         switch self {
+            case .configurationError:
+                return "SDK Configuration incorrect. Network is probably incorrect"
             case .apiRequestFailed:
                 return "API request failed or No response from the node"
             case .decodingFailed:

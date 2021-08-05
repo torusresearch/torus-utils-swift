@@ -536,9 +536,10 @@ extension TorusUtils {
         for (i, pr) in promisesArray.enumerated() {
             pr.done{ data, response in
                 // print("keyLookup", String(data: data, encoding: .utf8))
+                self.logger.trace(String(data: data, encoding: .utf8))
                 let decoder = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                 if(decoder == nil) { throw TorusError.decodingFailed }
-                //print(decoder)
+
                 let result = decoder!.result
                 let error = decoder?.error
                 if(error == nil){
@@ -549,7 +550,7 @@ extension TorusUtils {
                     resultArray[i] = ["err": "keyLookupfailed"]
                 }
                 
-                // print(resultArray[i])
+                
                 let lookupShares = resultArray.filter{ $0 != nil } // Nonnil elements
                 let keyResult = self.thresholdSame(arr: lookupShares, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
                 // print("threshold result", keyResult)

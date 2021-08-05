@@ -14,15 +14,38 @@ import CryptoSwift
 import BigInt
 import BestLogger
 
-public class TorusUtils{
+
+public class TorusUtils: AbstractTorusUtils{
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN|SECP256K1_CONTEXT_VERIFY))
-    let nodePubKeys: Array<TorusNodePub>
+    var nodePubKeys: Array<TorusNodePub>
+//    var endpoints: Array<String>
     let logger: BestLogger
     
-    public init(label: String = "Torus utils", loglevel: BestLogger.Level = .info, nodePubKeys: Array<TorusNodePub> = [TorusNodePub(_X: "4086d123bd8b370db29e84604cd54fa9f1aeb544dba1cc9ff7c856f41b5bf269", _Y: "fde2ac475d8d2796aab2dea7426bc57571c26acad4f141463c036c9df3a8b8e8"),TorusNodePub(_X: "1d6ae1e674fdc1849e8d6dacf193daa97c5d484251aa9f82ff740f8277ee8b7d", _Y: "43095ae6101b2e04fa187e3a3eb7fbe1de706062157f9561b1ff07fe924a9528"),TorusNodePub(_X: "fd2af691fe4289ffbcb30885737a34d8f3f1113cbf71d48968da84cab7d0c262", _Y: "c37097edc6d6323142e0f310f0c2fb33766dbe10d07693d73d5d490c1891b8dc"),TorusNodePub(_X: "e078195f5fd6f58977531135317a0f8d3af6d3b893be9762f433686f782bec58", _Y: "843f87df076c26bf5d4d66120770a0aecf0f5667d38aa1ec518383d50fa0fb88"),TorusNodePub(_X: "a127de58df2e7a612fd256c42b57bb311ce41fd5d0ab58e6426fbf82c72e742f", _Y: "388842e57a4df814daef7dceb2065543dd5727f0ee7b40d527f36f905013fa96")]){
+    public init(label: String, loglevel: BestLogger.Level = .none, nodePubKeys: Array<TorusNodePub>){
         self.logger = BestLogger(label: label, level: loglevel)
         self.nodePubKeys = nodePubKeys
     }
+    
+    public convenience init(){
+        self.init(label: "Torus Utils", loglevel: .info, nodePubKeys: [] )
+    }
+    
+    public convenience init(nodePubKeys: Array<TorusNodePub>){
+        self.init(label: "Torus Utils", loglevel: .info, nodePubKeys: nodePubKeys )
+    }
+    
+    public convenience init(nodePubKeys: Array<TorusNodePub>, loglevel: BestLogger.Level){
+        self.init(label: "Torus Utils", loglevel: loglevel, nodePubKeys: nodePubKeys )
+    }
+    
+    
+    public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePub>){
+        self.nodePubKeys = nodePubKeys
+    }
+    
+//    public func setEndpoints(endpoints: Array<String>){
+//        self.endpoints = endpoints
+//    }
     
     public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
         let (promise, seal) = Promise<[String:String]>.pending()
@@ -32,11 +55,15 @@ public class TorusUtils{
             let error = lookupData["err"]
             
             if(error != nil){
-                // Assign key to the user and return (wraped in a promise)
+                // Assign key to the user and return (wrapped in a promise)
                 return self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<[String:String]> in
                     // Do keylookup again
                     return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 }.then{ data -> Promise<[String: String]> in
+                    let error = data["err"]
+                    if(error != nil) {
+                        throw TorusError.configurationError
+                    }
                     return Promise<[String: String]>.value(data)
                 }
             }else{
@@ -71,6 +98,7 @@ public class TorusUtils{
                 if(err == TorusError.nodesUnavailable){
                     seal.reject(err)
                 }
+                seal.reject(tmpError)
             }
         }
         
