@@ -98,7 +98,7 @@ public class TorusUtils: AbstractTorusUtils{
                 if(err == TorusError.nodesUnavailable){
                     seal.reject(err)
                 }
-                seal.reject(tmpError)
+                seal.reject(err)
             }
         }
         
