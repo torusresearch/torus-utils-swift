@@ -3,7 +3,7 @@ import PromiseKit
 import FetchNodeDetails
 import CryptoSwift
 import BigInt
-import web3swift
+import web3
 import secp256k1
 import CryptorECC
 import JWTKit
