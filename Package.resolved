@@ -32,9 +32,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
-          "branch": "feat/argentweb3",
-          "revision": "512c74b46b42d2c433cfe357af4fce6b5f60ad11",
-          "version": null
+          "branch": null,
+          "revision": "fa5df65e45c4fc82940ee198520ace4f611946de",
+          "version": "1.0.0"
         }
       },
       {

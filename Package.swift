@@ -22,7 +22,7 @@ let package = Package(
         .package(name:"CryptorECC", url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.0.0"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", .branch("feat/argentweb3")),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", from: "1.0.0"),
         .package(name:"web3.swift", url: "https://github.com/argentlabs/web3.swift", from:"0.7.0"),
         .package(name:"secp256k1", url: "https://github.com/Boilertalk/secp256k1.swift", from: "0.1.0"),
     ],
