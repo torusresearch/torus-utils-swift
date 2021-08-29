@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
           "branch": "feat/argentweb3",
-          "revision": "94e8385fafe8ecd52465043c12e9da38a98f7fa2",
+          "revision": "512c74b46b42d2c433cfe357af4fce6b5f60ad11",
           "version": null
         }
       },
@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/vapor/jwt-kit.git",
         "state": {
           "branch": null,
-          "revision": "df7955305940ea0fcd1626a0a6d1a1556623f95e",
-          "version": "4.2.3"
+          "revision": "7a9a04df93e71de10fa2e8d6e9430dd0a7924643",
+          "version": "4.2.4"
         }
       },
       {
