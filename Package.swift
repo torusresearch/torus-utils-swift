@@ -14,9 +14,7 @@ let package = Package(
             targets: ["TorusUtils"]),
     ],
     dependencies: [
-        //        .package(url: "https://github.com/skywinder/web3swift", .branch("master")),
         .package(name:"BestLogger", url: "https://github.com/rathishubham7/swift-logger", from:"0.0.1"),
-        //        .package(name:"FetchNodeDetails", path: "../fetch-node-details-swift"),
         .package(name:"PromiseKit", url: "https://github.com/mxcl/PromiseKit.git", from: "6.0.0"),
         .package(name:"PMKFoundation", url: "https://github.com/PromiseKit/Foundation.git", from: "3.0.0"),
         .package(name:"CryptorECC", url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
