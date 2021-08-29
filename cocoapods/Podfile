@@ -1,13 +1,11 @@
 # Uncomment the next line to define a global platform for your project
- platform :ios, '10.0'
-
+ platform :ios, '11.0'
 target 'TestApplication' do
-  # Comment the next line if you don't want to use dynamic frameworks
   use_frameworks!
-  # pod 'Torus-fetchNodeDetails', :git=>'https://github.com/torusresearch/fetch-node-details-swift'
+  
+#  pod 'Torus-fetchNodeDetails', :git=>'https://github.com/torusresearch/fetch-node-details-swift'
   pod "Torus-utils",  :path => '../'
   # Pods for TestApplication
-  
   
   target 'TestApplicationTests' do
     # Pods for testing
