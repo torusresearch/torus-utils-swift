@@ -1,8 +1,8 @@
 {
   "name": "Torus-utils",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "platforms": {
-    "ios": "10.0"
+    "ios": "11.0"
   },
   "summary": "Retrieve user shares",
   "homepage": "https://github.com/torusresearch/torus-utils-swift",
@@ -17,7 +17,7 @@
   "module_name": "TorusUtils",
   "source": {
     "git": "https://github.com/torusresearch/torus-utils-swift.git",
-    "tag": "0.1.1"
+    "tag": "1.0.0"
   },
   "source_files": [
     "Sources/TorusUtils/*.{swift,json}",
@@ -25,7 +25,13 @@
   ],
   "dependencies": {
     "Torus-fetchNodeDetails": [
-      "~> 0.0.1"
+      "~> 1.0.0"
+    ],
+    "CryptoSwift": [
+      "~> 1.4.1"
+    ],
+    "secp256k1.swift": [
+      "~> 0.1.4"
     ],
     "PromiseKit/Foundation": [
       "~> 6.0"

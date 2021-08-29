@@ -11,7 +11,7 @@
         }
       },
       {
-        "package": "BlueECC",
+        "package": "CryptorECC",
         "repositoryURL": "https://github.com/IBM-Swift/BlueECC.git",
         "state": {
           "branch": null,
@@ -29,7 +29,7 @@
         }
       },
       {
-        "package": "fetch-node-details-swift",
+        "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
           "branch": "feat/argentweb3",
@@ -38,7 +38,7 @@
         }
       },
       {
-        "package": "Foundation",
+        "package": "PMKFoundation",
         "repositoryURL": "https://github.com/PromiseKit/Foundation.git",
         "state": {
           "branch": null,
@@ -47,7 +47,7 @@
         }
       },
       {
-        "package": "generic-json-swift",
+        "package": "GenericJSON",
         "repositoryURL": "https://github.com/zoul/generic-json-swift",
         "state": {
           "branch": null,
@@ -65,7 +65,16 @@
         }
       },
       {
-        "package": "secp256k1.swift",
+        "package": "PromiseKit",
+        "repositoryURL": "https://github.com/mxcl/PromiseKit.git",
+        "state": {
+          "branch": null,
+          "revision": "d2f7ba14bcdc45e18f4f60ad9df883fb9055f081",
+          "version": "6.15.3"
+        }
+      },
+      {
+        "package": "secp256k1",
         "repositoryURL": "https://github.com/Boilertalk/secp256k1.swift",
         "state": {
           "branch": null,
@@ -83,7 +92,7 @@
         }
       },
       {
-        "package": "swift-logger",
+        "package": "BestLogger",
         "repositoryURL": "https://github.com/rathishubham7/swift-logger",
         "state": {
           "branch": null,
