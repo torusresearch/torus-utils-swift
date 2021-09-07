@@ -32,9 +32,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
-          "branch": null,
-          "revision": "fa5df65e45c4fc82940ee198520ace4f611946de",
-          "version": "1.0.0"
+          "branch": "feat/oslog",
+          "revision": "6a4ac7f5a0b437b0d045069e25a9bc5f0e910d99",
+          "version": null
         }
       },
       {
