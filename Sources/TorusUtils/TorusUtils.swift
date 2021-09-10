@@ -8,17 +8,22 @@ import FetchNodeDetails
 import web3
 import PromiseKit
 import secp256k1
-import os
+import OSLog
 import BigInt
 
+@available(macOSApplicationExtension 10.12, *)
+var utilsLogLevel = OSLogType.default
+
+@available(macOS 10.12, *)
 public class TorusUtils: AbstractTorusUtils{
     
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     
     var nodePubKeys: Array<TorusNodePub>
     
-    public init(nodePubKeys: Array<TorusNodePub>){
+    public init(nodePubKeys: Array<TorusNodePub>, loglevel: OSLogType = .default){
         self.nodePubKeys = nodePubKeys
+        utilsLogLevel = loglevel
     }
         
     // set pubkeys later
@@ -81,7 +86,7 @@ public class TorusUtils: AbstractTorusUtils{
                 seal.fulfill(newData)
             }
         }.catch{err in
-            os_log("%s", log: Log.retrieveShares, type: .debug, err.localizedDescription)
+            os_log("%s", log: Log.core, type: .debug, "\(err)")
             if let err = err as? TorusError{
                 if(err == TorusError.nodesUnavailable){
                     seal.reject(err)
@@ -118,7 +123,7 @@ public class TorusUtils: AbstractTorusUtils{
         var lookupPubkeyX: String = ""
         var lookupPubkeyY: String = ""
         
-        os_log("Pubkeys: %s, %s, %s, %s", log: Log.retrieveShares, type: .debug, publicKeyHex, pubKeyX, pubKeyY, hashedToken)
+        os_log("Pubkeys: %s, %s, %s, %s", log: Log.core, type: .debug, publicKeyHex, pubKeyX, pubKeyY, hashedToken)
         
         // Reject if not resolved in 30 seconds
         after(.seconds(300)).done {
@@ -135,7 +140,7 @@ public class TorusUtils: AbstractTorusUtils{
             lookupPubkeyY = localPubkeyY
             return self.commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         }.then{ data -> Promise<(String, String, String)> in
-            os_log("retrieveShares - data after commitment request: %@",  log: Log.retrieveShares, type: .info,  data)
+            os_log("retrieveShares - data after commitment request: %@",  log: Log.core, type: .info,  data)
             return self.retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
         }.then{ x, y, key in
             return self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map{ ($0, key) } // Tuple
@@ -143,16 +148,16 @@ public class TorusUtils: AbstractTorusUtils{
             if(nonce != BigInt(0)) {
                 let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
                 let newKey = tempNewKey.modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
-                os_log("%@",  log: Log.retrieveShares, type: .info, newKey.description)
+                os_log("%@",  log: Log.core, type: .info, newKey.description)
                 seal.fulfill(["privateKey": BigUInt(newKey).serialize().suffix(64).toHexString(), "publicAddress": publicAddress])
             }
             seal.fulfill(["privateKey":key, "publicAddress": publicAddress])
         }.catch{ err in
-            os_log("Error: %@",  log: Log.retrieveShares, type: .error, err.localizedDescription)
+            os_log("Error: %@",  log: Log.core, type: .error, err.localizedDescription)
             seal.reject(err)
         }.finally {
             if(promise.isPending){
-                os_log("Error: %@",  log: Log.retrieveShares, type: .error, TorusError.unableToDerive.debugDescription)
+                os_log("Error: %@",  log: Log.core, type: .error, TorusError.unableToDerive.debugDescription)
                 seal.reject(TorusError.unableToDerive)
             }
         }
