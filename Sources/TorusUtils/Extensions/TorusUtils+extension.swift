@@ -58,7 +58,7 @@ extension TorusUtils {
         var hashmap = [T: Int]()
         for (_, value) in arr.enumerated() {
             if let _ = hashmap[value] {
-                hashmap[value] += 1
+                hashmap[value]! += 1
             } else {
                 hashmap[value] = 1
             }
@@ -115,7 +115,7 @@ extension TorusUtils {
         }.done { data in
             self.logger.info("getMetadata:", data)
             guard
-                let msg: String = data["message"],
+                let msg: String = data["message"] as? String,
                 let ret = BigUInt(msg, radix: 16)
             else {
                 throw TorusError.decodingFailed
@@ -505,15 +505,15 @@ extension TorusUtils {
             let nodeIndex = el.key
 
             guard
-                let k = el.value["ephermalPublicKey"],
-                let ephermalPublicKey = k.strip04Prefix(),
-                let ephermalPublicKeyBytes = ephermalPublicKey.hexa,
-                var ephermOne = ephermalPublicKeyBytes.prefix(32),
-                var ephermTwo = ephermalPublicKeyBytes.suffix(32)
+                let k = el.value["ephermalPublicKey"]
             else {
                 seal.reject(TorusError.decodingFailed)
                 break
             }
+            let ephermalPublicKey = k.strip04Prefix()
+            let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+            var ephermOne = ephermalPublicKeyBytes.prefix(32)
+            var ephermTwo = ephermalPublicKeyBytes.suffix(32)
             // Reverse because of C endian array storage
             ephermOne.reverse()
             ephermTwo.reverse()
@@ -523,12 +523,17 @@ extension TorusUtils {
             guard
                 // Calculate g^a^b, i.e., Shared Key
                 let data = Data(hexString: privateKey),
-                let sharedSecret = self.ecdh(
-                    pubKey: ephemPubKey, privateKey: data),
-                let sharedSecretData = sharedSecret.data,
-                let sharedSecretPrefix = self.tupleToArray(sharedSecretData).prefix(32),
-                let reversedSharedSecret = sharedSecretPrefix.reversed(),
-                // print(sharedSecretPrefix.hexa, reversedSharedSecret.hexa)
+                let sharedSecret = self.ecdh(pubKey: ephemPubKey, privateKey: data)
+            else {
+                seal.reject(TorusError.decryptionFailed)
+                break
+            }
+            let sharedSecretData = sharedSecret.data
+            let sharedSecretPrefix = self.tupleToArray(sharedSecretData).prefix(32)
+            let reversedSharedSecret = sharedSecretPrefix.reversed()
+            // print(sharedSecretPrefix.hexa, reversedSharedSecret.hexa)
+
+            guard
                 let share = el.value["share"]?.fromBase64()?.hexa,
                 let iv = el.value["iv"]?.hexa
             else {
@@ -574,8 +579,8 @@ extension TorusUtils {
             }
             self.lagrangeInterpolation(shares: sharesToInterpolate).done { data -> Void in
                 // Split key in 2 parts, X and Y
-                let finalPrivateKey = data.web3.hexData!
                 guard
+                    let finalPrivateKey = data.web3.hexData,
                     let publicKey = SECP256K1.privateToPublic(privateKey: finalPrivateKey)?.subdata(
                         in: 1..<65)
                 else {
@@ -643,7 +648,13 @@ extension TorusUtils {
                         lower = (lower * temp).modulus(secp256k1N)
                     }
                 }
-                var delta = (upper * (lower.inverse(secp256k1N)!)).modulus(secp256k1N)
+                guard
+                    let inv = lower.inverse(secp256k1N)
+                else {
+                    seal.reject(TorusError.decryptionFailed)
+                    return
+                }
+                var delta = (upper * inv).modulus(secp256k1N)
                 delta = (delta * share).modulus(secp256k1N)
                 secret = BigUInt((BigInt(secret) + delta).modulus(secp256k1N))
                 sharesDecrypt += 1
@@ -667,10 +678,15 @@ extension TorusUtils {
 
         // Enode data
         let encoder = JSONEncoder()
-        let rpcdata = try! encoder.encode(
-            JSONRPCrequest(
-                method: "VerifierLookupRequest",
-                params: ["verifier": verifier, "verifier_id": verifierId]))
+        guard
+            let rpcdata = try? encoder.encode(
+                JSONRPCrequest(
+                    method: "VerifierLookupRequest",
+                    params: ["verifier": verifier, "verifier_id": verifierId]))
+        else {
+            seal.reject(TorusError.decodingFailed)
+            return tempPromise
+        }
 
         // allowHost = 'https://signer.tor.us/api/allow'
         var allowHostRequest = self.makeUrlRequest(url: "https://signer.tor.us/api/allow")
@@ -684,7 +700,7 @@ extension TorusUtils {
         }
 
         // Create Array of URLRequest Promises
-        var promisesArray = [Promise<(data: Data, response: URLResponse)>]()
+        var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
             let rq = self.makeUrlRequest(url: el)
             promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
@@ -694,22 +710,31 @@ extension TorusUtils {
         var resultArray = Array<[String: String]?>.init(repeating: nil, count: promisesArray.count)
 
         for (i, pr) in promisesArray.enumerated() {
-            pr.done { data, _ in
+            pr.done { data, response in
                 // print("keyLookup", String(data: data, encoding: .utf8))
                 self.logger.trace(String(data: data, encoding: .utf8))
-                let decoder = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                if decoder == nil {
+
+
+                guard
+                    let decoder = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                else {
                     throw TorusError.decodingFailed
                 }
 
-                let result = decoder!.result
-                let error = decoder?.error
-                if error == nil {
-                    let decodedResult = result as! [String: [[String: String]]]
-                    let keys = decodedResult["keys"]![0] as [String: String]
-                    resultArray[i] = keys // Encode the result and error into string and push to array
-                } else {
+                let result = decoder.result
+                let error = decoder.error
+                if let _ = error {
                     resultArray[i] = ["err": "keyLookupfailed"]
+                } else {
+                    guard
+                        let decodedResult = result as? [String: [[String: String]]],
+                        let k = decodedResult["keys"]
+
+                    else {
+                        throw TorusError.decodingFailed
+                    }
+                    let keys = k[0] as [String: String]
+                    resultArray[i] = keys
                 }
 
                 let lookupShares = resultArray.filter {
@@ -718,10 +743,12 @@ extension TorusUtils {
                 let keyResult = self.thresholdSame(
                     arr: lookupShares, threshold: Int(endpoints.count / 2) + 1) // Check if threshold is satisfied
                 // print("threshold result", keyResult)
-                if keyResult != nil, !tempPromise.isFulfilled {
+
+                if(keyResult != nil && !tempPromise.isFulfilled)  {
                     self.logger.trace("keyLookup: fulfill: ", keyResult!!)
                     seal.fulfill(keyResult!!)
                 }
+
             }.catch { error in
                 let tmpError = error as NSError
                 let userInfo = tmpError.userInfo as [String: Any]
@@ -770,11 +797,21 @@ extension TorusUtils {
                 } else {
                     // Fallback on earlier versions
                 }
-                let index = newEndpoints2.firstIndex(of: endpoint)!
+                guard
+                    let index = newEndpoints2.firstIndex(of: endpoint)
+                else {
+                    seal.reject(TorusError.decodingFailed)
+                    return
+                }
                 self.logger.trace("KeyAssign: i: endpoint: ", index, endpoint)
                 let SignerObject = JSONRPCrequest(
                     method: "KeyAssign", params: ["verifier": verifier, "verifier_id": verifierId])
-                let rpcdata = try! encoder.encode(SignerObject)
+                guard
+                    let rpcdata = try? encoder.encode(SignerObject)
+                else {
+                    seal.reject(TorusError.decodingFailed)
+                    return
+                }
                 var request = self.makeUrlRequest(url: "https://signer.tor.us/api/sign")
                 request.addValue(
                     torusNodePubs[index].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
@@ -804,7 +841,12 @@ extension TorusUtils {
                     } else {
                         // Fallback on earlier versions
                     }
-                    let newData = try! encoder.encode(keyassignRequest)
+                    guard
+                        let newData = try? encoder.encode(keyassignRequest)
+                    else{
+                        throw TorusError.decodingFailed
+                    }
+           
                     self.logger.trace(
                         "KeyAssign: requestToKeyAssign: ", String(decoding: newData, as: UTF8.self))
 
@@ -815,7 +857,11 @@ extension TorusUtils {
                         "KeyAssign: responseFromKeyAssignAPI: ",
                         String(decoding: data, as: UTF8.self))
                     // let jsonData = try JSONSerialization.jsonObject(with: data) as! [String: Any]
-                    let decodedData = try! JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    guard
+                        let decodedData = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    else{
+                        throw TorusError.decodingFailed
+                    }
                     self.logger.debug("keyAssign: fullfill: ", decodedData)
                     if !tempPromise.isFulfilled {
                         seal.fulfill(decodedData)

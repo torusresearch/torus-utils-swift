@@ -10,6 +10,11 @@ import PromiseKit
 import secp256k1
 import BigInt
 import BestLogger
+import OSLog
+
+@available(macOSApplicationExtension 10.12, *)
+var utilsLogType = OSLogType.default
+
 
 public class TorusUtils: AbstractTorusUtils{
     
