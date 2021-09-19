@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/attaswift/BigInt",
         "state": {
           "branch": null,
-          "revision": "889a1ecacd73ccc189c5cb29288048f186c44ed9",
-          "version": "5.2.1"
+          "revision": "0ed110f7555c34ff468e72e1686e59721f2b0da6",
+          "version": "5.3.0"
         }
       },
       {
@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
           "branch": "feat/oslog",
-          "revision": "6a4ac7f5a0b437b0d045069e25a9bc5f0e910d99",
+          "revision": "fea8f6b275b07ae11bf98f3fe30135b75ea90b5c",
           "version": null
         }
       },
