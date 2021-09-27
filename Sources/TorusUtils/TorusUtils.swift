@@ -86,7 +86,7 @@ public class TorusUtils: AbstractTorusUtils{
                 seal.fulfill(newData)
             }
         }.catch{err in
-            log("%s", log: TorusUtilsLogger.core, type: .debug, "\(err)")
+            os_log("%s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(err)")
             if let err = err as? TorusError{
                 if(err == TorusError.nodesUnavailable){
                     seal.reject(err)
@@ -123,7 +123,7 @@ public class TorusUtils: AbstractTorusUtils{
         var lookupPubkeyX: String = ""
         var lookupPubkeyY: String = ""
         
-        // log("Pubkeys: %s, %s, %s, %s", log: TorusUtilsLogger.core, type: .debug, publicKeyHex, pubKeyX, pubKeyY, hashedToken)
+        // os_log("Pubkeys: %s, %s, %s, %s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, publicKeyHex, pubKeyX, pubKeyY, hashedToken)
         
         // Reject if not resolved in 30 seconds
         after(.seconds(300)).done {
