@@ -23,15 +23,15 @@ func getTorusLogger(log: OSLog = .default, type: OSLogType = .default) -> OSLog 
     return logCheck
 }
 
-@available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
-func log(_ message: StaticString, dso: UnsafeRawPointer? = #dsohandle, log: OSLog = .default, type: OSLogType = .default, _ args: CVarArg...){
-    var logCheck: OSLog
-    if(utilsLogType.rawValue <= type.rawValue){
-        logCheck = log
-    }else{
-        logCheck = TorusUtilsLogger.inactiveLog
-    }
-    
-    // TODO: fix the variadic parameter limitation is swift
-    os_log(message, dso: dso, log: logCheck, type: type, args)
-}
+//@available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
+//func log(_ message: StaticString, dso: UnsafeRawPointer? = #dsohandle, log: OSLog = .default, type: OSLogType = .default, _ args: CVarArg...){
+//    var logCheck: OSLog
+//    if(utilsLogType.rawValue <= type.rawValue){
+//        logCheck = log
+//    }else{
+//        logCheck = TorusUtilsLogger.inactiveLog
+//    }
+//    
+//    // TODO: fix the variadic parameter limitation in swift
+//    os_log(message, dso: dso, log: logCheck, type: type, args)
+//}

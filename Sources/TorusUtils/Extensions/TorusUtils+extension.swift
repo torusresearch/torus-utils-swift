@@ -364,7 +364,7 @@ extension TorusUtils {
                 if( pubKeyX == lookupPubkeyX && pubKeyY == lookupPubkeyY) {
                     seal.fulfill((pubKeyX, pubKeyY, data))
                 }else{
-                    log("retrieveDecryptAndReconstuct: verification failed", log: TorusUtilsLogger.core, type: .error)
+                    os_log("retrieveDecryptAndReconstuct: verification failed", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
                 }
             }.catch{err in
                 os_log("retrieveDecryptAndReconstuct: lagrangeInterpolation: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, err.localizedDescription)

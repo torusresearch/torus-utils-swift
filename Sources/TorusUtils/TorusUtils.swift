@@ -140,7 +140,7 @@ public class TorusUtils: AbstractTorusUtils{
             lookupPubkeyY = localPubkeyY
             return self.commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         }.then{ data -> Promise<(String, String, String)> in
-            log("retrieveShares - data after commitment request: %@",  log: TorusUtilsLogger.core, type: .info,  data)
+            os_log("retrieveShares - data after commitment request: %@",  log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info,  data)
             
             return self.retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
         }.then{ x, y, key in
@@ -149,16 +149,16 @@ public class TorusUtils: AbstractTorusUtils{
             if(nonce != BigInt(0)) {
                 let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
                 let newKey = tempNewKey.modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
-                log("%@",  log: TorusUtilsLogger.core, type: .info, newKey.description)
+                os_log("%@",  log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
                 seal.fulfill(["privateKey": BigUInt(newKey).serialize().suffix(64).toHexString(), "publicAddress": publicAddress])
             }
             seal.fulfill(["privateKey":key, "publicAddress": publicAddress])
         }.catch{ err in
-            log("Error: %@",  log: TorusUtilsLogger.core, type: .error, err.localizedDescription)
+            os_log("Error: %@",  log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, err.localizedDescription)
             seal.reject(err)
         }.finally {
             if(promise.isPending){
-                log("Error: %@",  log: TorusUtilsLogger.core, type: .error, TorusError.unableToDerive.debugDescription)
+                os_log("Error: %@",  log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, TorusError.unableToDerive.debugDescription)
                 seal.reject(TorusError.unableToDerive)
             }
         }
