@@ -26,9 +26,9 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: [.product(name: "FetchNodeDetails", package: "FetchNodeDetails"), "CryptoSwift", "web3.swift", "CryptorECC", "secp256k1", "PMKFoundation", "PromiseKit"]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "web3.swift", "CryptorECC", "secp256k1", "PMKFoundation", "PromiseKit"]),
         .testTarget(
             name: "TorusUtilsTests",
-            dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit"), .product(name: "FetchNodeDetails", package: "FetchNodeDetails"), "web3.swift", .product(name: "PromiseKit", package: "PromiseKit"), "PMKFoundation", "CryptorECC"]),
+            dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "web3.swift", .product(name: "PromiseKit", package: "PromiseKit"), "PMKFoundation", "CryptorECC"]),
     ]
 )
