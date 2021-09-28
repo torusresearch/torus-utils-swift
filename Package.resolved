@@ -32,9 +32,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
-          "branch": "feat/oslog",
-          "revision": "fea8f6b275b07ae11bf98f3fe30135b75ea90b5c",
-          "version": null
+          "branch": null,
+          "revision": "9ca24bd5ade37d8075c1261e370c932235dfd984",
+          "version": "1.1.0"
         }
       },
       {
@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/vapor/jwt-kit.git",
         "state": {
           "branch": null,
-          "revision": "7a9a04df93e71de10fa2e8d6e9430dd0a7924643",
-          "version": "4.2.4"
+          "revision": "846998c28d5c024137b61b8d788e2e7d21b16d08",
+          "version": "4.2.5"
         }
       },
       {
@@ -87,17 +87,8 @@
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
           "branch": null,
-          "revision": "3bea268b223651c4ab7b7b9ad62ef9b2d4143eb6",
-          "version": "1.1.6"
-        }
-      },
-      {
-        "package": "BestLogger",
-        "repositoryURL": "https://github.com/rathishubham7/swift-logger",
-        "state": {
-          "branch": null,
-          "revision": "e1e2fa0a6ee9f572432835b70f980a8b36449575",
-          "version": "0.0.3"
+          "revision": "127d3745c37b5705e4bc8d16c7951c48dcc3332c",
+          "version": "2.0.0"
         }
       },
       {
