@@ -14,7 +14,6 @@ Pod::Spec.new do |spec|
   spec.dependency 'CryptoSwift', '~> 1.4.1'
   spec.dependency 'secp256k1.swift', '~> 0.1.4'
   spec.dependency 'PromiseKit/Foundation', '~> 6.0'
-  spec.dependency 'BestLogger', '~> 0.0.1'
   spec.pod_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
   spec.user_target_xcconfig = { 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'arm64' }
 end

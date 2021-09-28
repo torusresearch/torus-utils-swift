@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/attaswift/BigInt",
         "state": {
           "branch": null,
-          "revision": "889a1ecacd73ccc189c5cb29288048f186c44ed9",
-          "version": "5.2.1"
+          "revision": "0ed110f7555c34ff468e72e1686e59721f2b0da6",
+          "version": "5.3.0"
         }
       },
       {
@@ -32,9 +32,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift",
         "state": {
-          "branch": null,
-          "revision": "fa5df65e45c4fc82940ee198520ace4f611946de",
-          "version": "1.0.0"
+          "branch": "feat/oslog",
+          "revision": "fea8f6b275b07ae11bf98f3fe30135b75ea90b5c",
+          "version": null
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/mxcl/PromiseKit.git",
         "state": {
           "branch": null,
-          "revision": "d2f7ba14bcdc45e18f4f60ad9df883fb9055f081",
-          "version": "6.15.3"
+          "revision": "2ff97931d2721ecae9f94d8cbf4cf853a7d79180",
+          "version": "6.16.0"
         }
       },
       {
