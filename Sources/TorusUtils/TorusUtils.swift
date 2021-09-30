@@ -32,6 +32,8 @@ public class TorusUtils: AbstractTorusUtils{
     }
     
     
+    /// Set the expected public keys of the torus nodes.
+    /// - Parameter nodePubKeys: An array of the public keys.
     public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePub>){
         self.nodePubKeys = nodePubKeys
     }
@@ -40,6 +42,14 @@ public class TorusUtils: AbstractTorusUtils{
 //        self.endpoints = endpoints
 //    }
     
+    /// Retrive the public address of a user from the torus nodes, given the user's unique id.
+    /// - Parameters:
+    ///   - endpoints: Endpoints of the torus nodes.
+    ///   - torusNodePubs: The expected public keys of the torus nodes.
+    ///   - verifier: Name of the verifier to be used.
+    ///   - verifierId: Unique ID of the user.
+    ///   - isExtended: Whether to returned extended information. If set to false, only the `address` will be returned.
+    /// - Returns: A dictionary that should contain at least a `address` field.
     public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
         let (promise, seal) = Promise<[String:String]>.pending()
         let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
@@ -98,6 +108,14 @@ public class TorusUtils: AbstractTorusUtils{
         return promise
     }
     
+    /// Retrive shares from the torus nodes given a set of credentials, inculding the user's unique id and the user's token.
+    /// - Parameters:
+    ///   - endpoints: Endpoints of the torus nodes.
+    ///   - verifierIdentifier: Name of the verifier to be used.
+    ///   - verifierId: Unique ID of the user.
+    ///   - idToken: Token retrieved from login flow for authentication.
+    ///   - extraParams: Extra params to pass to the verifier.
+    /// - Returns: A dictionary that should contain at least a `privateKey` and a `publicAddress` field.
     public func retrieveShares(endpoints : Array<String>, verifierIdentifier: String, verifierId:String, idToken: String, extraParams: Data) -> Promise<[String:String]>{
         let (promise, seal) = Promise<[String:String]>.pending()
         
