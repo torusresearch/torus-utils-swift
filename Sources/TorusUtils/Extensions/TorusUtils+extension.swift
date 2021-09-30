@@ -329,13 +329,13 @@ extension TorusUtils {
                 break
             }
             let ephermalPublicKey = k.strip04Prefix()
-            let ephermalPublicKeyBytes = ephermalPublicKey?.hexa
-            var ephermOne = ephermalPublicKeyBytes?.prefix(32)
-            var ephermTwo = ephermalPublicKeyBytes?.suffix(32)
+            let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+            var ephermOne = ephermalPublicKeyBytes.prefix(32)
+            var ephermTwo = ephermalPublicKeyBytes.suffix(32)
             // Reverse because of C endian array storage
-            ephermOne?.reverse(); ephermTwo?.reverse();
-            ephermOne?.append(contentsOf: ephermTwo!)
-            let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne!)))
+            ephermOne.reverse(); ephermTwo.reverse();
+            ephermOne.append(contentsOf: ephermTwo)
+            let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
 
             guard
                     // Calculate g^a^b, i.e., Shared Key
@@ -345,7 +345,7 @@ extension TorusUtils {
                 seal.reject(TorusError.decryptionFailed)
                 break
             }
-            let sharedSecretData = sharedSecret!.data
+            let sharedSecretData = sharedSecret.data
             let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
             let reversedSharedSecret = sharedSecretPrefix.reversed()
             // print(sharedSecretPrefix.hexa, reversedSharedSecret.hexa)
@@ -364,7 +364,7 @@ extension TorusUtils {
             
             do{
                 // AES-CBCblock-256
-                let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv!), padding: .pkcs7)
+                let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
                 let decrypt = try aes.decrypt(share)
                 result[nodeIndex] = decrypt.hexa
             }catch{
