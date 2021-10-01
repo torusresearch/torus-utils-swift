@@ -62,8 +62,14 @@ public class TorusUtils: AbstractTorusUtils{
             }else{
                 return Promise<[String: String]>.value(lookupData)
             }
-        }.then{ data in
-            return self.getMetadata(dictionary: ["pub_key_X": data["pub_key_X"]!, "pub_key_Y": data["pub_key_Y"]!]).map{ ($0, data) } // Tuple
+        }.then{ data -> Promise<(BigUInt, [String: String])> in
+            guard
+                let pubKeyX = data["pub_key_X"],
+                let pubKeyY = data["pub_key_Y"]
+            else {
+                throw TorusError.decodingFailed
+            }
+            return self.getMetadata(dictionary: ["pub_key_X": pubKeyX, "pub_key_Y": pubKeyY]).map{ ($0, data) } // Tuple
         }.done{ nonce, data in
             var newData = data
             guard
@@ -75,8 +81,10 @@ public class TorusUtils: AbstractTorusUtils{
             let nonce2 = BigInt(nonce).modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
             if(nonce != BigInt(0)) {
                 let actualPublicKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
-                let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64())
-                let addedPublicKeys = self.combinePublicKeys(keys: [actualPublicKey, noncePublicKey!.toHexString()], compressed: false)
+                guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
+                    throw TorusError.decryptionFailed
+                }
+                let addedPublicKeys = self.combinePublicKeys(keys: [actualPublicKey, noncePublicKey.toHexString()], compressed: false)
                 newData["address"] = self.publicKeyToAddress(key: addedPublicKeys)
             }
             
