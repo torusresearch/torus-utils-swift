@@ -45,8 +45,13 @@ extension TorusUtils {
         return combinations(elements: ArraySlice(elements), k: k)
     }
     
-    func makeUrlRequest(url: String) -> URLRequest {
-        var rq = URLRequest(url: URL(string: url)!)
+    func makeUrlRequest(url: String) throws -> URLRequest {
+        guard
+            let url = URL(string: url)
+        else {
+            throw TorusError.decodingFailed
+        }
+        var rq = URLRequest(url: url)
         rq.httpMethod = "POST"
         rq.addValue("application/json", forHTTPHeaderField: "Content-Type")
         rq.addValue("application/json", forHTTPHeaderField: "Accept")
@@ -104,8 +109,7 @@ extension TorusUtils {
             seal.reject(TorusError.runtime("Unable to serialize dictionary into JSON."))
             return promise
         }
-
-        let request = self.makeUrlRequest(url: "https://metadata.tor.us/get")
+        let request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
         let task = URLSession.shared.uploadTask(.promise, with: request, from: encoded)
         task.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
@@ -147,13 +151,19 @@ extension TorusUtils {
         
         // Build promises array
         var requestPromises = Array<Promise<(data: Data, response: URLResponse)> >()
-        for el in endpoints {
-            let rq = self.makeUrlRequest(url: el);
-            requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
-        }
+       
         
         // Return promise
         let (promise, seal) = Promise<(String, String, String)>.pending()
+        for el in endpoints {
+            do {
+                let rq = try self.makeUrlRequest(url: el)
+                requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+            } catch {
+                seal.reject(error)
+                return promise
+            }
+        }
         var globalCount = 0
         var shareResponses = Array<[String:String]?>.init(repeating: nil, count: requestPromises.count)
         var resultArray = [Int:[String:String]]()
@@ -257,8 +267,13 @@ extension TorusUtils {
         // Build promises array
         var requestPromises = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
-            let rq = self.makeUrlRequest(url: el);
-            requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+            do {
+                let rq = try self.makeUrlRequest(url: el);
+                requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+            } catch {
+                seal.reject(error)
+                return promise
+            }
         }
         
         // Array to store intermediate results
@@ -283,7 +298,15 @@ extension TorusUtils {
                 
                 let lookupShares = resultArrayStrings.filter{ $0 as? String != nil } // Nonnil elements
                 if(lookupShares.count >= Int(endpoints.count/4)*3+1 && !promise.isFulfilled){
-                    let nodeSignatures = resultArrayObjects.compactMap{ $0 }.map{return $0.result as! [String:String]}
+                    let nodeSignatures = try resultArrayObjects.compactMap{ $0 }.map{ (a: JSONRPCresponse) throws -> [String: String] in
+                        guard
+                            let r = a.result as? [String:String]
+                        else {
+                            throw TorusError.decodingFailed
+                        }
+                        return r
+                        
+                    }
                     os_log("commitmentRequest - nodeSignatures: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, nodeSignatures)
                     seal.fulfill(nodeSignatures)
                 }
@@ -490,7 +513,7 @@ extension TorusUtils {
         }
 
         // allowHost = 'https://signer.tor.us/api/allow'
-        var allowHostRequest = self.makeUrlRequest(url:  "https://signer.tor.us/api/allow")
+        var allowHostRequest = try! self.makeUrlRequest(url:  "https://signer.tor.us/api/allow")
         allowHostRequest.httpMethod = "GET"
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
@@ -503,8 +526,13 @@ extension TorusUtils {
         // Create Array of URLRequest Promises
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
-            let rq = self.makeUrlRequest(url: el);
-            promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+            do {
+                let rq = try self.makeUrlRequest(url: el)
+                promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+            } catch {
+                seal.reject(error)
+                return tempPromise
+            }
         }
         
         var lookupCount = 0
@@ -602,7 +630,7 @@ extension TorusUtils {
                     seal.reject(TorusError.decodingFailed)
                     return
                 }
-                var request = self.makeUrlRequest(url:  "https://signer.tor.us/api/sign")
+                var request = try! self.makeUrlRequest(url:  "https://signer.tor.us/api/sign")
                 request.addValue(torusNodePubs[index].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
                 request.addValue(torusNodePubs[index].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
             
@@ -621,11 +649,12 @@ extension TorusUtils {
                         // Fallback on earlier versions
                     }
                     guard
-                        let newData = try? encoder.encode(keyassignRequest)
+                        let newData = try? encoder.encode(keyassignRequest),
+                        let request = try? self.makeUrlRequest(url: endpoint)
                     else{
                         throw TorusError.decodingFailed
                     }
-                    let request = self.makeUrlRequest(url: endpoint)
+                    
                     return URLSession.shared.uploadTask(.promise, with: request, from: newData)
                 }.done{ data, _ in
                     guard
