@@ -552,7 +552,7 @@ extension TorusUtils {
                 let result = decoded.result
                 let error = decoded.error
                 if let _ = error {
-                    resultArray[i] = ["err": "keyLookupfailed"]
+                    resultArray[i] = ["err": decoded.error?.data ?? "nil"]
                 } else {
                     guard
                         let decodedResult = result as? [String: [[String: String]]],
@@ -568,7 +568,7 @@ extension TorusUtils {
                 
                 let lookupShares = resultArray.filter{ $0 != nil } // Nonnil elements
                 let keyResult = self.thresholdSame(arr: lookupShares, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
-                // print("threshold result", keyResult)
+                
                 if(keyResult != nil && !tempPromise.isFulfilled)  {
                     os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult!.debugDescription)
                     seal.fulfill(keyResult!!)

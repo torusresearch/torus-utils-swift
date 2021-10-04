@@ -25,6 +25,9 @@ final class IntegrationTests: XCTestCase {
     let TORUS_TEST_AGGREGATE_VERIFIER_SUB2 = "torus-test-ios-public-agg2"
     let TORUS_TEST_EMAIL = "hello@tor.us";
     
+    // Fake data
+    let TORUS_TEST_VERIFIER_FAKE = "torus-test-ios-fake"
+    
     override class func setUp() {
         IntegrationTests.fetchNodeDetails = FetchNodeDetails(proxyAddress: "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183", network: .ROPSTEN)
 //        IntegrationTests.nodeDetails = IntegrationTests.fetchNodeDetails?.getNodeDetails()
@@ -48,7 +51,14 @@ final class IntegrationTests: XCTestCase {
             XCTFail()
         }
         
-        wait(for: [exp1], timeout: 5)
+        let exp2 = XCTestExpectation(description: "Should throw if verifier not supported")
+        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: self.TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL, isExtended: false).done{ data in
+            XCTFail()
+        }.catch{ error in
+            XCTAssertEqual(error as! String, "getPublicAddress: err: Verifier not supported")
+            exp2.fulfill()
+        }
+        wait(for: [exp1, exp2], timeout: 10)
     }
     
     func test_keyAssign(){
@@ -74,7 +84,6 @@ final class IntegrationTests: XCTestCase {
     
     func test_keyLookup(){
         let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
-        
         IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL).done{ data in
             XCTAssertEqual(data["address"], "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
             exp1.fulfill()
@@ -82,7 +91,15 @@ final class IntegrationTests: XCTestCase {
             XCTFail()
         }
         
-        wait(for: [exp1], timeout: 5)
+        let exp2 = XCTestExpectation(description: "Should not be able to do keylookup")
+        IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL).done{ data in
+            XCTAssertEqual(data["err"]!, "Verifier not supported")
+            exp2.fulfill()
+        }.catch{error in
+            XCTFail()
+        }
+        
+        wait(for: [exp1, exp2], timeout: 10)
 
     }
     
