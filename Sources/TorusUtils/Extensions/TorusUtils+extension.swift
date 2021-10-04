@@ -541,12 +541,13 @@ extension TorusUtils {
         
         for (i, pr) in promisesArray.enumerated() {
             pr.done{ data, response in
+                // os_log("keyLookup: err: %s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error,  String(decoding: data, as: UTF8.self))
                 guard
-                        let decoded = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    let decoded = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                         else {
                     throw TorusError.decodingFailed
                 }
-                os_log("keyLookup: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)" )
+                os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)" )
 
                 let result = decoded.result
                 let error = decoded.error
