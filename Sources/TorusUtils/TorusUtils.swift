@@ -48,17 +48,28 @@ public class TorusUtils: AbstractTorusUtils{
             let error = lookupData["err"]
             
             if(error != nil){
-                // Assign key to the user and return (wrapped in a promise)
-                return self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<[String:String]> in
-                    // Do keylookup again
-                    return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-                }.then{ data -> Promise<[String: String]> in
-                    let error = data["err"]
-                    if(error != nil) {
-                        throw TorusError.configurationError
-                    }
-                    return Promise<[String: String]>.value(data)
+                guard let errorString = error else {
+                    throw TorusError.runtime("Error not supported")
                 }
+                
+                // Only assign key in case: Verifier exists and the verifierID doesn't.
+                if errorString.contains("Verifier + VerifierID has not yet been assigned") {
+                    // Assign key to the user and return (wrapped in a promise)
+                    return self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId).then{ data -> Promise<[String:String]> in
+                        // Do keylookup again
+                        return self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
+                    }.then{ data -> Promise<[String: String]> in
+                        let error = data["err"]
+                        if(error != nil) {
+                            throw TorusError.configurationError
+                        }
+                        return Promise<[String: String]>.value(data)
+                    }
+                }
+                else{
+                    throw error!
+                }
+                
             }else{
                 return Promise<[String: String]>.value(lookupData)
             }
@@ -94,13 +105,8 @@ public class TorusUtils: AbstractTorusUtils{
                 seal.fulfill(newData)
             }
         }.catch{err in
-            os_log("%s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(err)")
-            if let err = err as? TorusError{
-                if(err == TorusError.nodesUnavailable){
-                    seal.reject(err)
-                }
-                seal.reject(err)
-            }
+            os_log("getPublicAddress: err: %s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(err)")
+            seal.reject("getPublicAddress: err: \(err)")
         }
         
         return promise
