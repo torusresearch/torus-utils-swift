@@ -541,17 +541,18 @@ extension TorusUtils {
         
         for (i, pr) in promisesArray.enumerated() {
             pr.done{ data, response in
+                // os_log("keyLookup: err: %s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error,  String(decoding: data, as: UTF8.self))
                 guard
-                        let decoded = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    let decoded = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                         else {
                     throw TorusError.decodingFailed
                 }
-                os_log("keyLookup: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)" )
+                os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)" )
 
                 let result = decoded.result
                 let error = decoded.error
                 if let _ = error {
-                    resultArray[i] = ["err": "keyLookupfailed"]
+                    resultArray[i] = ["err": decoded.error?.data ?? "nil"]
                 } else {
                     guard
                         let decodedResult = result as? [String: [[String: String]]],
@@ -567,7 +568,7 @@ extension TorusUtils {
                 
                 let lookupShares = resultArray.filter{ $0 != nil } // Nonnil elements
                 let keyResult = self.thresholdSame(arr: lookupShares, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
-                // print("threshold result", keyResult)
+                
                 if(keyResult != nil && !tempPromise.isFulfilled)  {
                     os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult!.debugDescription)
                     seal.fulfill(keyResult!!)
