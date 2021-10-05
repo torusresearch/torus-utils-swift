@@ -29,16 +29,21 @@ final class IntegrationTests: XCTestCase {
     let TORUS_TEST_VERIFIER_FAKE = "torus-test-ios-fake"
     
     override class func setUp() {
+        super.setUp()
         IntegrationTests.fetchNodeDetails = FetchNodeDetails(proxyAddress: "0x4023d2a0D330bF11426B12C6144Cfb96B7fa6183", network: .ROPSTEN)
-//        IntegrationTests.nodeDetails = IntegrationTests.fetchNodeDetails?.getNodeDetails()
-//        IntegrationTests.endpoints = IntegrationTests.nodeDetails?.getTorusNodeEndpoints() ?? []
-//        IntegrationTests.nodePubKeys = IntegrationTests.nodeDetails?.getTorusNodePub() ?? []
+        // IntegrationTests.nodeDetails = IntegrationTests.fetchNodeDetails?.getNodeDetails()
+        // IntegrationTests.endpoints = IntegrationTests.nodeDetails?.getTorusNodeEndpoints() ?? []
+        // IntegrationTests.nodePubKeys = IntegrationTests.nodeDetails?.getTorusNodePub() ?? []
             
         // Faster logins by mocking data.
         IntegrationTests.endpoints = ROPSTEN_CONSTANTS.endpoints
         IntegrationTests.nodePubKeys = ROPSTEN_CONSTANTS.nodePubKeys
             
         IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys)
+    }
+    
+    override func setUpWithError() throws {
+        continueAfterFailure = false
     }
     
     func test_getPublicAddress(){
@@ -78,8 +83,7 @@ final class IntegrationTests: XCTestCase {
             XCTFail()
         }
         
-        wait(for: [exp1], timeout: 5)
-
+        wait(for: [exp1], timeout: 15)
     }
     
     func test_keyLookup(){
@@ -100,7 +104,6 @@ final class IntegrationTests: XCTestCase {
         }
         
         wait(for: [exp1, exp2], timeout: 10)
-
     }
     
     func test_shouldLogin(){

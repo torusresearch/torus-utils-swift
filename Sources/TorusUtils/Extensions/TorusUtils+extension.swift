@@ -521,6 +521,7 @@ extension TorusUtils {
             // swallow
         }.catch{error in
             os_log("KeyLookup: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+            seal.reject(error.localizedDescription)
         }
         
         // Create Array of URLRequest Promises
@@ -622,7 +623,6 @@ extension TorusUtils {
                     seal.reject(TorusError.decodingFailed)
                     return
                 }
-                os_log("KeyAssign: %d , endpoint: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, index, endpoint)
                 
                 let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier":verifier, "verifier_id":verifierId])
                 guard
@@ -661,19 +661,23 @@ extension TorusUtils {
                     guard
                         let decodedData = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                     else{
+                        os_log("keyAsssign: decodingError: ", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, String(decoding: data, as: UTF8.self))
                         throw TorusError.decodingFailed
                     }
-                    os_log("keyAssign: fullfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, decodedData.message ?? "")
+                    
+                    os_log("keyAssign: fullfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedData)")
                     if(!tempPromise.isFulfilled){
                         seal.fulfill(decodedData)
                     }
                     // semaphore.signal() // Signal to start again
                 }.catch{ err in
-                    os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, err.localizedDescription)
-                    // Reject only if reached the last point
-                    if(i+1==endpoint.count) {
+                    os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(err)")
+                    
+                    // Reject only if reached the last point, optimistic keyAssign
+                    if(i+1==endpoints.count) {
                         seal.reject(err)
                     }
+                    
                     // Signal to start again
                     semaphore.signal()
                 }
