@@ -109,8 +109,9 @@ extension TorusUtils {
             seal.reject(TorusError.runtime("Unable to serialize dictionary into JSON."))
             return promise
         }
-        let request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
-        let task = URLSession.shared.uploadTask(.promise, with: request, from: encoded)
+        var request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
+        request.httpBody = encoded
+        let task = URLSession.shared.dataTask(.promise, with: request)
         task.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
         }.done{ data in
@@ -157,8 +158,9 @@ extension TorusUtils {
         let (promise, seal) = Promise<(String, String, String)>.pending()
         for el in endpoints {
             do {
-                let rq = try self.makeUrlRequest(url: el)
-                requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+                var rq = try self.makeUrlRequest(url: el)
+                rq.httpBody = rpcdata
+                requestPromises.append(URLSession.shared.dataTask(.promise, with: rq))
             } catch {
                 seal.reject(error)
                 return promise
@@ -268,8 +270,9 @@ extension TorusUtils {
         var requestPromises = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
             do {
-                let rq = try self.makeUrlRequest(url: el);
-                requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+                var rq = try self.makeUrlRequest(url: el)
+                rq.httpBody = rpcdata
+                requestPromises.append(URLSession.shared.dataTask(.promise, with: rq))
             } catch {
                 seal.reject(error)
                 return promise
@@ -528,8 +531,9 @@ extension TorusUtils {
         var promisesArray = Array<Promise<(data: Data, response: URLResponse)> >()
         for el in endpoints {
             do {
-                let rq = try self.makeUrlRequest(url: el)
-                promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+                var rq = try self.makeUrlRequest(url: el)
+                rq.httpBody = rpcdata
+                promisesArray.append(URLSession.shared.dataTask(.promise, with: rq))
             } catch {
                 seal.reject(error)
                 return tempPromise
@@ -634,9 +638,9 @@ extension TorusUtils {
                 var request = try! self.makeUrlRequest(url:  "https://signer.tor.us/api/sign")
                 request.addValue(torusNodePubs[index].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
                 request.addValue(torusNodePubs[index].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
-            
+                request.httpBody = rpcdata
                 firstly {
-                    URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
+                    URLSession.shared.dataTask(.promise, with: request)
                 }.then{ data, _ -> Promise<(data: Data, response: URLResponse)> in
                     let decodedSignerResponse = try JSONDecoder().decode(SignerResponse.self, from: data)
                     os_log("KeyAssign: responseFromSigner: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedSignerResponse)")
@@ -651,12 +655,13 @@ extension TorusUtils {
                     }
                     guard
                         let newData = try? encoder.encode(keyassignRequest),
-                        let request = try? self.makeUrlRequest(url: endpoint)
+                        var request = try? self.makeUrlRequest(url: endpoint)
                     else{
                         throw TorusError.decodingFailed
                     }
                     
-                    return URLSession.shared.uploadTask(.promise, with: request, from: newData)
+                    request.httpBody = newData
+                    return URLSession.shared.dataTask(.promise, with: request)
                 }.done{ data, _ in
                     guard
                         let decodedData = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
