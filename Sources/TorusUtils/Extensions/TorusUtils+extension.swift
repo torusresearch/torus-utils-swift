@@ -702,13 +702,6 @@ extension TorusUtils {
 //        return address
 //    }
 //
-    open func generatePrivateKeyData() -> Data? {
-        return Data.randomOfLength(32)
-    }
-    
-    open func getTimestamp() -> TimeInterval {
-        return Date().timeIntervalSince1970
-    }
     
     public func publicKeyToAddress(key: Data) -> Data{
         return Data(key.sha3(.keccak256).suffix(20))

@@ -179,5 +179,14 @@ open class TorusUtils: AbstractTorusUtils{
         
         return promise
     }
+    
+    open func generatePrivateKeyData() -> Data? {
+        return Data.randomOfLength(32)
+    }
+    
+    open func getTimestamp() -> TimeInterval {
+        return Date().timeIntervalSince1970
+    }
+    
 }
 
