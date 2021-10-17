@@ -15,7 +15,7 @@ import BigInt
 var utilsLogType = OSLogType.default
 
 @available(macOS 10.12, *)
-public class TorusUtils: AbstractTorusUtils{
+open class TorusUtils: AbstractTorusUtils{
     
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     
@@ -131,7 +131,7 @@ public class TorusUtils: AbstractTorusUtils{
         let pubKeyY = publicKey.suffix(publicKey.count/2).toHexString().addLeading0sForLength64()
         
         // Hash the token from OAuth login
-        let timestamp = String(Int(Date().timeIntervalSince1970))
+        let timestamp = String(Int(self.getTimestamp()))
         let hashedToken = idToken.sha3(.keccak256)
         var publicAddress: String = ""
         var lookupPubkeyX: String = ""

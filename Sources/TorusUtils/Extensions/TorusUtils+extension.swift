@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  TorusUtils+extension.swift
 //  
 //
 //  Created by Shubham on 25/3/20.
@@ -702,8 +702,12 @@ extension TorusUtils {
 //        return address
 //    }
 //
-    func generatePrivateKeyData() -> Data? {
+    open func generatePrivateKeyData() -> Data? {
         return Data.randomOfLength(32)
+    }
+    
+    open func getTimestamp() -> TimeInterval {
+        return Date().timeIntervalSince1970
     }
     
     public func publicKeyToAddress(key: Data) -> Data{
