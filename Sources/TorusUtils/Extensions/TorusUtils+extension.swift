@@ -105,12 +105,12 @@ extension TorusUtils {
             return promise
         }
         
-        guard let encoded = encoded else {
+        guard let encodedUnwrapped = encoded else {
             seal.reject(TorusError.runtime("Unable to serialize dictionary into JSON."))
             return promise
         }
         let request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
-        let task = URLSession.shared.uploadTask(.promise, with: request, from: encoded)
+        let task = URLSession.shared.uploadTask(.promise, with: request, from: encodedUnwrapped)
         task.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
         }.done{ data in
