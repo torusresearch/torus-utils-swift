@@ -110,7 +110,7 @@ extension TorusUtils {
             return promise
         }
         let request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
-        let task = URLSession.shared.uploadTask(.promise, with: request, from: encoded)
+        let task = self.urlSession.uploadTask(.promise, with: request, from: encoded)
         task.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
         }.done{ data in
@@ -158,7 +158,7 @@ extension TorusUtils {
         for el in endpoints {
             do {
                 let rq = try self.makeUrlRequest(url: el)
-                requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+                requestPromises.append(self.urlSession.uploadTask(.promise, with: rq, from: rpcdata))
             } catch {
                 seal.reject(error)
                 return promise
@@ -269,7 +269,7 @@ extension TorusUtils {
         for el in endpoints {
             do {
                 let rq = try self.makeUrlRequest(url: el);
-                requestPromises.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+                requestPromises.append(self.urlSession.uploadTask(.promise, with: rq, from: rpcdata))
             } catch {
                 seal.reject(error)
                 return promise
@@ -517,7 +517,7 @@ extension TorusUtils {
         allowHostRequest.httpMethod = "GET"
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
-        URLSession.shared.dataTask(.promise, with: allowHostRequest).done{ data in
+        self.urlSession.dataTask(.promise, with: allowHostRequest).done{ data in
             // swallow
         }.catch{error in
             os_log("KeyLookup: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
@@ -529,7 +529,7 @@ extension TorusUtils {
         for el in endpoints {
             do {
                 let rq = try self.makeUrlRequest(url: el)
-                promisesArray.append(URLSession.shared.uploadTask(.promise, with: rq, from: rpcdata))
+                promisesArray.append(self.urlSession.uploadTask(.promise, with: rq, from: rpcdata))
             } catch {
                 seal.reject(error)
                 return tempPromise
@@ -636,7 +636,7 @@ extension TorusUtils {
                 request.addValue(torusNodePubs[index].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
             
                 firstly {
-                    URLSession.shared.uploadTask(.promise, with: request, from: rpcdata)
+                    self.urlSession.uploadTask(.promise, with: request, from: rpcdata)
                 }.then{ data, _ -> Promise<(data: Data, response: URLResponse)> in
                     let decodedSignerResponse = try JSONDecoder().decode(SignerResponse.self, from: data)
                     os_log("KeyAssign: responseFromSigner: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedSignerResponse)")
@@ -656,7 +656,7 @@ extension TorusUtils {
                         throw TorusError.decodingFailed
                     }
                     
-                    return URLSession.shared.uploadTask(.promise, with: request, from: newData)
+                    return self.urlSession.uploadTask(.promise, with: request, from: newData)
                 }.done{ data, _ in
                     guard
                         let decodedData = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct

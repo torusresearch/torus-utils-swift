@@ -21,8 +21,11 @@ public class TorusUtils: AbstractTorusUtils{
     
     var nodePubKeys: Array<TorusNodePub>
     
-    public init(nodePubKeys: Array<TorusNodePub>, loglevel: OSLogType = .default){
+    var urlSession: URLSession
+    
+    public init(nodePubKeys: Array<TorusNodePub>, loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared){
         self.nodePubKeys = nodePubKeys
+        self.urlSession = urlSession
         utilsLogType = loglevel
     }
         
