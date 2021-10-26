@@ -1,9 +1,9 @@
 # Uncomment the next line to define a global platform for your project
- platform :ios, '11.0'
+ platform :ios, '13.0'
 target 'TestApplication' do
   use_frameworks!
   
-#  pod 'Torus-fetchNodeDetails', :git=>'https://github.com/torusresearch/fetch-node-details-swift'
+  pod 'Torus-fetchNodeDetails', :git => 'https://github.com/torusresearch/fetch-node-details-swift', :branch => 'feat/urlsession'
   pod "Torus-utils",  :path => '../'
   # Pods for TestApplication
   
