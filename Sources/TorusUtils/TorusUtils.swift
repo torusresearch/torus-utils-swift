@@ -23,17 +23,11 @@ public class TorusUtils: AbstractTorusUtils{
     
     var urlSession: URLSession
     
-    public init(nodePubKeys: Array<TorusNodePub>, loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared){
+    public init(nodePubKeys: Array<TorusNodePub> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared){
         self.nodePubKeys = nodePubKeys
         self.urlSession = urlSession
         utilsLogType = loglevel
-    }
-        
-    // set pubkeys later
-    public convenience init(){
-        self.init(nodePubKeys: [] )
-    }
-    
+    }    
     
     public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePub>){
         self.nodePubKeys = nodePubKeys
