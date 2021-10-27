@@ -121,7 +121,7 @@ public struct JSONRPCrequest: Encodable {
 public struct JSONRPCresponse: Codable{
     public var id: Int
     public var jsonrpc = "2.0"
-    public var result: Any
+    public var result: Any?
     public var error: ErrorMessage?
     public var message: String?
     
