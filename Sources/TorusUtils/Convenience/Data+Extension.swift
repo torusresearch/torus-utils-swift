@@ -7,10 +7,11 @@
 import Foundation
 
 public extension Data {
-    
-    init<T>(fromArray values: [T]) {
-        var values = values
-        self.init(buffer: UnsafeBufferPointer(start: &values, count: values.count))
+        
+    static func fromArray<T>(values: [T]) -> Data {
+        return values.withUnsafeBufferPointer{
+            return Data(buffer: $0)
+        }
     }
     
     func toArray<T>(type: T.Type) throws -> [T] {

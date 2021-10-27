@@ -80,8 +80,9 @@ extension TorusUtils {
         let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
             if let pkRawPointer = a.baseAddress, let ctx = TorusUtils.context, a.count > 0 {
                 let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
-                let res = secp256k1_ec_pubkey_tweak_mul(
-                    ctx, UnsafeMutablePointer<secp256k1_pubkey>(&localPubkey), privateKeyPointer)
+                let res = withUnsafeMutablePointer(to: &localPubkey){
+                    secp256k1_ec_pubkey_tweak_mul(ctx, $0, privateKeyPointer)
+                }
                 return res
             } else {
                 return nil
@@ -105,12 +106,12 @@ extension TorusUtils {
             return promise
         }
         
-        guard let encoded = encoded else {
+        guard let encodedUnwrapped = encoded else {
             seal.reject(TorusError.runtime("Unable to serialize dictionary into JSON."))
             return promise
         }
         var request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
-        request.httpBody = encoded
+        request.httpBody = encodedUnwrapped
         let task = URLSession.shared.dataTask(.promise, with: request)
         task.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
