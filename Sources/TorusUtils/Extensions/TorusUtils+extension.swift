@@ -111,7 +111,7 @@ extension TorusUtils {
             return promise
         }
         let request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
-        let task = self.urlSession.uploadTask(.promise, with: request, from: encoded)
+        let task = self.urlSession.uploadTask(.promise, with: request, from: encodedWrapped)
         task.compactMap {
             try JSONSerialization.jsonObject(with: $0.data) as? [String: Any]
         }.done{ data in
