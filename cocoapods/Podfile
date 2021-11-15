@@ -3,7 +3,6 @@
 target 'TestApplication' do
   use_frameworks!
   
-  pod 'Torus-fetchNodeDetails', :git => 'https://github.com/torusresearch/fetch-node-details-swift', :branch => 'feat/urlsession'
   pod "Torus-utils",  :path => '../'
   # Pods for TestApplication
   

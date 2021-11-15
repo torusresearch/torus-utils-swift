@@ -60,31 +60,102 @@ fileprivate func stubMatcherWithBody(host: String, scheme: String, path: String,
 fileprivate let injectedURLs: Set = [
     URL(string: "https://www.googleapis.com/userinfo/v2/me"),
     URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
-    URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
-    URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
-    URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
-    URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
-    URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
-    URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
     URL(string: "https://teal-15-4.torusnode.com/jrpc"),
     URL(string: "https://teal-15-2.torusnode.com/jrpc"),
     URL(string: "https://teal-15-1.torusnode.com/jrpc"),
     URL(string: "https://teal-15-3.torusnode.com/jrpc"),
+    URL(string: "https://teal-15-5.torusnode.com/jrpc"),
+    URL(string: "https://metadata.tor.us/get"),
     URL(string: "https://signer.tor.us/api/allow"),
-    URL(string: "https://teal-15-5.torusnode.com/jrpc"),
-    URL(string: "https://metadata.tor.us/get"),
-    URL(string: "https://teal-15-1.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-3.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-4.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-5.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-2.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-3.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-1.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-5.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-2.torusnode.com/jrpc"),
-    URL(string: "https://teal-15-4.torusnode.com/jrpc"),
-    URL(string: "https://metadata.tor.us/get"),
 ]
+
+
+fileprivate let httpBodyKey = "StubURLProtocolHTTPBody"
+
+fileprivate struct Stub {
+    let requestMatcher: (URLRequest) -> Bool
+    let responseBody: Data?
+    let statusCode: Int
+    let responseHeaders: [String: String]
+}
+
+public class StubURLProtocol: URLProtocol {
+    private static let terminateUnknownRequest = true
+    
+    private static let stubs = injectedStubs
+    
+    private static let urls = injectedURLs
+    
+    // Match and return
+    private class func matchStub(req: URLRequest) -> Stub? {
+        var inputReq: URLRequest
+        if let httpBodyData = httpBodyStreamToData(stream: req.httpBodyStream) {
+            let mutableReq = (req as NSURLRequest).mutableCopy() as! NSMutableURLRequest
+            setProperty(httpBodyData, forKey: httpBodyKey, in: mutableReq)
+            inputReq = mutableReq as URLRequest
+        } else {
+            inputReq = req
+        }
+        for stub in stubs {
+            if stub.requestMatcher(inputReq) {
+                return stub
+            }
+        }
+        return nil
+    }
+    
+    // To check if this protocol can handle the given request.
+    public override class func canInit(with request: URLRequest) -> Bool {
+        var cleanURL: URL? {
+            var comp = URLComponents()
+            comp.scheme = request.url?.scheme
+            comp.host = request.url?.host
+            comp.path = request.url?.path ?? "/"
+            return comp.url
+        }
+        if urls.contains(cleanURL){
+            return true
+        }
+        return terminateUnknownRequest
+    }
+    
+    public override class func canonicalRequest(for request: URLRequest) -> URLRequest {
+        return request
+    }
+    
+    // This is where you create the mock response as per your test case and send it to the URLProtocolClient.
+    public override func startLoading() {
+        guard let url = request.url else {
+            fatalError("Request has no URL")
+        }
+        var cleanURL: URL? {
+            var comp = URLComponents()
+            comp.scheme = url.scheme
+            comp.host = url.host
+            comp.path = url.path
+            return comp.url
+        }
+        if !StubURLProtocol.urls.contains(cleanURL){
+            fatalError("URL not mocked, inconsistent injectedURLs: \(url.absoluteString)")
+        }
+        if let stub = StubURLProtocol.matchStub(req: request){
+            let res = HTTPURLResponse(url: url, statusCode: stub.statusCode, httpVersion: nil, headerFields: stub.responseHeaders)!
+            self.client?.urlProtocol(self, didReceive: res, cacheStoragePolicy: .notAllowed)
+            if let d = stub.responseBody {
+                self.client?.urlProtocol(self, didLoad: d)
+            }
+        }else{
+            fatalError("URL not mocked: \(url.absoluteString)")
+        }
+        self.client?.urlProtocolDidFinishLoading(self)
+    }
+    
+    // This is called if the request gets canceled or completed.
+    public override func stopLoading() {
+        
+    }
+}
+
 
 fileprivate let injectedStubs: [Stub] = [
     
@@ -476,85 +547,3 @@ fileprivate let injectedStubs: [Stub] = [
     ),
 
 ]
-
-fileprivate let httpBodyKey = "StubURLProtocolHTTPBody"
-
-fileprivate struct Stub {
-    let requestMatcher: (URLRequest) -> Bool
-    let responseBody: Data?
-    let statusCode: Int
-    let responseHeaders: [String: String]
-}
-
-public class StubURLProtocol: URLProtocol {
-    private static let terminateUnknownRequest = true
-    
-    private static let stubs = injectedStubs
-    
-    private static let urls = injectedURLs
-    
-    private class func matchStub(req: URLRequest) -> Stub? {
-        var inputReq: URLRequest
-        if let httpBodyData = httpBodyStreamToData(stream: req.httpBodyStream) {
-            let mutableReq = (req as NSURLRequest).mutableCopy() as! NSMutableURLRequest
-            setProperty(httpBodyData, forKey: httpBodyKey, in: mutableReq)
-            inputReq = mutableReq as URLRequest
-        } else {
-            inputReq = req
-        }
-        for stub in stubs {
-            if stub.requestMatcher(inputReq) {
-                return stub
-            }
-        }
-        return nil
-    }
-    
-    public override class func canInit(with request: URLRequest) -> Bool {
-        var cleanURL: URL? {
-            var comp = URLComponents()
-            comp.scheme = request.url?.scheme
-            comp.host = request.url?.host
-            comp.path = request.url?.path ?? "/"
-            return comp.url
-        }
-        if urls.contains(cleanURL){
-            return true
-        }
-        return terminateUnknownRequest
-    }
-    
-    public override class func canonicalRequest(for request: URLRequest) -> URLRequest {
-        return request
-    }
-    
-    public override func startLoading() {
-        guard let url = request.url else {
-            fatalError("Request has no URL")
-        }
-        var cleanURL: URL? {
-            var comp = URLComponents()
-            comp.scheme = url.scheme
-            comp.host = url.host
-            comp.path = url.path
-            return comp.url
-        }
-        if !StubURLProtocol.urls.contains(cleanURL){
-            fatalError("URL not mocked, inconsistent injectedURLs: \(url.absoluteString)")
-        }
-        if let stub = StubURLProtocol.matchStub(req: request){
-            let res = HTTPURLResponse(url: url, statusCode: stub.statusCode, httpVersion: nil, headerFields: stub.responseHeaders)!
-            self.client?.urlProtocol(self, didReceive: res, cacheStoragePolicy: .notAllowed)
-            if let d = stub.responseBody {
-                self.client?.urlProtocol(self, didLoad: d)
-            }
-        }else{
-            fatalError("URL not mocked: \(url.absoluteString)")
-        }
-        self.client?.urlProtocolDidFinishLoading(self)
-    }
-    
-    public override func stopLoading() {
-        
-    }
-}
