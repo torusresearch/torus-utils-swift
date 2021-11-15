@@ -15,22 +15,19 @@ import BigInt
 var utilsLogType = OSLogType.default
 
 @available(macOS 10.12, *)
-public class TorusUtils: AbstractTorusUtils{
+open class TorusUtils: AbstractTorusUtils{
     
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     
     var nodePubKeys: Array<TorusNodePub>
     
-    public init(nodePubKeys: Array<TorusNodePub>, loglevel: OSLogType = .default){
-        self.nodePubKeys = nodePubKeys
-        utilsLogType = loglevel
-    }
-        
-    // set pubkeys later
-    public convenience init(){
-        self.init(nodePubKeys: [] )
-    }
+    var urlSession: URLSession
     
+    public init(nodePubKeys: Array<TorusNodePub> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared){
+        self.nodePubKeys = nodePubKeys
+        self.urlSession = urlSession
+        utilsLogType = loglevel
+    }    
     
     public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePub>){
         self.nodePubKeys = nodePubKeys
@@ -131,7 +128,7 @@ public class TorusUtils: AbstractTorusUtils{
         let pubKeyY = publicKey.suffix(publicKey.count/2).toHexString().addLeading0sForLength64()
         
         // Hash the token from OAuth login
-        let timestamp = String(Int(Date().timeIntervalSince1970))
+        let timestamp = String(Int(self.getTimestamp()))
         let hashedToken = idToken.sha3(.keccak256)
         var publicAddress: String = ""
         var lookupPubkeyX: String = ""
@@ -179,5 +176,14 @@ public class TorusUtils: AbstractTorusUtils{
         
         return promise
     }
+    
+    open func generatePrivateKeyData() -> Data? {
+        return Data.randomOfLength(32)
+    }
+    
+    open func getTimestamp() -> TimeInterval {
+        return Date().timeIntervalSince1970
+    }
+    
 }
 
