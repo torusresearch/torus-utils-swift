@@ -14,13 +14,13 @@ let package = Package(
             targets: ["TorusUtils"]),
     ],
     dependencies: [
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", from: "1.2.0"),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", from: "1.3.0"),
         .package(name:"PMKFoundation", url: "https://github.com/PromiseKit/Foundation.git", from: "3.4.0"),
         .package(name:"PromiseKit", url: "https://github.com/mxcl/PromiseKit.git", from: "6.0.0"),
         .package(name:"CryptorECC", url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.0.0"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
-        .package(name:"web3.swift", url: "https://github.com/argentlabs/web3.swift", from:"0.7.0"),
+        .package(name:"web3.swift", url: "https://github.com/argentlabs/web3.swift", from:"0.8.1"),
         .package(name:"secp256k1", url: "https://github.com/Boilertalk/secp256k1.swift", from: "0.1.0"),
     ],
     targets: [
