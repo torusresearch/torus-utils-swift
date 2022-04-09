@@ -22,11 +22,12 @@ let package = Package(
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
         .package(name:"web3.swift", url: "https://github.com/argentlabs/web3.swift", from:"0.8.1"),
         .package(name:"secp256k1", url: "https://github.com/Boilertalk/secp256k1.swift", from: "0.1.0"),
+        .package(name: "TweetNacl", url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", from: "1.0.0")
     ],
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "web3.swift", "CryptorECC", "secp256k1", "PMKFoundation", "PromiseKit"]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "web3.swift", "CryptorECC", "secp256k1", "PMKFoundation", "PromiseKit", "TweetNacl"]),
         .testTarget(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "web3.swift", .product(name: "PromiseKit", package: "PromiseKit"), "PMKFoundation", "CryptorECC"]),

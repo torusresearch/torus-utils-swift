@@ -20,6 +20,7 @@ public enum TorusError: Error{
     case unableToDerive
     case interpolationFailed
     case nodesUnavailable
+    case invalidKeySize
     case runtime(_ msg: String)
     case empty
 }
@@ -55,6 +56,8 @@ extension TorusError: CustomDebugStringConvertible{
                 return ""
             case .runtime(let msg):
                 return msg
+            case .invalidKeySize:
+                return "Invalid key size. Expected 32 bytes"
         }
     }
     
