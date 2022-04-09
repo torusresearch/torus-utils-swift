@@ -7,7 +7,7 @@
 
 import Foundation
 
-public enum TorusError: Error{
+public enum TorusError: Error, Equatable {
     case configurationError
     case apiRequestFailed
     case errInResponse(Any)

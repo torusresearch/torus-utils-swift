@@ -13,7 +13,7 @@ public struct ED25591 {
     /// Returns ED25591 Keypair
     /// - Parameter privateKey: Private key returned from `getTorusKey`
     /// - Returns: Returns a tuple containing an ED25519 secretKey (sk) and publicKey (pk)
-    public static func getED25519Key(privateKey: String) -> throws (sk: String, pk: String) {
+    public static func getED25519Key(privateKey: String) throws ->  (sk: String, pk: String) {
         
         var sk = Data(hex: privateKey).bytes
         
