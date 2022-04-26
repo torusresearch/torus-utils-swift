@@ -18,7 +18,7 @@ public struct ED25591 {
         var sk = Data(hex: privateKey).bytes
         
         guard sk.count == 32 else {
-            throw TorusError.invalidKeySize
+            throw TorusUtilError.invalidKeySize
         }
         
         sk.append(contentsOf: [UInt8](repeating: 0, count: 32))
