@@ -303,10 +303,11 @@ extension TorusUtils {
                 let lookupShares = resultArrayStrings.filter{ $0 as? String != nil } // Nonnil elements
                 if(lookupShares.count >= Int(endpoints.count/4)*3+1 && !promise.isFulfilled){
                     let nodeSignatures = try resultArrayObjects.compactMap{ $0 }.map{ (a: JSONRPCresponse) throws -> [String: String] in
+                        os_log("nodeSignatures - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(a)")
                         guard
                             let r = a.result as? [String:String]
                         else {
-                            throw TorusUtilError.decodingFailed("\(a.result) not found")
+                            throw TorusUtilError.decodingFailed("\(a.result) not found in \(a)")
                         }
                         return r
                         
@@ -624,10 +625,11 @@ extension TorusUtils {
                 } else {
                     // Fallback on earlier versions
                 }
+                os_log("newEndpoints2 : %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, newEndpoints2)
                 guard
                     let index = newEndpoints2.firstIndex(of: endpoint)
                 else {
-                    seal.reject(TorusUtilError.decodingFailed(nil))
+                    seal.reject(TorusUtilError.decodingFailed("\(newEndpoints2)"))
                     return
                 }
                 
