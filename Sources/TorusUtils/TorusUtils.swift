@@ -75,7 +75,7 @@ open class TorusUtils: AbstractTorusUtils{
                 let pubKeyX = data["pub_key_X"],
                 let pubKeyY = data["pub_key_Y"]
             else {
-                throw TorusUtilError.decodingFailed
+                throw TorusUtilError.runtime("pub_key_X and pub_key_Y missing from \(data)")
             }
             return self.getMetadata(dictionary: ["pub_key_X": pubKeyX, "pub_key_Y": pubKeyY]).map{ ($0, data) } // Tuple
         }.done{ nonce, data in

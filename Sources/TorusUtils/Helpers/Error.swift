@@ -11,7 +11,8 @@ public enum TorusUtilError: Error, Equatable {
     case configurationError
     case apiRequestFailed
     case errInResponse(Any)
-    case decodingFailed
+    case encodingFailed
+    case decodingFailed(String?)
     case commitmentRequestFailed
     case decryptionFailed
     case thresholdError
@@ -32,8 +33,8 @@ extension TorusUtilError: CustomDebugStringConvertible{
                 return "SDK Configuration incorrect. Network is probably incorrect"
             case .apiRequestFailed:
                 return "API request failed or No response from the node"
-            case .decodingFailed:
-                return "JSON Decoding error"
+            case .decodingFailed(let response):
+                return "JSON Decoding error \(response)"
             case .errInResponse(let str):
                 return "API response error \(str)"
             case .decryptionFailed:
@@ -58,6 +59,8 @@ extension TorusUtilError: CustomDebugStringConvertible{
                 return msg
             case .invalidKeySize:
                 return "Invalid key size. Expected 32 bytes"
+        case .encodingFailed:
+            return "Could not encode data"
         }
     }
 
