@@ -11,8 +11,8 @@ public enum TorusUtilError: Error, Equatable {
     case configurationError
     case apiRequestFailed
     case errInResponse(Any)
-    case encodingFailed
-    case decodingFailed(String?)
+    case encodingFailed(String? = nil)
+    case decodingFailed(String? = nil)
     case commitmentRequestFailed
     case decryptionFailed
     case thresholdError
@@ -59,8 +59,8 @@ extension TorusUtilError: CustomDebugStringConvertible{
                 return msg
             case .invalidKeySize:
                 return "Invalid key size. Expected 32 bytes"
-        case .encodingFailed:
-            return "Could not encode data"
+        case .encodingFailed(let msg):
+            return "Could not encode data \(msg)"
         }
     }
 

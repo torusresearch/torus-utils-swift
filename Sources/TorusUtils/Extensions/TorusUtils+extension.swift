@@ -107,7 +107,7 @@ extension TorusUtils {
         }
         
         guard let encodedUnwrapped = encoded else {
-            seal.reject(TorusUtilError.runtime("Unable to serialize dictionary into JSON."))
+            seal.reject(TorusUtilError.runtime("Unable to serialize dictionary into JSON. \(dictionary)"))
             return promise
         }
         var request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
@@ -121,7 +121,7 @@ extension TorusUtils {
                     let msg: String = data["message"] as? String,
                     let ret = BigUInt(msg, radix: 16)
                     else {
-                throw TorusUtilError.decodingFailed("Message value not correct or nil in \(data["message"])")
+                throw TorusUtilError.decodingFailed("Message value not correct or nil in \(data)")
             }
             seal.fulfill(ret)
         }.catch{ _ in
@@ -182,7 +182,7 @@ extension TorusUtils {
                 guard
                     let decodedResult = decoded.result as? [String:Any],
                     let keyObj = decodedResult["keys"] as? [[String:Any]]
-                else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded.result)")}
+                else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)")}
 
                 // Due to multiple keyAssign
                 if let first = keyObj.first {
@@ -195,7 +195,7 @@ extension TorusUtils {
                             let pubKeyX = publicKey["X"],
                             let pubKeyY = publicKey["Y"]
                             else {
-                        throw TorusUtilError.decodingFailed(nil)
+                        throw TorusUtilError.decodingFailed("\(first)")
                     }
                     shareResponses[i] = publicKey // For threshold
                     resultArray[i] = [
@@ -253,7 +253,7 @@ extension TorusUtils {
         let (promise, seal) = Promise<[[String:String]]>.pending()
         
         let encoder = JSONEncoder()
-        guard let rpcdata = try? encoder.encode(JSONRPCrequest(
+        let jsonRPCRequest = JSONRPCrequest(
             method: "CommitmentRequest",
             params: ["messageprefix": "mug00",
                      "tokencommitment": tokenCommitment,
@@ -261,9 +261,10 @@ extension TorusUtils {
                      "temppuby": pubKeyY,
                      "verifieridentifier":verifier,
                      "timestamp": timestamp]
-        ))
+        )
+        guard let rpcdata = try? encoder.encode(jsonRPCRequest)
         else {
-            seal.reject(TorusUtilError.runtime("Unable to encode request."))
+            seal.reject(TorusUtilError.runtime("Unable to encode request. \(jsonRPCRequest)"))
             return promise
         }
         
@@ -353,7 +354,7 @@ extension TorusUtils {
             guard
                     let k = el.value["ephermalPublicKey"]
                     else {
-                seal.reject(TorusUtilError.runtime("No ephermalPublicKey found "))
+                seal.reject(TorusUtilError.runtime("No ephermalPublicKey found in \(el)"))
                 break
             }
             let ephermalPublicKey = k.strip04Prefix()
@@ -419,7 +420,7 @@ extension TorusUtils {
                 // Split key in 2 parts, X and Y
 
                 guard let finalPrivateKey = data.web3.hexData, let publicKey = SECP256K1.privateToPublic(privateKey: finalPrivateKey)?.subdata(in: 1..<65) else{
-                    seal.reject(TorusUtilError.decodingFailed(nil))
+                    seal.reject(TorusUtilError.decodingFailed("\(data)"))
                     return
                 }
                 
@@ -507,13 +508,13 @@ extension TorusUtils {
         
         // Enode data
         let encoder = JSONEncoder()
-        guard
-                let rpcdata = try? encoder.encode(
-                        JSONRPCrequest(
-                                method: "VerifierLookupRequest",
-                                params: ["verifier": verifier, "verifier_id": verifierId]))
+   
+            let jsonRPCRequest = JSONRPCrequest(
+                method: "VerifierLookupRequest",
+                params: ["verifier": verifier, "verifier_id": verifierId])
+        guard let rpcdata = try? encoder.encode(jsonRPCRequest)
                 else {
-            seal.reject(TorusUtilError.encodingFailed)
+            seal.reject(TorusUtilError.encodingFailed("\(jsonRPCRequest)"))
             return tempPromise
         }
 
