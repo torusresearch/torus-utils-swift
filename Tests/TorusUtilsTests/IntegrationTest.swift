@@ -26,7 +26,7 @@ final class IntegrationTests: XCTestCase {
     let TORUS_TEST_EMAIL = "hello@tor.us";
     
     // Fake data
-    let TORUS_TEST_VERIFIER_FAKE = "torus-test-ios-fake"
+    let TORUS_TEST_VERIFIER_FAKE = "torus-test-ios"
     
     override class func setUp() {
         super.setUp()
