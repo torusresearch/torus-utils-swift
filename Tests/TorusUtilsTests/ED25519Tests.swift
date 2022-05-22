@@ -20,12 +20,12 @@ class ED25519Tests: XCTestCase {
         }
         
         XCTAssertTrue(
-            thrownError is TorusError,
+            thrownError is TorusUtilError,
             "Unexpected error type: \(type(of: thrownError))"
         )
 
         // Verify that our error is equal to what we expect
-        XCTAssertEqual(thrownError as? TorusError, .invalidKeySize)
+        XCTAssertEqual(thrownError as? TorusUtilError, .invalidKeySize)
         
     }
     

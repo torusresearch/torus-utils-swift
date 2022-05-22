@@ -19,17 +19,17 @@ open class TorusUtils: AbstractTorusUtils{
     
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     
-    var nodePubKeys: Array<TorusNodePub>
+    var nodePubKeys: Array<TorusNodePubModel>
     
     var urlSession: URLSession
     
-    public init(nodePubKeys: Array<TorusNodePub> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared){
+    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared){
         self.nodePubKeys = nodePubKeys
         self.urlSession = urlSession
         utilsLogType = loglevel
     }    
     
-    public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePub>){
+    public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePubModel>){
         self.nodePubKeys = nodePubKeys
     }
     
@@ -37,7 +37,7 @@ open class TorusUtils: AbstractTorusUtils{
 //        self.endpoints = endpoints
 //    }
     
-    public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
+    public func getPublicAddress(endpoints : Array<String>, torusNodePubs : Array<TorusNodePubModel>, verifier : String, verifierId : String, isExtended: Bool) -> Promise<[String:String]>{
         let (promise, seal) = Promise<[String:String]>.pending()
         let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
         
@@ -46,7 +46,7 @@ open class TorusUtils: AbstractTorusUtils{
             
             if(error != nil){
                 guard let errorString = error else {
-                    throw TorusError.runtime("Error not supported")
+                    throw TorusUtilError.runtime("Error not supported")
                 }
                 
                 // Only assign key in case: Verifier exists and the verifierID doesn't.
@@ -58,7 +58,7 @@ open class TorusUtils: AbstractTorusUtils{
                     }.then{ data -> Promise<[String: String]> in
                         let error = data["err"]
                         if(error != nil) {
-                            throw TorusError.configurationError
+                            throw TorusUtilError.configurationError
                         }
                         return Promise<[String: String]>.value(data)
                     }
@@ -75,7 +75,7 @@ open class TorusUtils: AbstractTorusUtils{
                 let pubKeyX = data["pub_key_X"],
                 let pubKeyY = data["pub_key_Y"]
             else {
-                throw TorusError.decodingFailed
+                throw TorusUtilError.runtime("pub_key_X and pub_key_Y missing from \(data)")
             }
             return self.getMetadata(dictionary: ["pub_key_X": pubKeyX, "pub_key_Y": pubKeyY]).map{ ($0, data) } // Tuple
         }.done{ nonce, data in
@@ -83,14 +83,14 @@ open class TorusUtils: AbstractTorusUtils{
             guard
                 let localPubkeyX = newData["pub_key_X"],
                 let localPubkeyY = newData["pub_key_Y"]
-            else { throw TorusError.runtime("Empty pubkey returned from getMetadata.") }
+            else { throw TorusUtilError.runtime("Empty pubkey returned from getMetadata.") }
             
             // Convert to BigInt for modulus
             let nonce2 = BigInt(nonce).modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
             if(nonce != BigInt(0)) {
                 let actualPublicKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
                 guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
-                    throw TorusError.decryptionFailed
+                    throw TorusUtilError.decryptionFailed
                 }
                 let addedPublicKeys = self.combinePublicKeys(keys: [actualPublicKey, noncePublicKey.toHexString()], compressed: false)
                 newData["address"] = self.publicKeyToAddress(key: addedPublicKeys)
@@ -117,7 +117,7 @@ open class TorusUtils: AbstractTorusUtils{
             let privateKey = self.generatePrivateKeyData(),
             let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1..<65)
         else {
-            seal.reject(TorusError.runtime("Unable to generate SECP256K1 keypair."))
+            seal.reject(TorusUtilError.runtime("Unable to generate SECP256K1 keypair."))
             return promise
         }
         
@@ -138,7 +138,7 @@ open class TorusUtils: AbstractTorusUtils{
         
         // Reject if not resolved in 30 seconds
         after(.seconds(300)).done {
-            seal.reject(TorusError.timeout)
+            seal.reject(TorusUtilError.timeout)
         }
         
         getPublicAddress(endpoints: endpoints, torusNodePubs: nodePubKeys, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true).then{ data -> Promise<[[String:String]]> in
@@ -146,7 +146,7 @@ open class TorusUtils: AbstractTorusUtils{
             guard
                 let localPubkeyX = data["pub_key_X"]?.addLeading0sForLength64(),
                 let localPubkeyY = data["pub_key_Y"]?.addLeading0sForLength64()
-            else { throw TorusError.runtime("Empty pubkey returned from getPublicAddress.") }
+            else { throw TorusUtilError.runtime("Empty pubkey returned from getPublicAddress.") }
             lookupPubkeyX = localPubkeyX
             lookupPubkeyY = localPubkeyY
             return self.commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
@@ -169,8 +169,8 @@ open class TorusUtils: AbstractTorusUtils{
             seal.reject(err)
         }.finally {
             if(promise.isPending){
-                os_log("Error: %@",  log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, TorusError.unableToDerive.debugDescription)
-                seal.reject(TorusError.unableToDerive)
+                os_log("Error: %@",  log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, TorusUtilError.unableToDerive.debugDescription)
+                seal.reject(TorusUtilError.unableToDerive)
             }
         }
         

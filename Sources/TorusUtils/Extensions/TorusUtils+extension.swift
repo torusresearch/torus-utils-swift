@@ -49,7 +49,7 @@ extension TorusUtils {
         guard
             let url = URL(string: url)
         else {
-            throw TorusError.decodingFailed
+            throw TorusUtilError.runtime("Invalid Url \(url)")
         }
         var rq = URLRequest(url: url)
         rq.httpMethod = "POST"
@@ -107,7 +107,7 @@ extension TorusUtils {
         }
         
         guard let encodedUnwrapped = encoded else {
-            seal.reject(TorusError.runtime("Unable to serialize dictionary into JSON."))
+            seal.reject(TorusUtilError.runtime("Unable to serialize dictionary into JSON. \(dictionary)"))
             return promise
         }
         var request = try! self.makeUrlRequest(url: "https://metadata.tor.us/get")
@@ -121,7 +121,7 @@ extension TorusUtils {
                     let msg: String = data["message"] as? String,
                     let ret = BigUInt(msg, radix: 16)
                     else {
-                throw TorusError.decodingFailed
+                throw TorusUtilError.decodingFailed("Message value not correct or nil in \(data)")
             }
             seal.fulfill(ret)
         }.catch{ _ in
@@ -175,14 +175,14 @@ extension TorusUtils {
             rq.then{ data, response -> Promise<[Int:String]> in
                 let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                 if(decoded.error != nil) {
-                    throw TorusError.decodingFailed
+                    throw TorusUtilError.decodingFailed(decoded.error?.data)
                 }
                 os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
                 
                 guard
                     let decodedResult = decoded.result as? [String:Any],
                     let keyObj = decodedResult["keys"] as? [[String:Any]]
-                else { throw TorusError.decodingFailed }
+                else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)")}
 
                 // Due to multiple keyAssign
                 if let first = keyObj.first {
@@ -195,7 +195,7 @@ extension TorusUtils {
                             let pubKeyX = publicKey["X"],
                             let pubKeyY = publicKey["Y"]
                             else {
-                        throw TorusError.decodingFailed
+                        throw TorusUtilError.decodingFailed("\(first)")
                     }
                     shareResponses[i] = publicKey // For threshold
                     resultArray[i] = [
@@ -215,12 +215,12 @@ extension TorusUtils {
                     os_log("retreiveIndividualNodeShares - result: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, resultArray)
                     return self.decryptIndividualShares(shares: resultArray, privateKey: privateKey)
                 }else{
-                    throw TorusError.empty
+                    throw TorusUtilError.empty
                 }
             }.then{ data -> Promise<(String, String, String)> in
                 os_log("retrieveDecryptAndReconstuct - data after decryptIndividualShares: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data)
-                let filteredData = data.filter{$0.value != TorusError.decodingFailed.debugDescription}
-                if(filteredData.count < Int(endpoints.count/2)+1){ throw TorusError.thresholdError }
+                let filteredData = data.filter{$0.value != TorusUtilError.decodingFailed(nil).debugDescription}
+                if(filteredData.count < Int(endpoints.count/2)+1){ throw TorusUtilError.thresholdError }
                 return self.thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
             }.done{ x, y, z in
                 seal.fulfill((x, y, z))
@@ -231,8 +231,8 @@ extension TorusUtils {
                 if(nsErr.code == -1003){
                     // In case node is offline
                     os_log("retrieveDecryptAndReconstuct: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
-                }else if let err = (err as? TorusError) {
-                    if(err == TorusError.thresholdError){
+                }else if let err = (err as? TorusUtilError) {
+                    if(err == TorusUtilError.thresholdError){
                         os_log("retrieveDecryptAndReconstuct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, err.localizedDescription)
                     }
                 }else{
@@ -241,7 +241,7 @@ extension TorusUtils {
             }.finally{
                 globalCount+=1;
                 if (globalCount == endpoints.count && promise.isPending) {
-                    seal.reject(TorusError.runtime("Unable to reconstruct: \(errorStack)"))
+                    seal.reject(TorusUtilError.runtime("Unable to reconstruct: \(errorStack)"))
                 }
             }
         }
@@ -253,7 +253,7 @@ extension TorusUtils {
         let (promise, seal) = Promise<[[String:String]]>.pending()
         
         let encoder = JSONEncoder()
-        guard let rpcdata = try? encoder.encode(JSONRPCrequest(
+        let jsonRPCRequest = JSONRPCrequest(
             method: "CommitmentRequest",
             params: ["messageprefix": "mug00",
                      "tokencommitment": tokenCommitment,
@@ -261,9 +261,10 @@ extension TorusUtils {
                      "temppuby": pubKeyY,
                      "verifieridentifier":verifier,
                      "timestamp": timestamp]
-        ))
+        )
+        guard let rpcdata = try? encoder.encode(jsonRPCRequest)
         else {
-            seal.reject(TorusError.runtime("Unable to encode request."))
+            seal.reject(TorusUtilError.runtime("Unable to encode request. \(jsonRPCRequest)"))
             return promise
         }
         
@@ -293,7 +294,7 @@ extension TorusUtils {
 
                 if(decoded.error != nil) {
                     os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
-                    throw TorusError.commitmentRequestFailed
+                    throw TorusUtilError.commitmentRequestFailed
                 }
                 
                 // Check if k+t responses are back
@@ -303,10 +304,11 @@ extension TorusUtils {
                 let lookupShares = resultArrayStrings.filter{ $0 as? String != nil } // Nonnil elements
                 if(lookupShares.count >= Int(endpoints.count/4)*3+1 && !promise.isFulfilled){
                     let nodeSignatures = try resultArrayObjects.compactMap{ $0 }.map{ (a: JSONRPCresponse) throws -> [String: String] in
+                        os_log("nodeSignatures - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(a)")
                         guard
                             let r = a.result as? [String:String]
                         else {
-                            throw TorusError.decodingFailed
+                            throw TorusUtilError.decodingFailed("\(a.result) not found in \(a)")
                         }
                         return r
                         
@@ -324,7 +326,7 @@ extension TorusUtils {
                     // Reject if threshold nodes unavailable
                     lookupCount+=1
                     if(!promise.isFulfilled && (lookupCount > endpoints.count)){
-                        seal.reject(TorusError.nodesUnavailable)
+                        seal.reject(TorusUtilError.nodesUnavailable)
                     }
                 }else{
                     os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, err.localizedDescription)
@@ -332,7 +334,7 @@ extension TorusUtils {
             }.finally{
                 globalCount+=1;
                 if (globalCount == endpoints.count && promise.isPending) {
-                    seal.reject(TorusError.commitmentRequestFailed)
+                    seal.reject(TorusUtilError.commitmentRequestFailed)
                 }
             }
         }
@@ -352,7 +354,7 @@ extension TorusUtils {
             guard
                     let k = el.value["ephermalPublicKey"]
                     else {
-                seal.reject(TorusError.decodingFailed)
+                seal.reject(TorusUtilError.runtime("No ephermalPublicKey found in \(el)"))
                 break
             }
             let ephermalPublicKey = k.strip04Prefix()
@@ -369,7 +371,7 @@ extension TorusUtils {
                     let data = Data(hexString: privateKey),
                     let sharedSecret = self.ecdh(pubKey: ephemPubKey, privateKey: data)
                     else {
-                seal.reject(TorusError.decryptionFailed)
+                seal.reject(TorusUtilError.decryptionFailed)
                 break
             }
             let sharedSecretData = sharedSecret.data
@@ -381,7 +383,7 @@ extension TorusUtils {
                     let share = el.value["share"]?.fromBase64()?.hexa,
                     let iv = el.value["iv"]?.hexa
                     else {
-                seal.reject(TorusError.decryptionFailed)
+                seal.reject(TorusUtilError.decryptionFailed)
                 break
             }
             
@@ -394,8 +396,8 @@ extension TorusUtils {
                 let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
                 let decrypt = try aes.decrypt(share)
                 result[nodeIndex] = decrypt.hexa
-            }catch{
-                result[nodeIndex] = TorusError.decodingFailed.debugDescription
+            }catch(let err){
+                result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
             }
             if(shares.count == result.count) {
                 seal.fulfill(result) // Resolve if all shares decrypt
@@ -418,7 +420,7 @@ extension TorusUtils {
                 // Split key in 2 parts, X and Y
 
                 guard let finalPrivateKey = data.web3.hexData, let publicKey = SECP256K1.privateToPublic(privateKey: finalPrivateKey)?.subdata(in: 1..<65) else{
-                    seal.reject(TorusError.decodingFailed)
+                    seal.reject(TorusUtilError.decodingFailed("\(data)"))
                     return
                 }
                 
@@ -437,7 +439,7 @@ extension TorusUtils {
             }.finally {
                 totalInterpolations += 1
                 if(tempPromise.isPending && totalInterpolations > (shareCombinations.count-1)){
-                    seal.reject(TorusError.interpolationFailed)
+                    seal.reject(TorusUtilError.interpolationFailed)
                 }
             }
         }
@@ -482,7 +484,7 @@ extension TorusUtils {
                 guard
                         let inv = lower.inverse(secp256k1N)
                         else {
-                    seal.reject(TorusError.decryptionFailed)
+                    seal.reject(TorusUtilError.decryptionFailed)
                     return
                 }
                 var delta = (upper * inv).modulus(secp256k1N)
@@ -506,13 +508,13 @@ extension TorusUtils {
         
         // Enode data
         let encoder = JSONEncoder()
-        guard
-                let rpcdata = try? encoder.encode(
-                        JSONRPCrequest(
-                                method: "VerifierLookupRequest",
-                                params: ["verifier": verifier, "verifier_id": verifierId]))
+   
+            let jsonRPCRequest = JSONRPCrequest(
+                method: "VerifierLookupRequest",
+                params: ["verifier": verifier, "verifier_id": verifierId])
+        guard let rpcdata = try? encoder.encode(jsonRPCRequest)
                 else {
-            seal.reject(TorusError.decodingFailed)
+            seal.reject(TorusUtilError.encodingFailed("\(jsonRPCRequest)"))
             return tempPromise
         }
 
@@ -548,37 +550,39 @@ extension TorusUtils {
         for (i, pr) in promisesArray.enumerated() {
             pr.done{ data, response in
                 // os_log("keyLookup: err: %s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error,  String(decoding: data, as: UTF8.self))
-                guard
-                    let decoded = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                do{
+                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                    os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)" )
+
+                    let result = decoded.result
+                    let error = decoded.error
+                    if let _ = error {
+                        resultArray[i] = ["err": decoded.error?.data ?? "nil"]
+                    } else {
+                        guard
+                            let decodedResult = result as? [String: [[String: String]]],
+                            let k = decodedResult["keys"]
+
                         else {
-                    throw TorusError.decodingFailed
-                }
-                os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)" )
-
-                let result = decoded.result
-                let error = decoded.error
-                if let _ = error {
-                    resultArray[i] = ["err": decoded.error?.data ?? "nil"]
-                } else {
-                    guard
-                        let decodedResult = result as? [String: [[String: String]]],
-                        let k = decodedResult["keys"]
-
-                    else {
-                        throw TorusError.decodingFailed
+                            throw TorusUtilError.decodingFailed("keys not found in \(result)")
+                        }
+                        let keys = k[0] as [String: String]
+                        resultArray[i] = keys
                     }
-                    let keys = k[0] as [String: String]
-                    resultArray[i] = keys
+                    
+                    
+                    let lookupShares = resultArray.filter{ $0 != nil } // Nonnil elements
+                    let keyResult = self.thresholdSame(arr: lookupShares, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
+                    
+                    if(keyResult != nil && !tempPromise.isFulfilled)  {
+                        os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult!.debugDescription)
+                        seal.fulfill(keyResult!!)
+                    }
                 }
-                
-                
-                let lookupShares = resultArray.filter{ $0 != nil } // Nonnil elements
-                let keyResult = self.thresholdSame(arr: lookupShares, threshold: Int(endpoints.count/2)+1) // Check if threshold is satisfied
-                
-                if(keyResult != nil && !tempPromise.isFulfilled)  {
-                    os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult!.debugDescription)
-                    seal.fulfill(keyResult!!)
+                catch(let err){
+                    throw TorusUtilError.decodingFailed(err.localizedDescription)
                 }
+            
             }.catch{error in
                 let tmpError = error as NSError
                 let userInfo = tmpError.userInfo as [String: Any]
@@ -589,7 +593,7 @@ extension TorusUtils {
                     // reject if threshold nodes unavailable
                     lookupCount += 1
                     if(!tempPromise.isFulfilled && (lookupCount > Int(endpoints.count/2))){
-                        seal.reject(TorusError.nodesUnavailable)
+                        seal.reject(TorusUtilError.nodesUnavailable)
                     }
                 }else{
                     os_log("keyLookup: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
@@ -600,7 +604,7 @@ extension TorusUtils {
     }
     
     // MARK:- key assignment
-    public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePub>, verifier : String, verifierId : String) -> Promise<JSONRPCresponse> {
+    public func keyAssign(endpoints : Array<String>, torusNodePubs : Array<TorusNodePubModel>, verifier : String, verifierId : String) -> Promise<JSONRPCresponse> {
         let (tempPromise, seal) = Promise<JSONRPCresponse>.pending()
         os_log("KeyAssign: endpoints: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, endpoints)
         var newEndpoints = endpoints
@@ -622,20 +626,18 @@ extension TorusUtils {
                 } else {
                     // Fallback on earlier versions
                 }
+                os_log("newEndpoints2 : %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, newEndpoints2)
                 guard
                     let index = newEndpoints2.firstIndex(of: endpoint)
                 else {
-                    seal.reject(TorusError.decodingFailed)
+                    seal.reject(TorusUtilError.decodingFailed("\(newEndpoints2)"))
                     return
                 }
                 
                 let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier":verifier, "verifier_id":verifierId])
-                guard
-                    let rpcdata = try? encoder.encode(SignerObject)
-                else {
-                    seal.reject(TorusError.decodingFailed)
-                    return
-                }
+                do{
+                
+                    let rpcdata = try encoder.encode(SignerObject)
                 var request = try! self.makeUrlRequest(url:  "https://signer.tor.us/api/sign")
                 request.addValue(torusNodePubs[index].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
                 request.addValue(torusNodePubs[index].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
@@ -654,41 +656,41 @@ extension TorusUtils {
                     } else {
                         // Fallback on earlier versions
                     }
-                    guard
-                        let newData = try? encoder.encode(keyassignRequest),
-                        var request = try? self.makeUrlRequest(url: endpoint)
-                    else{
-                        throw TorusError.decodingFailed
-                    }
+                        let newData = try encoder.encode(keyassignRequest)
+                        var request = try self.makeUrlRequest(url: endpoint)
                     request.httpBody = newData
                     return self.urlSession.dataTask(.promise, with: request)
                 }.done{ data, _ in
-                    guard
-                        let decodedData = try? JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                    else{
-                        os_log("keyAsssign: decodingError: ", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, String(decoding: data, as: UTF8.self))
-                        throw TorusError.decodingFailed
+                    do{
+                let decodedData = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                        
+                        os_log("keyAssign: fullfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedData)")
+                        if(!tempPromise.isFulfilled){
+                            seal.fulfill(decodedData)
+                        }
                     }
-                    
-                    os_log("keyAssign: fullfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedData)")
-                    if(!tempPromise.isFulfilled){
-                        seal.fulfill(decodedData)
+                    catch(let err){
+                        throw TorusUtilError.decodingFailed(err.localizedDescription)
                     }
-                    // semaphore.signal() // Signal to start again
-                }.catch{ err in
+                }
+                .catch{ err in
                     os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(err)")
                     
                     // Reject only if reached the last point, optimistic keyAssign
                     if(i+1==endpoints.count) {
                         seal.reject(err)
                     }
-                    
                     // Signal to start again
                     semaphore.signal()
+            }
+                }catch(let err){
+                    seal.reject(err)
+                    }
+                }
+                    
+
                 }
                 
-            }
-        }
         return tempPromise
         
     }

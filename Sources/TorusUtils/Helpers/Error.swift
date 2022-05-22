@@ -1,17 +1,18 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Shubham on 2/4/20.
 //
 
 import Foundation
 
-public enum TorusError: Error, Equatable {
+public enum TorusUtilError: Error, Equatable {
     case configurationError
     case apiRequestFailed
     case errInResponse(Any)
-    case decodingFailed
+    case encodingFailed(String? = nil)
+    case decodingFailed(String? = nil)
     case commitmentRequestFailed
     case decryptionFailed
     case thresholdError
@@ -25,15 +26,15 @@ public enum TorusError: Error, Equatable {
     case empty
 }
 
-extension TorusError: CustomDebugStringConvertible{
+extension TorusUtilError: CustomDebugStringConvertible{
     public var debugDescription: String{
         switch self {
             case .configurationError:
                 return "SDK Configuration incorrect. Network is probably incorrect"
             case .apiRequestFailed:
                 return "API request failed or No response from the node"
-            case .decodingFailed:
-                return "JSON Decoding error"
+            case .decodingFailed(let response):
+                return "JSON Decoding error \(response)"
             case .errInResponse(let str):
                 return "API response error \(str)"
             case .decryptionFailed:
@@ -58,10 +59,12 @@ extension TorusError: CustomDebugStringConvertible{
                 return msg
             case .invalidKeySize:
                 return "Invalid key size. Expected 32 bytes"
+        case .encodingFailed(let msg):
+            return "Could not encode data \(msg)"
         }
     }
-    
-    static public func == (lhs: TorusError, rhs: TorusError) -> Bool {
+
+    static public func == (lhs: TorusUtilError, rhs: TorusUtilError) -> Bool {
         guard type(of: lhs) == type(of: rhs) else { return false }
         let error1 = lhs as NSError
         let error2 = rhs as NSError

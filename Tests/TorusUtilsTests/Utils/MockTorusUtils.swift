@@ -11,13 +11,13 @@ import PromiseKit
 import FetchNodeDetails
 
 class MockTorusUtils: AbstractTorusUtils{
-    var nodePubKeys: Array<TorusNodePub>
+    var nodePubKeys: Array<TorusNodePubModel>
     
     init(){
         self.nodePubKeys = []
     }
     
-    func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePub>) {
+    func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePubModel>) {
         self.nodePubKeys = nodePubKeys
     }
     
@@ -25,7 +25,7 @@ class MockTorusUtils: AbstractTorusUtils{
         return Promise.value([:])
     }
     
-    func getPublicAddress(endpoints: Array<String>, torusNodePubs: Array<TorusNodePub>, verifier: String, verifierId: String, isExtended: Bool) -> Promise<[String : String]> {
+    func getPublicAddress(endpoints: Array<String>, torusNodePubs: Array<TorusNodePubModel>, verifier: String, verifierId: String, isExtended: Bool) -> Promise<[String : String]> {
         return Promise.value([:])
     }
     
