@@ -10,14 +10,14 @@ import Foundation
 struct AnyCodingKey: CodingKey {
     var stringValue: String
     var intValue: Int?
-    
+
     init?(stringValue: String) {
         self.stringValue = stringValue
     }
-    
+
     init?(intValue: Int) {
         self.intValue = intValue
-        self.stringValue = String(intValue)
+        stringValue = String(intValue)
     }
 }
 
@@ -38,7 +38,7 @@ extension KeyedDecodingContainer {
         var values = try nestedUnkeyedContainer(forKey: key)
         return try values.decode(type)
     }
-    
+
     /// Decodes a value of the given type for the given key.
     ///
     /// - parameter type: The type of value to decode.
@@ -55,7 +55,7 @@ extension KeyedDecodingContainer {
         let values = try nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
         return try values.decode(type)
     }
-    
+
     /// Decodes a value of the given type for the given key, if present.
     ///
     /// This method returns `nil` if the container does not have a value
@@ -71,10 +71,10 @@ extension KeyedDecodingContainer {
     ///   is not convertible to the requested type.
     public func decodeIfPresent(_ type: [Any].Type, forKey key: KeyedDecodingContainer<K>.Key) throws -> [Any]? {
         guard contains(key),
-            try decodeNil(forKey: key) == false else { return nil }
+              try decodeNil(forKey: key) == false else { return nil }
         return try decode(type, forKey: key)
     }
-    
+
     /// Decodes a value of the given type for the given key, if present.
     ///
     /// This method returns `nil` if the container does not have a value
@@ -90,7 +90,7 @@ extension KeyedDecodingContainer {
     ///   is not convertible to the requested type.
     public func decodeIfPresent(_ type: [String: Any].Type, forKey key: KeyedDecodingContainer<K>.Key) throws -> [String: Any]? {
         guard contains(key),
-            try decodeNil(forKey: key) == false else { return nil }
+              try decodeNil(forKey: key) == false else { return nil }
         return try decode(type, forKey: key)
     }
 }
@@ -134,10 +134,10 @@ private extension UnkeyedDecodingContainer {
             } else if let string = try? decode(String.self) {
                 elements.append(string)
             } else if let values = try? nestedContainer(keyedBy: AnyCodingKey.self),
-                let element = try? values.decode([String: Any].self) {
+                      let element = try? values.decode([String: Any].self) {
                 elements.append(element)
             } else if var values = try? nestedUnkeyedContainer(),
-                let element = try? values.decode([Any].self) {
+                      let element = try? values.decode([Any].self) {
                 elements.append(element)
             }
         }

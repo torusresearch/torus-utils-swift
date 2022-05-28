@@ -1,13 +1,12 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Shubham on 3/8/21.
 //
 
 import Foundation
 import JWTKit
-
 
 // JWT payload structure.
 struct TestPayload: JWTPayload, Equatable {
@@ -17,11 +16,11 @@ struct TestPayload: JWTPayload, Equatable {
         case isAdmin = "admin"
         case emailVerified = "email_verified"
         case issuer = "iss"
-        case iat = "iat"
-        case email = "email"
+        case iat
+        case email
         case audience = "aud"
     }
-    
+
     var subject: SubjectClaim
     var expiration: ExpirationClaim
     var audience: AudienceClaim
@@ -30,10 +29,10 @@ struct TestPayload: JWTPayload, Equatable {
     var issuer: IssuerClaim
     var iat: IssuedAtClaim
     var email: String
-    
+
     // call its verify method.
     func verify(using signer: JWTSigner) throws {
-        try self.expiration.verifyNotExpired()
+        try expiration.verifyNotExpired()
     }
 }
 
@@ -46,7 +45,7 @@ func generateRandomEmail(of length: Int) -> String {
     return s + "@gmail.com"
 }
 
-func generateIdToken(email: String) throws -> String{
+func generateIdToken(email: String) throws -> String {
     let verifierPrivateKeyForSigning =
         """
         -----BEGIN PRIVATE KEY-----
@@ -54,32 +53,31 @@ func generateIdToken(email: String) throws -> String{
         kIxw9aogvHfbq09TlWKRFPGJjA==
         -----END PRIVATE KEY-----
         """
-    
-    do{
+
+    do {
         let signers = JWTSigners()
         let keys = try ECDSAKey.private(pem: verifierPrivateKeyForSigning)
         signers.use(.es256(key: keys))
-        
+
         // Parses the JWT and verifies its signature.
-        let today = Date.init()
+        let today = Date()
         let modifiedDate = Calendar.current.date(byAdding: .hour, value: 1, to: today)!
-        
+
         let emailComponent = email.components(separatedBy: "@")[0]
-        let subject = "email|"+emailComponent
-        
-        let payload = TestPayload(subject: SubjectClaim(stringLiteral: subject), expiration: ExpirationClaim(value: modifiedDate), audience: "torus-key-test" , isAdmin: false, emailVerified: true, issuer: "torus-key-test", iat: IssuedAtClaim(value: Date.init()), email: "hello@tor.us")
+        let subject = "email|" + emailComponent
+
+        let payload = TestPayload(subject: SubjectClaim(stringLiteral: subject), expiration: ExpirationClaim(value: modifiedDate), audience: "torus-key-test", isAdmin: false, emailVerified: true, issuer: "torus-key-test", iat: IssuedAtClaim(value: Date()), email: "hello@tor.us")
         let jwt = try signers.sign(payload)
         return jwt
-    }catch{
+    } catch {
         print(error)
         throw error
     }
 }
 
-
-//key 2
+// key 2
 //
-//-----BEGIN PRIVATE KEY-----
-//MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCCTK9Ly1QItO9QLoX12
-//IJC5lTMiO+7eZXQDiYi8mGLMvg==
-//-----END PRIVATE KEY-----
+// -----BEGIN PRIVATE KEY-----
+// MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCCTK9Ly1QItO9QLoX12
+// IJC5lTMiO+7eZXQDiYi8mGLMvg==
+// -----END PRIVATE KEY-----
