@@ -1,204 +1,199 @@
-import XCTest
-import PromiseKit
-import FetchNodeDetails
-import CryptoSwift
 import BigInt
-import web3
-import secp256k1
 import CryptorECC
+import CryptoSwift
+import FetchNodeDetails
 import JWTKit
+import PromiseKit
+import secp256k1
+import web3
+import XCTest
 
 @testable import TorusUtils
 
 @available(iOS 11.0, *)
 final class IntegrationTests: XCTestCase {
     static var fetchNodeDetails: FetchNodeDetails?
-   // static var nodeDetails: NodeDetails?
+    // static var nodeDetails: NodeDetails?
     static var utils: TorusUtils?
     static var endpoints: Array<String> = []
     static var nodePubKeys: Array<TorusNodePubModel> = []
     static var privKey: String = ""
 
-    let TORUS_TEST_VERIFIER = "torus-test-ios-public";
-    let TORUS_TEST_AGGREGATE_VERIFIER = "torus-ios-public-agg";
+    let TORUS_TEST_VERIFIER = "torus-test-ios-public"
+    let TORUS_TEST_AGGREGATE_VERIFIER = "torus-ios-public-agg"
     let TORUS_TEST_AGGREGATE_VERIFIER_SUB1 = "torus-test-ios-public-agg1"
     let TORUS_TEST_AGGREGATE_VERIFIER_SUB2 = "torus-test-ios-public-agg2"
-    let TORUS_TEST_EMAIL = "hello@tor.us";
-    
+    let TORUS_TEST_EMAIL = "hello@tor.us"
+
     // Fake data
     let TORUS_TEST_VERIFIER_FAKE = "torus-test-ios"
-    
+
     override class func setUp() {
         super.setUp()
         IntegrationTests.fetchNodeDetails = FetchNodeDetails(proxyAddress: "0x6258c9d6c12ed3edda59a1a6527e469517744aa7", network: .ROPSTEN)
         // IntegrationTests.nodeDetails = IntegrationTests.fetchNodeDetails?.getNodeDetails()
         // IntegrationTests.endpoints = IntegrationTests.nodeDetails?.getTorusNodeEndpoints() ?? []
         // IntegrationTests.nodePubKeys = IntegrationTests.nodeDetails?.getTorusNodePub() ?? []
-            
+
         // Faster logins by mocking data.
         IntegrationTests.endpoints = ROPSTEN_CONSTANTS.endpoints
         IntegrationTests.nodePubKeys = ROPSTEN_CONSTANTS.nodePubKeys
-            
+
         IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys)
     }
-    
+
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
-    
-    func test_getPublicAddress(){
+
+    func test_getPublicAddress() {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: self.TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false).done{ data in
+        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false).done { data in
             XCTAssertEqual(data["address"], "0xF2c682Fc2e053D03Bb91846d6755C3A31ed34C0f")
             exp1.fulfill()
-        }.catch{ error in
+        }.catch { error in
             print(error)
             XCTFail()
         }
-        
+
         let exp2 = XCTestExpectation(description: "Should throw if verifier not supported")
-        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: self.TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL, isExtended: false).done{ data in
+        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL, isExtended: false).done { _ in
             XCTFail()
-        }.catch{ error in
+        }.catch { error in
             XCTAssertEqual(error as! String, "getPublicAddress: err: Verifier not supported")
             exp2.fulfill()
         }
         wait(for: [exp1, exp2], timeout: 10)
     }
-    
-    func test_keyAssign(){
-        
+
+    func test_keyAssign() {
         let email = generateRandomEmail(of: 6)
-        
+
         let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
-        IntegrationTests.utils?.keyAssign(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: self.TORUS_TEST_VERIFIER, verifierId: email).done{ data in
-            let result = data.result as! [String:Any]
-            let keys = result["keys"] as! [[String:String]]
+        IntegrationTests.utils?.keyAssign(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER, verifierId: email).done { data in
+            let result = data.result as! [String: Any]
+            let keys = result["keys"] as! [[String: String]]
             let address = keys[0]["address"]
-            
+
             // Add more check to see if address is valid
             XCTAssertNotNil(address)
             exp1.fulfill()
-        }.catch{error in
+        }.catch { _ in
             XCTFail()
         }
-        
+
         wait(for: [exp1], timeout: 15)
     }
-    
-    func test_keyLookup(){
+
+    func test_keyLookup() {
         let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
-        IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL).done{ data in
+        IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL).done { data in
             XCTAssertEqual(data["address"], "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
             exp1.fulfill()
-        }.catch{error in
+        }.catch { _ in
             XCTFail()
         }
-        
+
         let exp2 = XCTestExpectation(description: "Should not be able to do keylookup")
-        IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL).done{ data in
+        IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL).done { data in
             XCTAssertEqual(data["err"]!, "Verifier not supported")
             exp2.fulfill()
-        }.catch{error in
+        }.catch { _ in
             XCTFail()
         }
-        
+
         wait(for: [exp1, exp2], timeout: 10)
     }
-    
-    func test_shouldLogin(){
+
+    func test_shouldLogin() {
         let exp1 = XCTestExpectation(description: "Should be able to do a Login")
-        
-        do{
-            let jwt = try generateIdToken(email: self.TORUS_TEST_EMAIL)
-            let extraParams = ["verifieridentifier": self.TORUS_TEST_VERIFIER, "verifier_id": self.TORUS_TEST_EMAIL] as [String : Any]
+
+        do {
+            let jwt = try generateIdToken(email: TORUS_TEST_EMAIL)
+            let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
             let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-            
-            IntegrationTests.utils?.retrieveShares(endpoints: IntegrationTests.endpoints, verifierIdentifier: self.TORUS_TEST_VERIFIER, verifierId: self.TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer).done{ data in
+
+            IntegrationTests.utils?.retrieveShares(endpoints: IntegrationTests.endpoints, verifierIdentifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer).done { data in
                 XCTAssertEqual(data["publicAddress"], "0xF2c682Fc2e053D03Bb91846d6755C3A31ed34C0f")
                 exp1.fulfill()
-            }.catch{ error in
+            }.catch { error in
                 print(error)
                 XCTFail()
             }
-        }catch{
+        } catch {
             XCTFail("\(error)")
         }
-        
+
         wait(for: [exp1], timeout: 10)
     }
-    
+
     // MARK: Aggregate tests
-    
-    func test_getPublicAddressAggregateLogin(){
+
+    func test_getPublicAddressAggregateLogin() {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false).done{ data in
+        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false).done { data in
             XCTAssertEqual(data["address"], "0xF9f6742d29B4524a3e56f2d7EBE718a31E73CAD1")
             exp1.fulfill()
-        }.catch{ error in
+        }.catch { error in
             print(error)
             XCTFail()
         }
-        
+
         wait(for: [exp1], timeout: 5)
     }
-    
-    
-    func test_keyAssignAggregateLogin(){
-        
+
+    func test_keyAssignAggregateLogin() {
         let email = generateRandomEmail(of: 6)
-        
+
         let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
-        IntegrationTests.utils?.keyAssign(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: self.TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email).done{ data in
-            let result = data.result as! [String:Any]
-            let keys = result["keys"] as! [[String:String]]
+        IntegrationTests.utils?.keyAssign(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email).done { data in
+            let result = data.result as! [String: Any]
+            let keys = result["keys"] as! [[String: String]]
             let address = keys[0]["address"]
-            
+
             // Add more check to see if address is valid
             XCTAssertNotNil(address)
             exp1.fulfill()
-        }.catch{error in
+        }.catch { _ in
             XCTFail()
         }
-        
+
         wait(for: [exp1], timeout: 5)
-        
     }
-    
-    func test_keyLookupAggregateLogin(){
+
+    func test_keyLookupAggregateLogin() {
         let exp1 = XCTestExpectation(description: "Should be able to do a keyLookupAggregateLogin")
-        
-        IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: self.TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL).done{ data in
+
+        IntegrationTests.utils?.keyLookup(endpoints: IntegrationTests.endpoints, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL).done { data in
             XCTAssertEqual(data["address"], "0xF9f6742d29B4524a3e56f2d7EBE718a31E73CAD1")
             exp1.fulfill()
-        }.catch{error in
+        }.catch { _ in
             XCTFail()
         }
-        
-        wait(for: [exp1], timeout: 5)
 
+        wait(for: [exp1], timeout: 5)
     }
-    
-    func test_shouldAggregateLogin(){
+
+    func test_shouldAggregateLogin() {
         let exp1 = XCTestExpectation(description: "Should be able to do a aggregate login")
-        do{
-            let jwt = try generateIdToken(email: self.TORUS_TEST_EMAIL)
-            let extraParams = ["verifieridentifier": self.TORUS_TEST_AGGREGATE_VERIFIER, "verifier_id": self.TORUS_TEST_EMAIL, "sub_verifier_ids":[self.TORUS_TEST_AGGREGATE_VERIFIER_SUB1], "verify_params": [["verifier_id": self.TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String : Any]
+        do {
+            let jwt = try generateIdToken(email: TORUS_TEST_EMAIL)
+            let extraParams = ["verifieridentifier": TORUS_TEST_AGGREGATE_VERIFIER, "verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_AGGREGATE_VERIFIER_SUB1], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Any]
             let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-            
-            IntegrationTests.utils?.retrieveShares(endpoints: IntegrationTests.endpoints, verifierIdentifier: self.TORUS_TEST_AGGREGATE_VERIFIER, verifierId: self.TORUS_TEST_EMAIL, idToken: jwt.sha3(.keccak256), extraParams: buffer).done{ data in
+
+            IntegrationTests.utils?.retrieveShares(endpoints: IntegrationTests.endpoints, verifierIdentifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt.sha3(.keccak256), extraParams: buffer).done { data in
                 XCTAssertEqual(data["publicAddress"], "0xF9f6742d29B4524a3e56f2d7EBE718a31E73CAD1")
                 exp1.fulfill()
-            }.catch{ error in
+            }.catch { _ in
                 XCTFail()
             }
-        }catch{
+        } catch {
             XCTFail("\(error)")
         }
-        
+
         wait(for: [exp1], timeout: 10)
     }
-    
+
     var allTests = [
         ("getPublicAddress", test_getPublicAddress),
     ]
