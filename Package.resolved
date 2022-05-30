@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift.git",
         "state": {
           "branch": null,
-          "revision": "039f56c5d7960f277087a0be51f5eb04ed0ec073",
-          "version": "1.5.1"
+          "revision": "12f2389aca4a07e0dd54c86ec23d0721ed88b8db",
+          "version": "1.4.3"
         }
       },
       {
@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/vapor/jwt-kit.git",
         "state": {
           "branch": null,
-          "revision": "5f9c44d4c196cc06c3fc601f279169f121d6f62d",
-          "version": "4.4.0"
+          "revision": "1822bb0abf0a31a4b5078ec19061c548835253b5",
+          "version": "4.3.0"
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/mxcl/PromiseKit.git",
         "state": {
           "branch": null,
-          "revision": "3fd8c77ded8a4bbee548e3bd6c987ffe8c1e3574",
-          "version": "6.17.0"
+          "revision": "7b07b214dacecb22ca4b680531c7e981d52483f9",
+          "version": "6.16.3"
         }
       },
       {
@@ -78,8 +78,8 @@
         "repositoryURL": "https://github.com/Boilertalk/secp256k1.swift",
         "state": {
           "branch": null,
-          "revision": "45e458ec3be46cf0a6eb68bc947f797852dc65d8",
-          "version": "0.1.6"
+          "revision": "823281fe9def21b384099b72a9a53ca988317b20",
+          "version": "0.1.4"
         }
       },
       {
@@ -87,8 +87,8 @@
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
           "branch": null,
-          "revision": "067254c79435de759aeef4a6a03e43d087d61312",
-          "version": "2.0.5"
+          "revision": "a8911e0fadc25aef1071d582355bd1037a176060",
+          "version": "2.0.4"
         }
       },
       {
@@ -105,8 +105,8 @@
         "repositoryURL": "https://github.com/argentlabs/web3.swift",
         "state": {
           "branch": null,
-          "revision": "0474eb5e883bc4800b3909833207a1d35e72b808",
-          "version": "0.9.3"
+          "revision": "7362febc328f8effc13240439960b0fec9ba94c9",
+          "version": "0.9.1"
         }
       }
     ]

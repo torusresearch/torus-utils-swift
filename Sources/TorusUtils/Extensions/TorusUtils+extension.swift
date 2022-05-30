@@ -693,20 +693,20 @@ extension TorusUtils {
     // MARK: - Helper functions
 
 //
-//    public func privateKeyToAddress(key: Data) -> Data{
+//    public func privateKeyToAddress2(key: Data) -> Data{
 //        print(key)
 //        let publicKey = SECP256K1.privateToPublic(privateKey: key)!
 //        let address = Data(publicKey.sha3(.keccak256).suffix(20))
 //        return address
 //    }
-//
+
 
     public func publicKeyToAddress(key: Data) -> Data {
-        return Data(key.sha3(.keccak256).suffix(20))
+        return key.web3.keccak256;
     }
 
     public func publicKeyToAddress(key: String) -> String {
-        return String(key.sha3(.keccak256).suffix(20))
+        return key.web3.keccak256fromHex.toHexString()
     }
 
     func combinePublicKeys(keys: [String], compressed: Bool) -> String {
