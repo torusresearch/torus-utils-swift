@@ -19,13 +19,16 @@ open class TorusUtils: AbstractTorusUtils {
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
 
     var nodePubKeys: Array<TorusNodePubModel>
-
     var urlSession: URLSession
+    var enableOneKey: Bool
+    var serverTimeOffset: TimeInterval = 0
+    var isNewKey = false
 
-    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared) {
+    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool) {
         self.nodePubKeys = nodePubKeys
         self.urlSession = urlSession
         utilsLogType = loglevel
+        self.enableOneKey = enableOneKey
     }
 
     public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePubModel>) {
@@ -68,40 +71,84 @@ open class TorusUtils: AbstractTorusUtils {
             } else {
                 return Promise<[String: String]>.value(lookupData)
             }
-        }.then { data -> Promise<(BigUInt, [String: String])> in
+        }.done { data in
+            var newData = data
             guard
                 let pubKeyX = data["pub_key_X"],
                 let pubKeyY = data["pub_key_Y"]
             else {
                 throw TorusUtilError.runtime("pub_key_X and pub_key_Y missing from \(data)")
             }
-            return self.getMetadata(dictionary: ["pub_key_X": pubKeyX, "pub_key_Y": pubKeyY]).map { ($0, data) } // Tuple
-        }.done { nonce, data in
-            var newData = data
-            guard
-                let localPubkeyX = newData["pub_key_X"],
-                let localPubkeyY = newData["pub_key_Y"]
-            else { throw TorusUtilError.runtime("Empty pubkey returned from getMetadata.") }
-
-            // Convert to BigInt for modulus
-            let nonce2 = BigInt(nonce).modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
-            if nonce != BigInt(0) {
-                let actualPublicKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
-                guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
-                    throw TorusUtilError.decryptionFailed
+            var nonceResult: GetOrSetNonceResultModel?
+            var modifiedPubKey: String = ""
+            var nonce: BigUInt = 0
+            var typeOfUser = ""
+            var pubNonce: GetOrSetNonceResultModel.XY?
+            if self.enableOneKey {
+                self.getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !self.isNewKey).done { localNonceResult in
+                    nonceResult = localNonceResult
+                    nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
+                    typeOfUser = localNonceResult.typeOfUser
+                    if typeOfUser == "v1" {
+                        modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                        let nonce2 = BigInt(nonce).modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
+                        if nonce != BigInt(0) {
+                            guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
+                                throw TorusUtilError.decryptionFailed
+                            }
+                            modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
+                            newData["address"] = self.publicKeyToAddress(key: modifiedPubKey)
+                        }
+                    } else if typeOfUser == "v2" {
+                        guard localNonceResult.pubNonce != nil else { throw TorusUtilError.decodingFailed("No pun nonce found") }
+                        if localNonceResult.upgraded ?? false {
+                            modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                            pubNonce = localNonceResult.pubNonce!
+                        } else {
+                            modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                            var ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
+                            modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
+                            newData["address"] = self.publicKeyToAddress(key: modifiedPubKey)
+                            print(newData["address"])
+                        }
+                    } else {
+                        seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
+                    }
+                    if !isExtended {
+                        seal.fulfill(["address": newData["address"]!])
+                    } else {
+                        seal.fulfill(newData)
+                    }
+                }.catch { error in
+                    seal.reject(error)
                 }
-                let addedPublicKeys = self.combinePublicKeys(keys: [actualPublicKey, noncePublicKey.toHexString()], compressed: false)
-                newData["address"] = self.publicKeyToAddress(key: addedPublicKeys)
-            }
-
-            if !isExtended {
-                seal.fulfill(["address": newData["address"]!])
             } else {
-                seal.fulfill(newData)
+                typeOfUser = "v1"
+                _ = self.getMetadata(dictionary: ["pub_key_X": pubKeyX, "pub_key_Y": pubKeyY]).map { ($0, data) }.done { localNonce, data in
+                    nonce = localNonce
+                    var newData = data
+                    guard
+                        let localPubkeyX = data["pub_key_X"],
+                        let localPubkeyY = data["pub_key_Y"]
+                    else { throw TorusUtilError.runtime("Empty pubkey returned from getMetadata.") }
+                    modifiedPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
+                    if localNonce != BigInt(0) {
+                        let nonce2 = BigInt(localNonce).modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
+                        guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
+                            throw TorusUtilError.decryptionFailed
+                        }
+                        modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
+                        let address = self.publicKeyToAddress(key: modifiedPubKey)
+                        newData["address"] = address
+                    }
+
+                    if !isExtended {
+                        seal.fulfill(["address": newData["address"]!])
+                    } else {
+                        seal.fulfill(newData)
+                    }
+                }
             }
-        }.catch { err in
-            os_log("getPublicAddress: err: %s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(err)")
-            seal.reject("getPublicAddress: err: \(err)")
         }
 
         return promise

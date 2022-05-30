@@ -636,6 +636,7 @@ extension TorusUtils {
                 let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier": verifier, "verifier_id": verifierId])
                 do {
                     let rpcdata = try encoder.encode(SignerObject)
+                    //signerHost https://signer.tor.us/api/sign
                     var request = try! self.makeUrlRequest(url: "https://signer.tor.us/api/sign")
                     request.addValue(torusNodePubs[index].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
                     request.addValue(torusNodePubs[index].getY().lowercased(), forHTTPHeaderField: "pubKeyY")

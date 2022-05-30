@@ -19,14 +19,14 @@ final class IntegrationTests: XCTestCase {
     static var nodePubKeys: Array<TorusNodePubModel> = []
     static var privKey: String = ""
 
-    let TORUS_TEST_VERIFIER = "torus-test-ios-public"
+    let TORUS_TEST_VERIFIER = "tkey-google-lrc"
     let TORUS_TEST_AGGREGATE_VERIFIER = "torus-ios-public-agg"
     let TORUS_TEST_AGGREGATE_VERIFIER_SUB1 = "torus-test-ios-public-agg1"
     let TORUS_TEST_AGGREGATE_VERIFIER_SUB2 = "torus-test-ios-public-agg2"
     let TORUS_TEST_EMAIL = "hello@tor.us"
 
     // Fake data
-    let TORUS_TEST_VERIFIER_FAKE = "torus-test-ios"
+    let TORUS_TEST_VERIFIER_FAKE = "google-lrc"
 
     override class func setUp() {
         super.setUp()
@@ -39,7 +39,7 @@ final class IntegrationTests: XCTestCase {
         IntegrationTests.endpoints = ROPSTEN_CONSTANTS.endpoints
         IntegrationTests.nodePubKeys = ROPSTEN_CONSTANTS.nodePubKeys
 
-        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys)
+        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, enableOneKey: true)
     }
 
     override func setUpWithError() throws {
@@ -47,23 +47,44 @@ final class IntegrationTests: XCTestCase {
     }
 
     func test_getPublicAddress() {
+     
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false).done { data in
-            XCTAssertEqual(data["address"], "0xF2c682Fc2e053D03Bb91846d6755C3A31ed34C0f")
+        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER, verifierId: "somev2user@gmail.com", isExtended: true).done { data in
+            print(data)
+            XCTAssertEqual(data["address"], "0xE91200d82029603d73d6E307DbCbd9A7D0129d8D")
             exp1.fulfill()
         }.catch { error in
             print(error)
             XCTFail()
         }
+        
+        
+        
+        
 
-        let exp2 = XCTestExpectation(description: "Should throw if verifier not supported")
-        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL, isExtended: false).done { _ in
-            XCTFail()
-        }.catch { error in
-            XCTAssertEqual(error as! String, "getPublicAddress: err: Verifier not supported")
-            exp2.fulfill()
+//        let exp2 = XCTestExpectation(description: "Should throw if verifier not supported")
+//        IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL, isExtended: false).done { _ in
+//            XCTFail()
+//        }.catch { error in
+//            XCTAssertEqual(error as! String, "getPublicAddress: err: Verifier not supported")
+//            exp2.fulfill()
+//        }
+        wait(for: [exp1], timeout: 10)
+    }
+    
+    func test_polygon_public_address(){
+        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let fnd = FetchNodeDetails(proxyAddress: "0x9f072ba19b3370e512aa1b4bfcdaf97283168005", network: .POLYGON)
+        _ = fnd.getNodeDetails(verifier: "tkey-google-cyan", verifierID: "somev2user@gmail.com").done { nodeDetails in
+            IntegrationTests.utils?.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "tkey-google-cyan", verifierId: "somev2user@gmail.com", isExtended: false).done { data in
+                XCTAssertEqual(data["address"], "0x8EA83Ace86EB414747F2b23f03C38A34E0217814")
+                exp1.fulfill()
+            }.catch { error in
+                print(error)
+                XCTFail()
+            }
         }
-        wait(for: [exp1, exp2], timeout: 10)
+        wait(for: [exp1], timeout: 10)
     }
 
     func test_keyAssign() {
