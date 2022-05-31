@@ -39,7 +39,7 @@ final class IntegrationTests: XCTestCase {
         IntegrationTests.endpoints = ROPSTEN_CONSTANTS.endpoints
         IntegrationTests.nodePubKeys = ROPSTEN_CONSTANTS.nodePubKeys
 
-        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, enableOneKey: false)
+        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, enableOneKey: true)
     }
 
     override func setUpWithError() throws {
@@ -62,7 +62,7 @@ final class IntegrationTests: XCTestCase {
         _ = fnd.getNodeDetails(verifier: "tkey-google-lrc", verifierID: "somev2user@gmail.com").done { nodeDetails in
             IntegrationTests.utils?.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "tkey-google-lrc", verifierId: "somev2user@gmail.com", isExtended: true).done { data in
                 print(data)
-                XCTAssertEqual(data["address"], "0x376597141d8d219553378313d18590F373B09795")
+                XCTAssertEqual(data["address"], "0xE91200d82029603d73d6E307DbCbd9A7D0129d8D")
                 exp1.fulfill()
             }.catch { error in
                 print(error)

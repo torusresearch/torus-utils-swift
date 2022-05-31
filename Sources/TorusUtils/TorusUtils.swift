@@ -109,7 +109,7 @@ open class TorusUtils: AbstractTorusUtils {
                             modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                             var ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                             modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
-                            newData["address"] = self.publicKeyToAddress(key: modifiedPubKey)
+                            newData["address"] = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128)))
                             print(newData["address"])
                         }
                     } else {
