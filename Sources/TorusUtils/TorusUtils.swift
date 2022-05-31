@@ -4,13 +4,13 @@
  */
 
 import BigInt
+import Crypto
 import FetchNodeDetails
 import Foundation
 import OSLog
 import PromiseKit
 import secp256k1
 import web3
-import Crypto
 
 @available(macOSApplicationExtension 10.12, *)
 var utilsLogType = OSLogType.default

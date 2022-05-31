@@ -6,13 +6,13 @@
 //
 
 import BigInt
+import Crypto
 import FetchNodeDetails
 import Foundation
 import OSLog
 import PromiseKit
 import secp256k1
 import web3
-import Crypto
 
 extension TorusUtils {
     func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) -> Promise<String> {
@@ -74,13 +74,11 @@ extension TorusUtils {
                         modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
                         address = self.publicKeyToAddress(key: modifiedPubKey)
                         seal.fulfill(address)
-                    }
-                    else{
+                    } else {
                         seal.fulfill(data["address"]!)
                     }
                 } else if typeOfUser == "v2" {
-                    
-                    print(self.combinePublicKeys(keys: [pubKeyX,pubKeyY], compressed: false))
+                    print(self.combinePublicKeys(keys: [pubKeyX, pubKeyY], compressed: false))
                     modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                     modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
