@@ -10,6 +10,7 @@ import OSLog
 import PromiseKit
 import secp256k1
 import web3
+import Crypto
 
 @available(macOSApplicationExtension 10.12, *)
 var utilsLogType = OSLogType.default
@@ -24,7 +25,7 @@ open class TorusUtils: AbstractTorusUtils {
     var serverTimeOffset: TimeInterval = 0
     var isNewKey = false
 
-    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool) {
+    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false) {
         self.nodePubKeys = nodePubKeys
         self.urlSession = urlSession
         utilsLogType = loglevel

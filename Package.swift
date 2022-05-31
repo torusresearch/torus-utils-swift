@@ -32,4 +32,5 @@ let package = Package(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "web3.swift", .product(name: "PromiseKit", package: "PromiseKit"), "PMKFoundation", "CryptorECC"]),
     ]
+    
 )

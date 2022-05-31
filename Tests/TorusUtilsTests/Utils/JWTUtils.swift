@@ -45,7 +45,7 @@ func generateRandomEmail(of length: Int) -> String {
     return s + "@gmail.com"
 }
 
-func generateIdToken(email: String) throws -> String {
+func generateIdToken(email: String) throws -> String { 
     let verifierPrivateKeyForSigning =
         """
         -----BEGIN PRIVATE KEY-----
@@ -74,6 +74,8 @@ func generateIdToken(email: String) throws -> String {
         throw error
     }
 }
+
+
 
 // key 2
 //

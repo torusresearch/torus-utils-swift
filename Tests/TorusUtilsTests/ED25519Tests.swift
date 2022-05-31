@@ -6,7 +6,6 @@
 //
 
 import XCTest
-
 @testable import TorusUtils
 
 class ED25519Tests: XCTestCase {
