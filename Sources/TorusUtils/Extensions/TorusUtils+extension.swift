@@ -702,11 +702,11 @@ extension TorusUtils {
 
 
     public func publicKeyToAddress(key: Data) -> Data {
-        return key.web3.keccak256;
+        return key.web3.keccak256.suffix(20);
     }
 
     public func publicKeyToAddress(key: String) -> String {
-        return String(key.web3.keccak256fromHex.toHexString().suffix(40))
+        return key.web3.keccak256fromHex.suffix(20).toHexString()
     }
 
     func combinePublicKeys(keys: [String], compressed: Bool) -> String {
