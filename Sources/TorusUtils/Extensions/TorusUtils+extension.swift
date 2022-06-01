@@ -520,7 +520,7 @@ extension TorusUtils {
         }
 
         // allowHost = 'https://signer.tor.us/api/allow'
-        var allowHostRequest = try! makeUrlRequest(url: "https://signer.tor.us/api/allow")
+        var allowHostRequest = try! makeUrlRequest(url: self.allowHost)
         allowHostRequest.httpMethod = "GET"
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
@@ -637,7 +637,7 @@ extension TorusUtils {
                 do {
                     let rpcdata = try encoder.encode(SignerObject)
                     //signerHost https://signer.tor.us/api/sign
-                    var request = try! self.makeUrlRequest(url: "https://signer.tor.us/api/sign")
+                    var request = try! self.makeUrlRequest(url: self.signerHost)
                     request.addValue(torusNodePubs[index].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
                     request.addValue(torusNodePubs[index].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
                     request.httpBody = rpcdata
@@ -710,7 +710,7 @@ extension TorusUtils {
     }
 
     func combinePublicKeys(keys: [String], compressed: Bool) -> String {
-        let data = keys.map({ Data(hex: $0) })
+        let data = keys.map({ Data.fromHex($0)! })
         let added = SECP256K1.combineSerializedPublicKeys(keys: data)
         return (added?.toHexString())!
     }

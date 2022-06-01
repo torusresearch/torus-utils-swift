@@ -24,12 +24,17 @@ open class TorusUtils: AbstractTorusUtils {
     var enableOneKey: Bool
     var serverTimeOffset: TimeInterval = 0
     var isNewKey = false
+    var metaDataHost = "https://metadata.tor.us"
+    var signerHost:String
+    var allowHost:String
 
-    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false) {
+    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false,signerHost:String = "https://signer.tor.us/api/sign",allowHost:String = "https://signer.tor.us/api/allow") {
         self.nodePubKeys = nodePubKeys
         self.urlSession = urlSession
         utilsLogType = loglevel
         self.enableOneKey = enableOneKey
+        self.signerHost = signerHost
+        self.allowHost = allowHost
     }
 
     public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePubModel>) {
@@ -107,7 +112,7 @@ open class TorusUtils: AbstractTorusUtils {
                             pubNonce = localNonceResult.pubNonce!
                         } else {
                             modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
-                            var ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
+                            let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                             modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
                             newData["address"] = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128)))
                             print(newData["address"])

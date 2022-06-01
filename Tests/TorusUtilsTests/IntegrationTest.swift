@@ -19,7 +19,7 @@ final class IntegrationTests: XCTestCase {
     static var nodePubKeys: Array<TorusNodePubModel> = []
     static var privKey: String = ""
 
-    let TORUS_TEST_VERIFIER = "tkey-google-lrc"
+    let TORUS_TEST_VERIFIER = "torus-test-health"
     let TORUS_TEST_AGGREGATE_VERIFIER = "torus-ios-public-agg"
     let TORUS_TEST_AGGREGATE_VERIFIER_SUB1 = "torus-test-ios-public-agg1"
     let TORUS_TEST_AGGREGATE_VERIFIER_SUB2 = "torus-test-ios-public-agg2"
@@ -39,7 +39,7 @@ final class IntegrationTests: XCTestCase {
         IntegrationTests.endpoints = ROPSTEN_CONSTANTS.endpoints
         IntegrationTests.nodePubKeys = ROPSTEN_CONSTANTS.nodePubKeys
 
-        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, enableOneKey: true)
+        IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, enableOneKey: false)
     }
 
     override func setUpWithError() throws {
@@ -62,7 +62,7 @@ final class IntegrationTests: XCTestCase {
         _ = fnd.getNodeDetails(verifier: "tkey-google-lrc", verifierID: "somev2user@gmail.com").done { nodeDetails in
             IntegrationTests.utils?.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "tkey-google-lrc", verifierId: "somev2user@gmail.com", isExtended: true).done { data in
                 print(data)
-                XCTAssertEqual(data["address"], "0xE91200d82029603d73d6E307DbCbd9A7D0129d8D")
+                XCTAssertEqual(data["address"], "0xe91200d82029603d73d6e307dbcbd9a7d0129d8d")
                 exp1.fulfill()
             }.catch { error in
                 print(error)
@@ -84,11 +84,30 @@ final class IntegrationTests: XCTestCase {
     func test_getUserTypeAndAddress() {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let verifier: String = "tkey-google-lrc"
-        let verifierID: String = "caspertorus@gmail.com"
+        let verifierID: String = "somev2user@gmail.com"
         let fnd = FetchNodeDetails(proxyAddress: "0x6258c9d6c12ed3edda59a1a6527e469517744aa7", network: .ROPSTEN)
         _ = fnd.getNodeDetails(verifier: verifier, verifierID: verifierID).done { nodeDetails in
             IntegrationTests.utils?.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID).done { address in
-                XCTAssertEqual(address, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
+                XCTAssertEqual(address, "0xE91200d82029603d73d6E307DbCbd9A7D0129d8D")
+                exp1.fulfill()
+            }.catch { error in
+                print(error)
+                XCTFail()
+            }
+        }
+
+        wait(for: [exp1], timeout: 10)
+    }
+    
+    
+    func test_getUserTypeAndAddress_polygon() {
+        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let verifier: String = "tkey-google-cyan"
+        let verifierID: String = "somev2user@gmail.com"
+        let fnd = FetchNodeDetails(proxyAddress: "0x9f072ba19b3370e512aa1b4bfcdaf97283168005", network: .POLYGON)
+        _ = fnd.getNodeDetails(verifier: verifier, verifierID: verifierID).done { nodeDetails in
+            IntegrationTests.utils?.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID).done { address in
+                XCTAssertEqual(address, "0x8EA83Ace86EB414747F2b23f03C38A34E0217814")
                 exp1.fulfill()
             }.catch { error in
                 print(error)
@@ -102,9 +121,9 @@ final class IntegrationTests: XCTestCase {
     func test_polygon_public_address() {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let fnd = FetchNodeDetails(proxyAddress: "0x9f072ba19b3370e512aa1b4bfcdaf97283168005", network: .POLYGON)
-        _ = fnd.getNodeDetails(verifier: "tkey-google-cyan", verifierID: "somev2user@gmail.com").done { nodeDetails in
-            IntegrationTests.utils?.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "tkey-google-cyan", verifierId: "somev2user@gmail.com", isExtended: false).done { data in
-                XCTAssertEqual(data["address"], "0x8EA83Ace86EB414747F2b23f03C38A34E0217814")
+        _ = fnd.getNodeDetails(verifier: "tkey-google-cyan", verifierID: "hello@tor.us").done { nodeDetails in
+            IntegrationTests.utils?.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "tkey-google-cyan", verifierId: "hello@tor.us", isExtended: false).done { data in
+                XCTAssertEqual(data["address"], "0xA3767911A84bE6907f26C572bc89426dDdDB2825")
                 exp1.fulfill()
             }.catch { error in
                 print(error)
@@ -153,7 +172,7 @@ final class IntegrationTests: XCTestCase {
         wait(for: [exp1, exp2], timeout: 10)
     }
 
-    func test_shouldLogin() {
+        func test_shouldLogin() {
         let exp1 = XCTestExpectation(description: "Should be able to do a Login")
 
         do {

@@ -18,7 +18,7 @@ extension TorusUtils {
     func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) -> Promise<String> {
         let (promise, seal) = Promise<String>.pending()
         let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
-        keyLookup.then { lookupData -> Promise<[String: String]> in
+         keyLookup.then { lookupData -> Promise<[String: String]> in
             let error = lookupData["err"]
 
             if error != nil {
@@ -61,7 +61,7 @@ extension TorusUtils {
             var typeOfUser = ""
             var pubNonce: GetOrSetNonceResultModel.XY?
             var address: String = ""
-            self.getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !self.isNewKey).done { localNonceResult in
+           _ = self.getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !self.isNewKey).done { localNonceResult in
                 nonceResult = localNonceResult
                 nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
                 typeOfUser = localNonceResult.typeOfUser
@@ -78,11 +78,10 @@ extension TorusUtils {
                         seal.fulfill(data["address"]!)
                     }
                 } else if typeOfUser == "v2" {
-                    print(self.combinePublicKeys(keys: [pubKeyX, pubKeyY], compressed: false))
                     modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                     modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
-                    address = self.publicKeyToAddress(key: modifiedPubKey)
+                    address = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128))).web3.withHexPrefix
                     seal.fulfill(address)
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
