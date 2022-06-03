@@ -706,7 +706,7 @@ extension TorusUtils {
     }
 
     public func publicKeyToAddress(key: String) -> String {
-        return key.web3.keccak256fromHex.suffix(20).toHexString()
+        return key.web3.keccak256fromHex.suffix(20).toHexString().toChecksumAddress()
     }
 
     func combinePublicKeys(keys: [String], compressed: Bool) -> String {

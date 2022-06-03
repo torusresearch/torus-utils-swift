@@ -179,6 +179,7 @@ open class TorusUtils: AbstractTorusUtils {
         // Hash the token from OAuth login
         let timestamp = String(Int(getTimestamp()))
         let hashedToken = idToken.sha3(.keccak256)
+    
         var publicAddress: String = ""
         var lookupPubkeyX: String = ""
         var lookupPubkeyY: String = ""
@@ -201,7 +202,6 @@ open class TorusUtils: AbstractTorusUtils {
             return self.commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         }.then { data -> Promise<(String, String, String)> in
             os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, data)
-
             return self.retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
         }.then { x, y, key in
             self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map { ($0, key) } // Tuple

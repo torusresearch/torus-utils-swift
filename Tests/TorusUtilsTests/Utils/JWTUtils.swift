@@ -49,8 +49,7 @@ func generateIdToken(email: String) throws -> String {
     let verifierPrivateKeyForSigning =
         """
         -----BEGIN PRIVATE KEY-----
-        MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCA3pdm53N0jlj3+7st1
-        kIxw9aogvHfbq09TlWKRFPGJjA==
+        MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCCD7oLrcKae+jVZPGx52Cb/lKhdKxpXjl9eGNa1MlY57A==
         -----END PRIVATE KEY-----
         """
 
