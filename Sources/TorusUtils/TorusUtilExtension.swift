@@ -13,14 +13,13 @@ import OSLog
 import PromiseKit
 import secp256k1
 import web3
+import SwiftUI
 
 extension TorusUtils {
-    func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) -> Promise<String> {
-        let (promise, seal) = Promise<String>.pending()
-        let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
-         keyLookup.then { lookupData -> Promise<[String: String]> in
+    func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) -> Promise<GetUserAndAddressModel> {
+        let (promise, seal) = Promise<GetUserAndAddressModel>.pending()
+        _ = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID).then { lookupData -> Promise<[String: String]> in
             let error = lookupData["err"]
-
             if error != nil {
                 guard let errorString = error else {
                     throw TorusUtilError.runtime("Error not supported")
@@ -44,7 +43,6 @@ extension TorusUtils {
                 } else {
                     throw error!
                 }
-
             } else {
                 return Promise<[String: String]>.value(lookupData)
             }
@@ -55,14 +53,11 @@ extension TorusUtils {
             else {
                 throw TorusUtilError.runtime("pub_key_X and pub_key_Y missing from \(data)")
             }
-            var nonceResult: GetOrSetNonceResultModel?
             var modifiedPubKey: String = ""
             var nonce: BigUInt = 0
             var typeOfUser = ""
-            var pubNonce: GetOrSetNonceResultModel.XY?
             var address: String = ""
            _ = self.getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !self.isNewKey).done { localNonceResult in
-                nonceResult = localNonceResult
                 nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
                 typeOfUser = localNonceResult.typeOfUser
                 if typeOfUser == "v1" {
@@ -73,21 +68,25 @@ extension TorusUtils {
                         }
                         modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
                         address = self.publicKeyToAddress(key: modifiedPubKey)
-                        seal.fulfill(address)
                     } else {
-                        seal.fulfill(data["address"]!)
+                        address = data["address"] ?? ""
                     }
                 } else if typeOfUser == "v2" {
                     modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                     modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
                     address = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128))).web3.withHexPrefix
-                    seal.fulfill(address)
+        
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
                 }
+               let val:GetUserAndAddressModel = .init(typeOfUser: .init(rawValue: typeOfUser) ?? .v1, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address: address, x: pubKeyX, y: pubKeyY)
+               seal.fulfill(val)
             }
         }
+        .catch({ error in
+            seal.reject(error)
+        })
 
         return promise
     }
@@ -135,3 +134,20 @@ extension TorusUtils {
         }
     }
 }
+
+
+enum TypeOfUser:String{
+    case v1 = "v1"
+    case v2 = "v2"
+}
+struct GetUserAndAddressModel{
+    
+    var typeOfUser:TypeOfUser
+    var pubNonce:PubNonce?
+    var nonceResult:String?
+    var address:String
+    var x:String
+    var y:String
+}
+
+

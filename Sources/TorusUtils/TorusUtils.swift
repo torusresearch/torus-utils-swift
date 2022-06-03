@@ -41,15 +41,11 @@ open class TorusUtils: AbstractTorusUtils {
         self.nodePubKeys = nodePubKeys
     }
 
-//    public func setEndpoints(endpoints: Array<String>){
-//        self.endpoints = endpoints
-//    }
+
 
     public func getPublicAddress(endpoints: Array<String>, torusNodePubs: Array<TorusNodePubModel>, verifier: String, verifierId: String, isExtended: Bool) -> Promise<[String: String]> {
         let (promise, seal) = Promise<[String: String]>.pending()
-        let keyLookup = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-
-        keyLookup.then { lookupData -> Promise<[String: String]> in
+        _ = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId).then { lookupData -> Promise<[String: String]> in
             let error = lookupData["err"]
 
             if error != nil {
@@ -89,7 +85,7 @@ open class TorusUtils: AbstractTorusUtils {
             var modifiedPubKey: String = ""
             var nonce: BigUInt = 0
             var typeOfUser = ""
-            var pubNonce: GetOrSetNonceResultModel.XY?
+            var pubNonce: PubNonce?
             if self.enableOneKey {
                 self.getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !self.isNewKey).done { localNonceResult in
                     nonceResult = localNonceResult
@@ -156,6 +152,9 @@ open class TorusUtils: AbstractTorusUtils {
                 }
             }
         }
+        .catch({ error in
+            seal.reject(error)
+        })
 
         return promise
     }

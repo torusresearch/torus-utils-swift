@@ -24,14 +24,15 @@ public struct GetOrSetNonceResultModel: Decodable {
 
     var typeOfUser: String
     var nonce: String?
-    var pubNonce: XY?
+    var pubNonce: PubNonce?
     var ifps: String?
     var upgraded: Bool?
 
-    struct XY: Decodable {
-        var x: String
-        var y: String
-    }
+   
+}
+struct PubNonce: Decodable {
+    var x: String
+    var y: String
 }
 
 public struct UserTypeAndAddressModel {
