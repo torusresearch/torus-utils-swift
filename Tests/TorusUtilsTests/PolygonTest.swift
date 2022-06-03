@@ -107,14 +107,12 @@ class PolygonTest: XCTestCase {
     }
     
  
-    func test_key_assign_polygon() {
+    func test_key_assign_polygon() async{
         let fakeEmail = generateRandomEmail(of: 6)
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let verifier: String = "tkey-google-cyan"
         let verifierID: String = fakeEmail
-        let fnd = FetchNodeDetails(proxyAddress: "0x9f072ba19b3370e512aa1b4bfcdaf97283168005", network: .POLYGON)
-        _ = fnd.getNodeDetails(verifier: verifier, verifierID: verifierID).done { nodeDetails in
-         let tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), signerHost: "https://signer-polygon.tor.us/api/sign", allowHost: "https://signer-polygon.tor.us/api/allow")
+        let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID, isExtended: false).done { data in
                 XCTAssertNotNil(data["address"])
                 XCTAssertNotEqual(data["address"],"")
@@ -123,20 +121,17 @@ class PolygonTest: XCTestCase {
                 print(error)
                 XCTFail()
             }
-        }
         wait(for: [exp1], timeout: 10)
     }
     
-    func test_login_polygon() {
+    func test_login_polygon() async{
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let verifier: String = "tkey-google-cyan"
         let verifierID: String =   TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
         let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-        let fnd = FetchNodeDetails(proxyAddress: "0x9f072ba19b3370e512aa1b4bfcdaf97283168005", network: .POLYGON)
-        _ = fnd.getNodeDetails(verifier: verifier, verifierID: verifierID).done { nodeDetails in
-         let tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), signerHost: "https://signer-polygon.tor.us/api/sign", allowHost: "https://signer-polygon.tor.us/api/allow")
+        let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
                // XCTAssertEqual(data["address"], "0xA3767911A84bE6907f26C572bc89426dDdDB2825".lowercased())
                 exp1.fulfill()
@@ -145,20 +140,17 @@ class PolygonTest: XCTestCase {
                 XCTFail(error.localizedDescription)
                 exp1.fulfill()
             }
-        }
         wait(for: [exp1], timeout: 10)
     }
     
-    func test_aggregate_login_polygon() {
+    func test_aggregate_login_polygon() async{
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let verifier: String = "tkey-google-cyan"
         let verifierID: String =   TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
         let extraParams = ["verifieridentifier": TORUS_TEST_AGGREGATE_VERIFIER, "verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_AGGREGATE_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-        let fnd = FetchNodeDetails(proxyAddress: "0x9f072ba19b3370e512aa1b4bfcdaf97283168005", network: .POLYGON)
-        _ = fnd.getNodeDetails(verifier: verifier, verifierID: verifierID).done { nodeDetails in
-         let tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), signerHost: "https://signer-polygon.tor.us/api/sign", allowHost: "https://signer-polygon.tor.us/api/allow")
+        let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
                // XCTAssertEqual(data["address"], "0xA3767911A84bE6907f26C572bc89426dDdDB2825".lowercased())
                 exp1.fulfill()
@@ -167,7 +159,6 @@ class PolygonTest: XCTestCase {
                 XCTFail(error.localizedDescription)
                 exp1.fulfill()
             }
-        }
         wait(for: [exp1], timeout: 10)
     }
     
