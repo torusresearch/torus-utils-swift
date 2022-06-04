@@ -31,11 +31,6 @@ class IntegrationTests: XCTestCase {
     override func setUp() {
         super.setUp()
         IntegrationTests.fetchNodeDetails = FetchNodeDetails(proxyAddress: "0x6258c9d6c12ed3edda59a1a6527e469517744aa7", network: .ROPSTEN)
-        // IntegrationTests.nodeDetails = IntegrationTests.fetchNodeDetails?.getNodeDetails()
-        // IntegrationTests.endpoints = IntegrationTests.nodeDetails?.getTorusNodeEndpoints() ?? []
-        // IntegrationTests.nodePubKeys = IntegrationTests.nodeDetails?.getTorusNodePub() ?? []
-
-        // Faster logins by mocking data.
         IntegrationTests.endpoints = ROPSTEN_CONSTANTS.endpoints
         IntegrationTests.nodePubKeys = ROPSTEN_CONSTANTS.nodePubKeys
         IntegrationTests.utils = TorusUtils(nodePubKeys: IntegrationTests.nodePubKeys, enableOneKey: false)
@@ -73,7 +68,7 @@ class IntegrationTests: XCTestCase {
         _ = fnd.getNodeDetails(verifier: "tkey-google-lrc", verifierID: "somev2user@gmail.com").done { nodeDetails in
             IntegrationTests.utils?.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "tkey-google-lrc", verifierId: "somev2user@gmail.com", isExtended: true).done { data in
                 print(data)
-                XCTAssertEqual(data["address"] as! String, "0x376597141d8d219553378313d18590F373B09795")
+                XCTAssertEqual(data.address, "0x376597141d8d219553378313d18590F373B09795")
                 exp1.fulfill()
             }.catch { error in
                 print(error)
@@ -179,7 +174,7 @@ class IntegrationTests: XCTestCase {
     func test_getPublicAddressAggregateLogin() {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         IntegrationTests.utils?.getPublicAddress(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false).done { data in
-            XCTAssertEqual(data["address"] as! String, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
+            XCTAssertEqual(data.address, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
             exp1.fulfill()
         }.catch { error in
             print(error)

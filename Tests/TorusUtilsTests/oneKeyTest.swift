@@ -47,7 +47,7 @@ class OneKeyTest: XCTestCase {
         let verifierID = TORUS_TEST_EMAIL
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID, isExtended: true).done { val in
-            XCTAssertEqual(val["address"], "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
+            XCTAssertEqual(val.address, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
             // XCTAssertEqual(val["typeOfUser"], TypeOfUser.v1.rawValue)
             exp1.fulfill()
         }.catch { error in
@@ -104,8 +104,8 @@ class OneKeyTest: XCTestCase {
         let verifierID: String = fakeEmail
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID, isExtended: false).done { data in
-            XCTAssertNotNil(data["address"])
-            XCTAssertNotEqual(data["address"], "")
+            XCTAssertNotNil(data.address)
+            XCTAssertNotEqual(data.address, "")
             exp1.fulfill()
         }.catch { error in
             print(error)

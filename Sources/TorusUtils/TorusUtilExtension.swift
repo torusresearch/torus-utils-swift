@@ -12,13 +12,13 @@ import Foundation
 import OSLog
 import PromiseKit
 import secp256k1
-import web3
 import SwiftUI
+import web3
 
 extension TorusUtils {
-    func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) -> Promise<GetUserAndAddressModel> {
+    public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) -> Promise<GetUserAndAddressModel> {
         let (promise, seal) = Promise<GetUserAndAddressModel>.pending()
-        _ = self.keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID).then { lookupData -> Promise<[String: String]> in
+        _ = keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID).then { lookupData -> Promise<[String: String]> in
             let error = lookupData["err"]
             if error != nil {
                 guard let errorString = error else {
@@ -57,7 +57,7 @@ extension TorusUtils {
             var nonce: BigUInt = 0
             var typeOfUser = ""
             var address: String = ""
-           _ = self.getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !self.isNewKey).done { localNonceResult in
+            _ = self.getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !self.isNewKey).done { localNonceResult in
                 nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
                 typeOfUser = localNonceResult.typeOfUser
                 if typeOfUser == "v1" {
@@ -76,12 +76,12 @@ extension TorusUtils {
                     let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                     modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
                     address = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128))).web3.withHexPrefix
-        
+
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
                 }
-               let val:GetUserAndAddressModel = .init(typeOfUser: .init(rawValue: typeOfUser) ?? .v1, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address: address, x: pubKeyX, y: pubKeyY)
-               seal.fulfill(val)
+                let val: GetUserAndAddressModel = .init(typeOfUser: .init(rawValue: typeOfUser) ?? .v1, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address: address, x: pubKeyX, y: pubKeyY)
+                seal.fulfill(val)
             }
         }
         .catch({ error in
@@ -127,27 +127,12 @@ extension TorusUtils {
             let timeStamp = BigInt(serverTimeOffset + Date().timeIntervalSince1970 / 1000).description
             let setData: MetadataParams.SetData = .init(data: message, timeStamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
-            var sig = SECP256K1.signForRecovery(hash: encodedData.sha3(.keccak256), privateKey: key)
+            var sig = SECP256K1.signForRecovery(hash: encodedData.sha3(.keccak256), privateKey: key).serializedSignature?.web3.hexString
             return .init(pub_key_X: "key", pub_key_Y: "", setData: .init(data: "", timeStamp: ""), signature: "")
         } catch let error {
             throw error
         }
     }
-}
-
-
-enum TypeOfUser:String{
-    case v1 = "v1"
-    case v2 = "v2"
-}
-struct GetUserAndAddressModel{
-    
-    var typeOfUser:TypeOfUser
-    var pubNonce:PubNonce?
-    var nonceResult:String?
-    var address:String
-    var x:String
-    var y:String
 }
 
 

@@ -109,8 +109,8 @@ class PolygonTest: XCTestCase {
         let verifierID: String = fakeEmail
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID, isExtended: false).done { data in
-            XCTAssertNotNil(data["address"])
-            XCTAssertNotEqual(data["address"], "")
+            XCTAssertNotNil(data.address)
+            XCTAssertNotEqual(data.address, "")
             exp1.fulfill()
         }.catch { error in
             print(error)

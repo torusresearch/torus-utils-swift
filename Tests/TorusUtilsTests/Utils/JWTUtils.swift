@@ -74,11 +74,3 @@ func generateIdToken(email: String) throws -> String {
     }
 }
 
-
-
-// key 2
-//
-// -----BEGIN PRIVATE KEY-----
-// MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCCTK9Ly1QItO9QLoX12
-// IJC5lTMiO+7eZXQDiYi8mGLMvg==
-// -----END PRIVATE KEY-----

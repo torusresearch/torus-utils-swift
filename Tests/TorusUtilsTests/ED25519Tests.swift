@@ -36,4 +36,16 @@ class ED25519Tests: XCTestCase {
         let address = "0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1"
         XCTAssertEqual(address.toChecksumAddress(), "0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1")
     }
+    
+    func test_generateMetadata(){
+        let msg = "Hello"
+        let privKey = "fb30e31d3a82f4751b91b470dsdsdsds"
+       let tu = TorusUtils(nodePubKeys: ROPSTEN_CONSTANTS.nodePubKeys)
+        do{
+        try tu.generateParams(message: msg, privateKey: privKey)
+        }
+        catch{
+            print(error)
+        }
+    }
 }
