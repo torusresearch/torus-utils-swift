@@ -45,7 +45,7 @@ class ED25519Tests: XCTestCase {
         try tu.generateParams(message: msg, privateKey: privKey)
         }
         catch{
-            print(error)
+         XCTFail()
         }
     }
 }

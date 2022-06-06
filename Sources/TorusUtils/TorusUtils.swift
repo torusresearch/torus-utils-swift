@@ -204,7 +204,7 @@ open class TorusUtils: AbstractTorusUtils {
         }.done { x, y, key in
             if self.enableOneKey {
              _ = self.getOrSetNonce(x: x, y: y,privateKey: key,getOnly: true).done { result in
-                    let nonce = BigUInt(result.nonce ?? "0") ?? 0
+                    let nonce = BigUInt(result.nonce ?? "0",radix: 16) ?? 0
                     if nonce != BigInt(0) {
                         let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
                         let newKey = tempNewKey.modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)

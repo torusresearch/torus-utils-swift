@@ -65,7 +65,7 @@ func generateIdToken(email: String) throws -> String {
         let emailComponent = email.components(separatedBy: "@")[0]
         let subject = "email|" + emailComponent
 
-        let payload = TestPayload(subject: SubjectClaim(stringLiteral: subject), expiration: ExpirationClaim(value: modifiedDate), audience: "torus-key-test", isAdmin: false, emailVerified: true, issuer: "torus-key-test", iat: IssuedAtClaim(value: Date()), email: "hello@tor.us")
+        let payload = TestPayload(subject: SubjectClaim(stringLiteral: subject), expiration: ExpirationClaim(value: modifiedDate), audience: "torus-key-test", isAdmin: false, emailVerified: true, issuer: "torus-key-test", iat: IssuedAtClaim(value: Date()), email: email)
         let jwt = try signers.sign(payload)
         return jwt
     } catch {
