@@ -128,21 +128,15 @@ extension TorusUtils {
             else {
                 throw TorusUtilError.runtime("invalid pric key")
             }
-            let timeStamp = BigInt(serverTimeOffset + Date().timeIntervalSince1970 / 1000).description
-            let setData: MetadataParams.SetData = .init(data: message, timeStamp: timeStamp)
+            let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970),radix: 16)
+            let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
-            guard let sigData = SECP256K1.signForRecovery(hash: encodedData.sha3(.keccak256), privateKey: privateKey.web3.keccak256).serializedSignature else {
+            guard let sigData = SECP256K1.signForRecovery(hash: encodedData.web3.keccak256, privateKey: privKeyData).serializedSignature else {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
             }
             let pubKeyX = String(publicKey.prefix(64))
             let pubKeyY = String(publicKey.suffix(64))
-            guard let unmarshalledSig = SECP256K1.unmarshalSignature(signatureData: sigData) else {
-                throw TorusUtilError.runtime("error")
-            }
-            let r = unmarshalledSig.r.toHexString()
-            let s = unmarshalledSig.s.toHexString()
-            var sig = r + s
-            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: s)
+            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, set_data: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
         }

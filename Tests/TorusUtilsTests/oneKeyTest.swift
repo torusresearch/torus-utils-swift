@@ -87,14 +87,14 @@ class OneKeyTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer).done { data in
-            XCTAssertEqual(data["publicAddress"], "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
+            XCTAssertEqual(data["publicAddress"], "0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B")
             exp1.fulfill()
         }.catch { error in
             print(error)
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
+        wait(for: [exp1], timeout: 30)
     }
 
     func test_key_assign() async {

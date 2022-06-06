@@ -62,12 +62,12 @@ public struct UserTypeAndAddressModel {
 public struct MetadataParams: Codable {
     struct SetData: Codable {
         var data: String
-        var timeStamp: String
+        var timestamp: String
     }
 
     var namespace: String?
     var pub_key_X: String
     var pub_key_Y: String
-    var setData: SetData
+    var set_data: SetData
     var signature: String
 }
