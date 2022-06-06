@@ -123,28 +123,29 @@ extension TorusUtils {
 
     func generateParams(message: String, privateKey: String) throws -> MetadataParams {
         do {
-            let key =  SECP256K1.generatePrivateKey()!
+            guard let privKeyData = Data(hex: privateKey),
+                  let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString()
+            else {
+                throw TorusUtilError.runtime("invalid pric key")
+            }
             let timeStamp = BigInt(serverTimeOffset + Date().timeIntervalSince1970 / 1000).description
             let setData: MetadataParams.SetData = .init(data: message, timeStamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
-            guard let sigData = SECP256K1.signForRecovery(hash: encodedData.sha3(.keccak256), privateKey: key).serializedSignature else{
+            guard let sigData = SECP256K1.signForRecovery(hash: encodedData.sha3(.keccak256), privateKey: privateKey.web3.keccak256).serializedSignature else {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
             }
-            let hexSig = sigData.web3.hexString.stripHexPrefix()
-            let pubKeyX = String(hexSig[0...32]).addLeading0sForLength64()
-            let pubKeyY = String(hexSig[32...64]).addLeading0sForLength64()
-            var unmarshalledSig = SECP256K1.unmarshalSignature(signatureData: sigData)
-            let r = String(unmarshalledSig!.r.base64EncodedString()[16...64])
-            let s = String(unmarshalledSig!.s.base64EncodedString()[16...64])
-            let bn = String("")
-            var added = BigUInt(s + r + bn,radix: 16)!
+            let pubKeyX = String(publicKey.prefix(64))
+            let pubKeyY = String(publicKey.suffix(64))
+            guard let unmarshalledSig = SECP256K1.unmarshalSignature(signatureData: sigData) else {
+                throw TorusUtilError.runtime("error")
+            }
+            let r = unmarshalledSig.r.toHexString()
+            let s = String(unmarshalledSig.s.base64EncodedString()[16 ... 64])
+            var added = BigUInt(s + r + "", radix: 16)!
             print(added.serialize().base64EncodedString())
-        
-            return .init(pub_key_X: "key", pub_key_Y: "", setData: .init(data: "", timeStamp: ""), signature: "")
+            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: "")
         } catch let error {
             throw error
         }
     }
 }
-
-

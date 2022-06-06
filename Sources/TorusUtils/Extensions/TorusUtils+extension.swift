@@ -425,7 +425,6 @@ extension TorusUtils {
                     seal.reject(TorusUtilError.decodingFailed("\(data)"))
                     return
                 }
-
                 let pubKeyX = publicKey.prefix(publicKey.count / 2).toHexString()
                 let pubKeyY = publicKey.suffix(publicKey.count / 2).toHexString()
                 os_log("retrieveDecryptAndReconstuct: private key rebuild %@ %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data, pubKeyX, pubKeyY)
