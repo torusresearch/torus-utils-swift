@@ -67,7 +67,7 @@ class OneKeyTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
-            XCTAssertEqual(data["privateKey"], "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
+            XCTAssertEqual(data["privateKey"], "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
             exp1.fulfill()
         }.catch { error in
             print(error)
