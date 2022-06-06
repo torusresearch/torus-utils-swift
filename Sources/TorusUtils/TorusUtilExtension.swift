@@ -140,10 +140,9 @@ extension TorusUtils {
                 throw TorusUtilError.runtime("error")
             }
             let r = unmarshalledSig.r.toHexString()
-            let s = String(unmarshalledSig.s.base64EncodedString()[16 ... 64])
-            var added = BigUInt(s + r + "", radix: 16)!
-            print(added.serialize().base64EncodedString())
-            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: "")
+            let s = unmarshalledSig.s.toHexString()
+            var sig = r + s
+            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: s)
         } catch let error {
             throw error
         }
