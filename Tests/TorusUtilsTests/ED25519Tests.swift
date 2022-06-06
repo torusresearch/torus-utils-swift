@@ -39,7 +39,7 @@ class ED25519Tests: XCTestCase {
     
     func test_generateMetadata(){
         let msg = "Hello"
-        let privKey = "fb30e31d3a82f4751b91b470dsdsdsds"
+        let privKey = "d9733fc1098151f3e3289673e7c69c4ed46cbbdbc13416560e14741524d2d51a"
        let tu = TorusUtils(nodePubKeys: ROPSTEN_CONSTANTS.nodePubKeys)
         do{
         try tu.generateParams(message: msg, privateKey: privKey)

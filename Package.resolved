@@ -32,9 +32,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift.git",
         "state": {
-          "branch": "master",
-          "revision": "4e254bd8a02595f46d2c45a79ba02890acd7dde5",
-          "version": null
+          "branch": null,
+          "revision": "a25d369266bfb51616f679a1805ee0cf4c7e3d3d",
+          "version": "2.6.0"
         }
       },
       {
@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/vapor/jwt-kit.git",
         "state": {
           "branch": null,
-          "revision": "1822bb0abf0a31a4b5078ec19061c548835253b5",
-          "version": "4.3.0"
+          "revision": "3537dd319dfbcc403a5165d8c19c4834e8e64730",
+          "version": "4.5.0"
         }
       },
       {
@@ -69,8 +69,8 @@
         "repositoryURL": "https://github.com/mxcl/PromiseKit.git",
         "state": {
           "branch": null,
-          "revision": "7b07b214dacecb22ca4b680531c7e981d52483f9",
-          "version": "6.16.3"
+          "revision": "c946b7561fbe11379a874e59faa2c5f8077ae0e1",
+          "version": "6.17.1"
         }
       },
       {
@@ -78,8 +78,8 @@
         "repositoryURL": "https://github.com/Boilertalk/secp256k1.swift",
         "state": {
           "branch": null,
-          "revision": "823281fe9def21b384099b72a9a53ca988317b20",
-          "version": "0.1.4"
+          "revision": "45e458ec3be46cf0a6eb68bc947f797852dc65d8",
+          "version": "0.1.6"
         }
       },
       {
@@ -87,8 +87,8 @@
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
           "branch": null,
-          "revision": "a8911e0fadc25aef1071d582355bd1037a176060",
-          "version": "2.0.4"
+          "revision": "d9825fa541df64b1a7b182178d61b9a82730d01f",
+          "version": "2.1.0"
         }
       },
       {

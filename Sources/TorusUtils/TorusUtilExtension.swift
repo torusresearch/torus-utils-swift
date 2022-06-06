@@ -123,11 +123,23 @@ extension TorusUtils {
 
     func generateParams(message: String, privateKey: String) throws -> MetadataParams {
         do {
-            let key = SECP256K1.privateToPublic(privateKey: privateKey.data(using: .utf8) ?? Data()) ?? Data()
+            let key =  SECP256K1.generatePrivateKey()!
             let timeStamp = BigInt(serverTimeOffset + Date().timeIntervalSince1970 / 1000).description
             let setData: MetadataParams.SetData = .init(data: message, timeStamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
-            var sig = SECP256K1.signForRecovery(hash: encodedData.sha3(.keccak256), privateKey: key).serializedSignature?.web3.hexString
+            guard let sigData = SECP256K1.signForRecovery(hash: encodedData.sha3(.keccak256), privateKey: key).serializedSignature else{
+                throw TorusUtilError.runtime("sign for recovery hash failed")
+            }
+            let hexSig = sigData.web3.hexString.stripHexPrefix()
+            let pubKeyX = String(hexSig[0...32]).addLeading0sForLength64()
+            let pubKeyY = String(hexSig[32...64]).addLeading0sForLength64()
+            var unmarshalledSig = SECP256K1.unmarshalSignature(signatureData: sigData)
+            let r = String(unmarshalledSig!.r.base64EncodedString()[16...64])
+            let s = String(unmarshalledSig!.s.base64EncodedString()[16...64])
+            let bn = String("")
+            var added = BigUInt(s + r + bn,radix: 16)!
+            print(added.serialize().base64EncodedString())
+        
             return .init(pub_key_X: "key", pub_key_Y: "", setData: .init(data: "", timeStamp: ""), signature: "")
         } catch let error {
             throw error

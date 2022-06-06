@@ -71,14 +71,3 @@ public struct MetadataParams: Codable {
     var setData: SetData
     var signature: String
 }
-
-public struct V2UserTypeAndAddress {
-    var typeOfUser: String
-    var nonce: BigInt?
-    var pubNonce: TorusNodePubModel
-    var ifps: String?
-    var upgraded: Bool?
-    var x: String
-    var y: String
-    var address: String
-}
