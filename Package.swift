@@ -13,8 +13,7 @@ let package = Package(
             targets: ["TorusUtils"]),
     ],
     dependencies: [
-        
-        .package(name: "FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git",from: "2.6.0"),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", .branch("web3-fix-6Jun")),
         .package(name:"PMKFoundation", url: "https://github.com/PromiseKit/Foundation.git", from: "3.4.0"),
         .package(name:"PromiseKit", url: "https://github.com/mxcl/PromiseKit.git", from: "6.0.0"),
         .package(name:"CryptorECC", url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
