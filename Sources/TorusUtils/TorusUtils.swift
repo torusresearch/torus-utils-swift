@@ -203,8 +203,8 @@ open class TorusUtils: AbstractTorusUtils {
             return self.retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
         }.done { x, y, key in
             if self.enableOneKey {
-             _ = self.getOrSetNonce(x: x, y: y,privateKey: key,getOnly: true).done { result in
-                    let nonce = BigUInt(result.nonce ?? "0",radix: 16) ?? 0
+                _ = self.getOrSetNonce(x: x, y: y, privateKey: key, getOnly: true).done { result in
+                    let nonce = BigUInt(result.nonce ?? "0", radix: 16) ?? 0
                     if nonce != BigInt(0) {
                         let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
                         let newKey = tempNewKey.modulus(BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!)
@@ -214,7 +214,7 @@ open class TorusUtils: AbstractTorusUtils {
                     seal.fulfill(["privateKey": key, "publicAddress": publicAddress])
                 }
             } else {
-              _ = self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map { ($0, key) }
+                _ = self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map { ($0, key) }
                     .done { nonce, key in
                         if nonce != BigInt(0) {
                             let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!

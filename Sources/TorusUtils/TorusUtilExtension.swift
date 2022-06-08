@@ -128,7 +128,7 @@ extension TorusUtils {
             else {
                 throw TorusUtilError.runtime("invalid pric key")
             }
-            let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970),radix: 16)
+            let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
             guard let sigData = SECP256K1.signForRecovery(hash: encodedData.web3.keccak256, privateKey: privKeyData).serializedSignature else {

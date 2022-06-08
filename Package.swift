@@ -29,7 +29,7 @@ let package = Package(
             dependencies: ["FetchNodeDetails", "CryptoSwift", "web3.swift", "CryptorECC", "secp256k1", "PMKFoundation", "PromiseKit", "TweetNacl"]),
         .testTarget(
             name: "TorusUtilsTests",
-            dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "web3.swift", .product(name: "PromiseKit", package: "PromiseKit"), "PMKFoundation", "CryptorECC"]),
+            dependencies: ["TorusUtils","CryptoSwift",.product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "web3.swift", .product(name: "PromiseKit", package: "PromiseKit"), "PMKFoundation", "CryptorECC"]),
     ]
     ,swiftLanguageVersions: [.v5]
     

@@ -121,10 +121,10 @@ class PolygonTest: XCTestCase {
 
     func test_login_polygon() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        let verifier: String = "torus-test-health"
+        let verifier: String = TORUS_TEST_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
-        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
+        let jwt = try! generateIdToken(email: verifierID)
+        let extraParams = ["verifieridentifier": verifier, "verifier_id": verifierID] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
