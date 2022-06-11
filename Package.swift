@@ -17,7 +17,7 @@ let package = Package(
         .package(name:"PMKFoundation", url: "https://github.com/PromiseKit/Foundation.git", from: "3.4.0"),
         .package(name:"PromiseKit", url: "https://github.com/mxcl/PromiseKit.git", from: "6.0.0"),
         .package(name:"CryptorECC", url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
-        .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", .branch("main")),
+        .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
         .package(name:"web3.swift", url: "https://github.com/argentlabs/web3.swift", from:"0.9.3"),
         .package(name:"secp256k1", url: "https://github.com/Boilertalk/secp256k1.swift", from: "0.1.0"),
