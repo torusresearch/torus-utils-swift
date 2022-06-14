@@ -136,10 +136,10 @@ extension String {
     func toChecksumAddress() -> String {
         let lowerCaseAddress = stripHexPrefix().lowercased()
         let arr = Array(lowerCaseAddress)
-        let keccaf = Array(lowerCaseAddress.sha3(.keccak256))
+        let hash = Array(lowerCaseAddress.sha3(.keccak256))
         var result = "0x"
         for i in 0 ... lowerCaseAddress.count - 1 {
-            if let val = Int(String(keccaf[i]), radix: 16), val >= 8 {
+            if let val = Int(String(hash[i]), radix: 16), val >= 8 {
                 result.append(arr[i].uppercased())
             } else {
                 result.append(arr[i])
