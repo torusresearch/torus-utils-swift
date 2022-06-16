@@ -103,8 +103,8 @@ class PolygonTest: XCTestCase {
     }
 
     func test_key_assign_polygon() async {
-        let fakeEmail = generateRandomEmail(of: 6)
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let fakeEmail = generateRandomEmail(of: 6)
         let verifier: String = "tkey-google-cyan"
         let verifierID: String = fakeEmail
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
@@ -115,6 +115,7 @@ class PolygonTest: XCTestCase {
         }.catch { error in
             print(error)
             XCTFail()
+            exp1.fulfill()
         }
         wait(for: [exp1], timeout: 10)
     }
