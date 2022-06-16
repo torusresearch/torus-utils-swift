@@ -112,7 +112,7 @@ extension TorusUtils {
             seal.reject(TorusUtilError.runtime("Unable to serialize dictionary into JSON. \(dictionary)"))
             return promise
         }
-        var request = try! makeUrlRequest(url: "https://metadata.tor.us/get")
+        var request = try! makeUrlRequest(url: "\(metaDataHost)/get")
         request.httpBody = encodedUnwrapped
         let task = urlSession.dataTask(.promise, with: request)
         task.compactMap {
@@ -776,7 +776,7 @@ extension TorusUtils {
                 let dict: [String: Any] = ["pub_key_X": x, "pub_key_Y": y, "set_data": ["data": msg]]
                 data = try JSONSerialization.data(withJSONObject: dict)
             }
-            var request = try! makeUrlRequest(url: "https://metadata.tor.us/get_or_set_nonce")
+            var request = try! makeUrlRequest(url: "\(metaDataHost)/get_or_set_nonce")
             request.httpBody = data
             urlSession.dataTask(.promise, with: request).done { outputData, _ in
                 print(try JSONSerialization.jsonObject(with: outputData))

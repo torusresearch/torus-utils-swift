@@ -24,17 +24,19 @@ open class TorusUtils: AbstractTorusUtils {
     var enableOneKey: Bool
     var serverTimeOffset: TimeInterval = 0
     var isNewKey = false
-    var metaDataHost = "https://metadata.tor.us"
+    var metaDataHost:String
     var signerHost: String
     var allowHost: String
 
-    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false, signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow") {
+    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false,metaDataHost:String = "https://metadata.tor.us" ,signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow") {
         self.nodePubKeys = nodePubKeys
         self.urlSession = urlSession
         utilsLogType = loglevel
+        self.metaDataHost = metaDataHost
         self.enableOneKey = enableOneKey
         self.signerHost = signerHost
         self.allowHost = allowHost
+     
     }
 
     public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePubModel>) {
