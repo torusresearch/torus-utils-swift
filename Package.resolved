@@ -32,9 +32,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift.git",
         "state": {
-          "branch": "web3-fix-6Jun",
-          "revision": "551eaa7e388e565c2b7456e360aa27ed32ff3586",
-          "version": null
+          "branch": null,
+          "revision": "922c9f3050bbc250de6cd22e6b711ceb0a462365",
+          "version": "2.6.3"
         }
       },
       {
@@ -62,6 +62,15 @@
           "branch": null,
           "revision": "3537dd319dfbcc403a5165d8c19c4834e8e64730",
           "version": "4.5.0"
+        }
+      },
+      {
+        "package": "PromiseKit",
+        "repositoryURL": "https://github.com/mxcl/PromiseKit.git",
+        "state": {
+          "branch": null,
+          "revision": "c946b7561fbe11379a874e59faa2c5f8077ae0e1",
+          "version": "6.17.1"
         }
       },
       {
@@ -96,7 +105,7 @@
         "repositoryURL": "https://github.com/argentlabs/web3.swift",
         "state": {
           "branch": null,
-          "revision": "23246805707db1ff2b65e651eac1e2904957a569",
+          "revision": "0474eb5e883bc4800b3909833207a1d35e72b808",
           "version": "0.9.3"
         }
       }

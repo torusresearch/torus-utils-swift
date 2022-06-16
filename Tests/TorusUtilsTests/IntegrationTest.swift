@@ -41,7 +41,7 @@ class IntegrationTests: XCTestCase {
         continueAfterFailure = false
     }
 
-    func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = false) async -> AllNodeDetailsModel {
+    func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async -> AllNodeDetailsModel {
         return await withCheckedContinuation { continuation in
             _ = fnd.getNodeDetails(verifier: verifer, verifierID: veriferID).done { [unowned self] nodeDetails in
                 tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), enableOneKey: enableOneKey)
@@ -224,7 +224,7 @@ class IntegrationTests: XCTestCase {
         let hashedIDToken = jwt.sha3(.keccak256)
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-        let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let nodeDetails = await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
         tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer).done { data in
             XCTAssertEqual(data["publicAddress"], "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
             exp1.fulfill()
