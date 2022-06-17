@@ -672,6 +672,7 @@ extension TorusUtils {
             }
             .catch { err in
                 os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(err)")
+                seal.reject(err)
             }
         } catch let err {
             // seal.reject(err)
@@ -732,31 +733,32 @@ extension TorusUtils {
             var modifiedPubKey: String = ""
             var nonce: BigUInt = 0
             var typeOfUser: TypeOfUser = .v1
-            var address: String = ""
             _ = self.getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !self.isNewKey).done { localNonceResult in
                 nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
                 typeOfUser = TypeOfUser(rawValue: localNonceResult.typeOfUser) ?? .v1
                 if typeOfUser == .v1 {
+                    modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let nonce2 = BigInt(nonce).modulus(self.modulusValue)
                     if nonce != BigInt(0) {
                         guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                             throw TorusUtilError.decryptionFailed
                         }
                         modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
-                        address = self.publicKeyToAddress(key: modifiedPubKey)
-                    } else {
-                        address = data["address"] ?? ""
+                    }
+                    else{
+                        modifiedPubKey = String(modifiedPubKey.suffix(128))
                     }
                 } else if typeOfUser == .v2 {
                     modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                     modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
-                    address = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128)))  
+                    modifiedPubKey = String(modifiedPubKey.suffix(128))
+                 
 
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
                 }
-                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address: address, x: pubKeyX, y: pubKeyY)
+                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address:     self.publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY)
                 seal.fulfill(val)
             }
         }
@@ -800,7 +802,7 @@ extension TorusUtils {
             guard let privKeyData = Data(hex: privateKey),
                   let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString()
             else {
-                throw TorusUtilError.runtime("invalid pric key")
+                throw TorusUtilError.runtime("invalid priv key")
             }
             let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
