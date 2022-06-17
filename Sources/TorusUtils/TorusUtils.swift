@@ -50,13 +50,12 @@ open class TorusUtils: AbstractTorusUtils {
         _ = keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId).then { [self] lookupData -> Promise<[String: String]> in
             let error = lookupData["err"]
 
-            if error != nil {
-                guard let errorString = error else {
-                    throw TorusUtilError.runtime("Error not supported")
+            if error != nil,let errorString = error{
+                if errorString.contains("Verifier not supported"){
+                    throw TorusUtilError.runtime("Verifier not supported. Check if you: \n1. Are on the right network (Torus testnet/mainnet) \n2. Have setup a verifier on dashboard.web3auth.io?")
                 }
-
-                // Only assign key in case: Verifier exists and the verifierID doesn't.
-                if errorString.contains("Verifier + VerifierID has not yet been assigned") {
+ // Only assign key in case: Verifier exists and the verifierID doesn't.
+               else if errorString.contains("Verifier + VerifierID has not yet been assigned") {
                     // Assign key to the user and return (wrapped in a promise)
                     return self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: self.network).then { _ -> Promise<[String: String]> in
                         // Do keylookup again
@@ -75,7 +74,7 @@ open class TorusUtils: AbstractTorusUtils {
             } else {
                 return Promise<[String: String]>.value(lookupData)
             }
-        }.done { data in
+        }.then { data -> Promise<GetPublicAddressModel> in
             guard
                 let pubKeyX = data["pub_key_X"],
                 let pubKeyY = data["pub_key_Y"]
@@ -88,7 +87,7 @@ open class TorusUtils: AbstractTorusUtils {
             var pubNonce: PubNonce?
             var address: String = data["address"] ?? ""
             if self.enableOneKey {
-                self.getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !self.isNewKey).done { localNonceResult in
+                _ = self.getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !self.isNewKey).done { localNonceResult in
                     pubNonce = localNonceResult.pubNonce
                     nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
                     typeOfUser = .init(rawValue: localNonceResult.typeOfUser) ?? .v1
@@ -116,15 +115,7 @@ open class TorusUtils: AbstractTorusUtils {
                     } else {
                         seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
                     }
-                    if !isExtended {
-                        let val = GetPublicAddressModel(address: address)
-                        seal.fulfill(val)
-                    } else {
-                        let val = GetPublicAddressModel(address: address, typeOfUser: typeOfUser, x: pubKeyX, y: pubKeyY, metadataNonce: nonce, pubNonce: pubNonce)
-                        seal.fulfill(val)
-                    }
-                }.catch { error in
-                    seal.reject(error)
+                    seal.fulfill(.init(address: address, typeOfUser: typeOfUser, x: pubKeyX, y: pubKeyY, metadataNonce: nonce, pubNonce: pubNonce))
                 }
             } else {
                 typeOfUser = .v1
@@ -144,16 +135,19 @@ open class TorusUtils: AbstractTorusUtils {
                         modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
                         address = self.publicKeyToAddress(key: modifiedPubKey)
                     }
-                    if !isExtended {
-                        let val = GetPublicAddressModel(address: address)
-                        seal.fulfill(val)
-                    } else {
-                        let val = GetPublicAddressModel(address: address, typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce, pubNonce: nil)
-                        seal.fulfill(val)
-                    }
+                    seal.fulfill(GetPublicAddressModel(address: address, typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce, pubNonce: nil))
                 }
             }
+            return promise
         }
+        .done({ result in
+            if !isExtended {
+                let val = GetPublicAddressModel(address: result.address)
+                seal.fulfill(val)
+            } else {
+                seal.fulfill(result)
+            }
+        })
         .catch({ error in
             seal.reject(error)
         })
@@ -205,7 +199,8 @@ open class TorusUtils: AbstractTorusUtils {
         }.then { data -> Promise<(String, String, String)> in
             os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, data)
             return self.retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: data, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
-        }.done { x, y, key in
+        }.then { x, y, key -> Promise<String> in
+            let (promise, seal) = Promise<String>.pending()
             if self.enableOneKey {
                 _ = self.getOrSetNonce(x: x, y: y, privateKey: key, getOnly: true).done { result in
                     let nonce = BigUInt(result.nonce ?? "0", radix: 16) ?? 0
@@ -213,9 +208,10 @@ open class TorusUtils: AbstractTorusUtils {
                         let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
                         let newKey = tempNewKey.modulus(self.modulusValue)
                         os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
-                        seal.fulfill(["privateKey": BigUInt(newKey).serialize().suffix(64).toHexString(), "publicAddress": publicAddress])
+                        seal.fulfill(BigUInt(newKey).serialize().suffix(64).toHexString())
+                    } else {
+                        seal.fulfill(key)
                     }
-                    seal.fulfill(["privateKey": key, "publicAddress": publicAddress])
                 }
             } else {
                 _ = self.getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y]).map { ($0, key) }
@@ -224,13 +220,18 @@ open class TorusUtils: AbstractTorusUtils {
                             let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
                             let newKey = tempNewKey.modulus(self.modulusValue)
                             os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
-                            seal.fulfill(["privateKey": BigUInt(newKey).serialize().suffix(64).toHexString(), "publicAddress": publicAddress])
+                            seal.fulfill(BigUInt(newKey).serialize().suffix(64).toHexString())
+                        } else {
+                            seal.fulfill(key)
                         }
-                        seal.fulfill(["privateKey": key, "publicAddress": publicAddress])
                     }
             }
-
-        }.catch { err in
+            return promise
+        }
+        .done({ privateKey in
+            seal.fulfill(["privateKey": privateKey, "publicAddress": publicAddress])
+        })
+        .catch { err in
             os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, err.localizedDescription)
             seal.reject(err)
         }

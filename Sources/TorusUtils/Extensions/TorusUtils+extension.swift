@@ -751,7 +751,7 @@ extension TorusUtils {
                     modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                     modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
-                    address = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128))).web3.withHexPrefix
+                    address = self.publicKeyToAddress(key: String(modifiedPubKey.suffix(128)))  
 
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
