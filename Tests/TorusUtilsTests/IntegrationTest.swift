@@ -22,6 +22,9 @@ class IntegrationTests: XCTestCase {
     let TORUS_TEST_VERIFIER = "torus-test-health"
     let TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
     let TORUS_TEST_EMAIL = "hello@tor.us"
+    var signerHost = "https://signer.tor.us/api/sign"
+    var allowHost = "https://signer.tor.us/api/allow"
+    
 
     // Fake data
     let TORUS_TEST_VERIFIER_FAKE = "google-lrc-fakes"
@@ -44,7 +47,7 @@ class IntegrationTests: XCTestCase {
     func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async -> AllNodeDetailsModel {
         return await withCheckedContinuation { continuation in
             _ = fnd.getNodeDetails(verifier: verifer, verifierID: veriferID).done { [unowned self] nodeDetails in
-                tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), enableOneKey: enableOneKey)
+                tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), enableOneKey: enableOneKey,network: .ROPSTEN)
                 continuation.resume(returning: nodeDetails)
             }.catch({ error in
                 fatalError(error.localizedDescription)
@@ -106,11 +109,12 @@ class IntegrationTests: XCTestCase {
         wait(for: [exp1], timeout: 10)
     }
 
-    func test_keyAssign() {
+    func test_keyAssign() async {
         let email = generateRandomEmail(of: 6)
 
         let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
-        IntegrationTests.utils?.keyAssign(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_VERIFIER, verifierId: email).done { data in
+        let nodeDetails = await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: email)
+        tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email,signerHost:tu.signerHost ,network:.ROPSTEN).done { data in
             let result = data.result as! [String: Any]
             let keys = result["keys"] as! [[String: String]]
             let address = keys[0]["address"]
@@ -188,7 +192,8 @@ class IntegrationTests: XCTestCase {
         let email = generateRandomEmail(of: 6)
 
         let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
-        IntegrationTests.utils?.keyAssign(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email).done { data in
+        
+        IntegrationTests.utils?.keyAssign(endpoints: IntegrationTests.endpoints, torusNodePubs: IntegrationTests.nodePubKeys, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email,signerHost: signerHost,network: .ROPSTEN).done { data in
             let result = data.result as! [String: Any]
             let keys = result["keys"] as! [[String: String]]
             let address = keys[0]["address"]

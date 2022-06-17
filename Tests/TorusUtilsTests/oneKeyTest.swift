@@ -33,7 +33,7 @@ class OneKeyTest: XCTestCase {
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = true) async -> AllNodeDetailsModel {
         return await withCheckedContinuation { continuation in
             _ = fnd.getNodeDetails(verifier: verifer, verifierID: veriferID).done { [unowned self] nodeDetails in
-                tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), enableOneKey: enableOneKey)
+                tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), enableOneKey: enableOneKey,network: .ROPSTEN)
                 continuation.resume(returning: nodeDetails)
             }.catch({ error in
                 fatalError(error.localizedDescription)
