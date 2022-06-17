@@ -616,7 +616,7 @@ extension TorusUtils {
     // MARK: - key assignment
 
     public func keyAssign(endpoints: Array<String>, torusNodePubs: Array<TorusNodePubModel>, verifier: String, verifierId: String, signerHost: String, network: EthereumNetworkFND, firstPoint: Int? = nil, lastPoint: Int? = nil) -> Promise<JSONRPCresponse> {
-        let (tempPromise, seal) = Promise<JSONRPCresponse>.pending()
+        var (tempPromise, seal) = Promise<JSONRPCresponse>.pending()
         var nodeNum: Int = 0
         var initialPoint: Int = 0
         os_log("KeyAssign: endpoints: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, endpoints)
@@ -627,6 +627,7 @@ extension TorusUtils {
         }
         if nodeNum == firstPoint {
             seal.reject(TorusUtilError.runtime("Looped through all"))
+            return tempPromise
         }
         if let safefirstPoint = firstPoint {
             initialPoint = safefirstPoint
@@ -673,19 +674,10 @@ extension TorusUtils {
             .catch { err in
                 os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(err)")
                 seal.reject(err)
+                tempPromise = self.keyAssign(endpoints: endpoints, torusNodePubs: self.nodePubKeys, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
             }
         } catch let err {
-            // seal.reject(err)
-            let errorMessageArr: [String] = [
-                "Timed out", // Happens when the node is not reachable (dns issue etc)
-                "TypeError: Failed to fetch", // All except iOS and Firefox
-                "TypeError: cancelled", // iOS
-                "TypeError: NetworkError when attempting to fetch resource."]
-            if errorMessageArr.contains(err.localizedDescription) {
-                return keyAssign(endpoints: endpoints, torusNodePubs: nodePubKeys, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
-            } else {
-                seal.reject(err)
-            }
+            seal.reject(err)
         }
 
         return tempPromise
@@ -744,8 +736,7 @@ extension TorusUtils {
                             throw TorusUtilError.decryptionFailed
                         }
                         modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
-                    }
-                    else{
+                    } else {
                         modifiedPubKey = String(modifiedPubKey.suffix(128))
                     }
                 } else if typeOfUser == .v2 {
@@ -753,12 +744,11 @@ extension TorusUtils {
                     let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
                     modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
                     modifiedPubKey = String(modifiedPubKey.suffix(128))
-                 
 
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
                 }
-                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address:     self.publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY)
+                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address: self.publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY)
                 seal.fulfill(val)
             }
         }

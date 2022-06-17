@@ -113,7 +113,7 @@ class IntegrationTests: XCTestCase {
 
         let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
         let nodeDetails = await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: email)
-        tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email,signerHost:tu.signerHost.appending("fake") ,network:.ROPSTEN).done { data in
+        tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email,signerHost:tu.signerHost ,network:.ROPSTEN).done { data in
             let result = data.result as! [String: Any]
             let keys = result["keys"] as! [[String: String]]
             let address = keys[0]["address"]
@@ -123,9 +123,10 @@ class IntegrationTests: XCTestCase {
             exp1.fulfill()
         }.catch { _ in
             XCTFail()
+            exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 15)
+        wait(for: [exp1], timeout: 10)
     }
 
     func test_keyLookup() {
