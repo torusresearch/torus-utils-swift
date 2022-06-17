@@ -670,8 +670,7 @@ extension TorusUtils {
                 } catch let err {
                     throw TorusUtilError.decodingFailed(err.localizedDescription)
                 }
-            }
-            .catch { err in
+            }.catch { err in
                 os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(err)")
                 seal.reject(err)
                 tempPromise = self.keyAssign(endpoints: endpoints, torusNodePubs: self.nodePubKeys, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
