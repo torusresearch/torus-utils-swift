@@ -12,14 +12,11 @@ import PromiseKit
 #if canImport(PMKFoundation)
     import PMKFoundation
 #endif
-#if canImport(secp256k1)
-    import secp256k1
-#endif
+import secp256k1
 import BigInt
 import CryptoSwift
 import os
 import OSLog
-import web3
 
 extension TorusUtils {
     // MARK: - utils
