@@ -125,13 +125,15 @@ open class TorusUtils: AbstractTorusUtils {
                         let localPubkeyY = data["pub_key_Y"]
                     else { throw TorusUtilError.runtime("Empty pubkey returned from getMetadata.") }
                     modifiedPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
-                    modifiedPubKey = String(modifiedPubKey.suffix(128))
                     if localNonce != BigInt(0) {
                         let nonce2 = BigInt(localNonce).modulus(self.modulusValue)
                         guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                             throw TorusUtilError.decryptionFailed
                         }
                         modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
+                    }
+                    else{
+                        modifiedPubKey = String(modifiedPubKey.suffix(128))
                     }
                     seal.fulfill(GetPublicAddressModel(address: self.publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce, pubNonce: nil))
                 }
