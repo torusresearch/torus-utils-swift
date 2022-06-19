@@ -1,7 +1,8 @@
 
-
-import CTweetNacl
 import TweetNacl
+import CTweetNacl
+
+
 
 import Foundation
 public struct ED25519 {
@@ -28,4 +29,3 @@ public struct ED25519 {
     }
 }
 
-// #endif
