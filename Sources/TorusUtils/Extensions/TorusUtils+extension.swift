@@ -12,7 +12,9 @@ import PromiseKit
 #if canImport(PMKFoundation)
     import PMKFoundation
 #endif
-import secp256k1
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 import BigInt
 import CryptoSwift
 import os
@@ -96,7 +98,6 @@ extension TorusUtils {
 
     func getMetadata(dictionary: [String: String]) -> Promise<BigUInt> {
         let (promise, seal) = Promise<BigUInt>.pending()
-
         let encoded: Data?
         do {
             encoded = try JSONSerialization.data(withJSONObject: dictionary, options: [])
