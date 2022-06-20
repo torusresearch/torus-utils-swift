@@ -17,9 +17,10 @@ var utilsLogType = OSLogType.default
 
 @available(macOS 10.12, *)
 open class TorusUtils: AbstractTorusUtils {
+
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
 
-    var nodePubKeys: Array<TorusNodePubModel>
+    //var nodePubKeys: Array<TorusNodePubModel>
     var urlSession: URLSession
     var enableOneKey: Bool
     var serverTimeOffset: TimeInterval = 0
@@ -30,8 +31,7 @@ open class TorusUtils: AbstractTorusUtils {
     var network: EthereumNetworkFND
     var modulusValue = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
 
-    public init(nodePubKeys: Array<TorusNodePubModel> = [], loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET) {
-        self.nodePubKeys = nodePubKeys
+    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false,serverTimeOffset:TimeInterval = 0, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET) {
         self.urlSession = urlSession
         utilsLogType = loglevel
         self.metaDataHost = metaDataHost
@@ -39,10 +39,7 @@ open class TorusUtils: AbstractTorusUtils {
         self.signerHost = signerHost
         self.allowHost = allowHost
         self.network = network
-    }
-
-    public func setTorusNodePubKeys(nodePubKeys: Array<TorusNodePubModel>) {
-        self.nodePubKeys = nodePubKeys
+        self.serverTimeOffset = serverTimeOffset
     }
 
     public func getPublicAddress(endpoints: Array<String>, torusNodePubs: Array<TorusNodePubModel>, verifier: String, verifierId: String, isExtended: Bool) -> Promise<GetPublicAddressModel> {
@@ -155,7 +152,7 @@ open class TorusUtils: AbstractTorusUtils {
         return promise
     }
 
-    public func retrieveShares(endpoints: Array<String>, verifierIdentifier: String, verifierId: String, idToken: String, extraParams: Data) -> Promise<[String: String]> {
+    public func retrieveShares(torusNodePubs: Array<TorusNodePubModel>,endpoints: Array<String>, verifierIdentifier: String, verifierId: String, idToken: String, extraParams: Data) -> Promise<[String: String]> {
         let (promise, seal) = Promise<[String: String]>.pending()
 
         // Generate keypair
@@ -187,7 +184,7 @@ open class TorusUtils: AbstractTorusUtils {
             seal.reject(TorusUtilError.timeout)
         }
 
-        getPublicAddress(endpoints: endpoints, torusNodePubs: nodePubKeys, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true).then { data -> Promise<[[String: String]]> in
+        getPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true).then { data -> Promise<[[String: String]]> in
             publicAddress = data.address
             guard
                 let localPubkeyX = data.x?.addLeading0sForLength64(),

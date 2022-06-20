@@ -12,6 +12,7 @@ import TorusUtils
 @testable import TorusUtils
 
 class MockTorusUtils: AbstractTorusUtils {
+    
   
     
     
@@ -25,7 +26,7 @@ class MockTorusUtils: AbstractTorusUtils {
         self.nodePubKeys = nodePubKeys
     }
 
-    func retrieveShares(endpoints: Array<String>, verifierIdentifier: String, verifierId: String, idToken: String, extraParams: Data) -> Promise<[String: String]> {
+    func retrieveShares(torusNodePubs: Array<TorusNodePubModel>,endpoints: Array<String>, verifierIdentifier: String, verifierId: String, idToken: String, extraParams: Data) -> Promise<[String: String]> {
         return Promise.value([:])
     }
 

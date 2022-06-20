@@ -35,7 +35,7 @@ class PolygonTest: XCTestCase {
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = false) async -> AllNodeDetailsModel {
         return await withCheckedContinuation { continuation in
             _ = fnd.getNodeDetails(verifier: verifer, verifierID: veriferID).done { [unowned self] nodeDetails in
-                tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), enableOneKey: enableOneKey, signerHost: signerHost, allowHost: allowHost,network: .POLYGON)
+                tu = TorusUtils(enableOneKey: enableOneKey, signerHost: signerHost, allowHost: allowHost,network: .POLYGON)
                 continuation.resume(returning: nodeDetails)
             }.catch({ error in
                 fatalError(error.localizedDescription)
@@ -128,7 +128,7 @@ class PolygonTest: XCTestCase {
         let extraParams = ["verifieridentifier": verifier, "verifier_id": verifierID] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-        tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
+        tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
             XCTAssertEqual(data["privateKey"], "1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8")
             exp1.fulfill()
         }.catch { error in
@@ -148,7 +148,7 @@ class PolygonTest: XCTestCase {
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-        tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer).done { data in
+        tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer).done { data in
             XCTAssertEqual(data["publicAddress"], "0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04")
             exp1.fulfill()
         }.catch { error in
