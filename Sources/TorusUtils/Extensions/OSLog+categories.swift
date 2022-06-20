@@ -7,6 +7,7 @@
 
 import Foundation
 import os
+import FetchNodeDetails
 
 let subsystem = Bundle.main.bundleIdentifier ?? "com.torus.utils"
 

@@ -45,12 +45,11 @@ func generateRandomEmail(of length: Int) -> String {
     return s + "@gmail.com"
 }
 
-func generateIdToken(email: String) throws -> String {
+func generateIdToken(email: String) throws -> String { 
     let verifierPrivateKeyForSigning =
         """
         -----BEGIN PRIVATE KEY-----
-        MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCA3pdm53N0jlj3+7st1
-        kIxw9aogvHfbq09TlWKRFPGJjA==
+        MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCCD7oLrcKae+jVZPGx52Cb/lKhdKxpXjl9eGNa1MlY57A==
         -----END PRIVATE KEY-----
         """
 
@@ -66,7 +65,7 @@ func generateIdToken(email: String) throws -> String {
         let emailComponent = email.components(separatedBy: "@")[0]
         let subject = "email|" + emailComponent
 
-        let payload = TestPayload(subject: SubjectClaim(stringLiteral: subject), expiration: ExpirationClaim(value: modifiedDate), audience: "torus-key-test", isAdmin: false, emailVerified: true, issuer: "torus-key-test", iat: IssuedAtClaim(value: Date()), email: "hello@tor.us")
+        let payload = TestPayload(subject: SubjectClaim(stringLiteral: subject), expiration: ExpirationClaim(value: modifiedDate), audience: "torus-key-test", isAdmin: false, emailVerified: true, issuer: "torus-key-test", iat: IssuedAtClaim(value: Date()), email: email)
         let jwt = try signers.sign(payload)
         return jwt
     } catch {
@@ -75,9 +74,3 @@ func generateIdToken(email: String) throws -> String {
     }
 }
 
-// key 2
-//
-// -----BEGIN PRIVATE KEY-----
-// MEECAQAwEwYHKoZIzj0CAQYIKoZIzj0DAQcEJzAlAgEBBCCTK9Ly1QItO9QLoX12
-// IJC5lTMiO+7eZXQDiYi8mGLMvg==
-// -----END PRIVATE KEY-----

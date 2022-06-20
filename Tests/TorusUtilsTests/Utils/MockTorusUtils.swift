@@ -9,8 +9,12 @@ import FetchNodeDetails
 import Foundation
 import PromiseKit
 import TorusUtils
+@testable import TorusUtils
 
 class MockTorusUtils: AbstractTorusUtils {
+  
+    
+    
     var nodePubKeys: Array<TorusNodePubModel>
 
     init() {
@@ -25,7 +29,15 @@ class MockTorusUtils: AbstractTorusUtils {
         return Promise.value([:])
     }
 
-    func getPublicAddress(endpoints: Array<String>, torusNodePubs: Array<TorusNodePubModel>, verifier: String, verifierId: String, isExtended: Bool) -> Promise<[String: String]> {
-        return Promise.value([:])
+    func getPublicAddress(endpoints: Array<String>, torusNodePubs: Array<TorusNodePubModel>, verifier: String, verifierId: String, isExtended: Bool) -> Promise<GetPublicAddressModel> {
+        return Promise.value(.init(address: ""))
+    }
+    
+    func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool) -> Promise<GetUserAndAddressModel> {
+        return Promise.value(.init(typeOfUser: .v1, address: "", x: "", y: ""))
+    }
+    
+    func getOrSetNonce(x: String, y: String, privateKey: String?, getOnly: Bool) -> Promise<GetOrSetNonceResultModel> {
+        return Promise.value(GetOrSetNonceResultModel.init(typeOfUser: "v1"))
     }
 }
