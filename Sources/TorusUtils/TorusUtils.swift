@@ -20,7 +20,6 @@ open class TorusUtils: AbstractTorusUtils {
 
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
 
-    //var nodePubKeys: Array<TorusNodePubModel>
     var urlSession: URLSession
     var enableOneKey: Bool
     var serverTimeOffset: TimeInterval = 0
