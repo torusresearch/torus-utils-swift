@@ -33,7 +33,7 @@ class OneKeyTest: XCTestCase {
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = true) async -> AllNodeDetailsModel {
         return await withCheckedContinuation { continuation in
             _ = fnd.getNodeDetails(verifier: verifer, verifierID: veriferID).done { [unowned self] nodeDetails in
-                tu = TorusUtils(nodePubKeys: nodeDetails.getTorusNodePub(), enableOneKey: enableOneKey,network: .ROPSTEN)
+                tu = TorusUtils(enableOneKey: enableOneKey,network: .ROPSTEN)
                 continuation.resume(returning: nodeDetails)
             }.catch({ error in
                 fatalError(error.localizedDescription)
@@ -66,7 +66,7 @@ class OneKeyTest: XCTestCase {
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-        tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
+        tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
             XCTAssertEqual(data["privateKey"], "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
             exp1.fulfill()
         }.catch { error in
@@ -85,7 +85,7 @@ class OneKeyTest: XCTestCase {
         let extraParams = ["verifier_id": verifierID] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-        tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
+        tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer).done { data in
             XCTAssertEqual(data["privateKey"], "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075")
             XCTAssertEqual(data["publicAddress"], "0x2876820fd9536BD5dd874189A85d71eE8bDf64c2")
             exp1.fulfill()
@@ -108,7 +108,7 @@ class OneKeyTest: XCTestCase {
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Any]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         let nodeDetails = await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-        tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer).done { data in
+        tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifierIdentifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer).done { data in
             XCTAssertEqual(data["publicAddress"], "0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B")
             exp1.fulfill()
         }.catch { error in

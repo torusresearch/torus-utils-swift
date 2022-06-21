@@ -19,7 +19,6 @@ import BigInt
 import CryptoSwift
 import os
 import OSLog
-import web3
 
 extension TorusUtils {
     // MARK: - utils
@@ -99,7 +98,6 @@ extension TorusUtils {
 
     func getMetadata(dictionary: [String: String]) -> Promise<BigUInt> {
         let (promise, seal) = Promise<BigUInt>.pending()
-
         let encoded: Data?
         do {
             encoded = try JSONSerialization.data(withJSONObject: dictionary, options: [])
@@ -673,7 +671,7 @@ extension TorusUtils {
             }.catch { err in
                 os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(err)")
                 seal.reject(err)
-                tempPromise = self.keyAssign(endpoints: endpoints, torusNodePubs: self.nodePubKeys, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
+                tempPromise = self.keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
             }
         } catch let err {
             seal.reject(err)

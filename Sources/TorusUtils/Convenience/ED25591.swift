@@ -1,17 +1,15 @@
-//
-//  File.swift
-//
-//
-//  Created by Eric McGary on 4/8/22.
-//
 
+import TweetNacl
 import CTweetNacl
-import Foundation
 
+
+
+import Foundation
 public struct ED25519 {
     /// Returns ED25519 Keypair
     /// - Parameter privateKey: Private key returned from `getTorusKey`
     /// - Returns: Returns a tuple containing an ED25519 secretKey (sk) and publicKey (pk)
+    ///
     public static func getED25519Key(privateKey: String) throws -> (sk: String, pk: String) {
         var sk = Data(hex: privateKey).bytes
 
@@ -30,3 +28,4 @@ public struct ED25519 {
         )
     }
 }
+
