@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "CryptorECC",
-        "repositoryURL": "https://github.com/IBM-Swift/BlueECC.git",
-        "state": {
-          "branch": null,
-          "revision": "baf6ed3fc1a622675f0041b4aff7c02dd1a93818",
-          "version": "1.2.200"
-        }
-      },
-      {
         "package": "CryptoSwift",
         "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift.git",
         "state": {
@@ -105,7 +96,7 @@
         "repositoryURL": "https://github.com/argentlabs/web3.swift",
         "state": {
           "branch": null,
-          "revision": "0474eb5e883bc4800b3909833207a1d35e72b808",
+          "revision": "23246805707db1ff2b65e651eac1e2904957a569",
           "version": "0.9.3"
         }
       }

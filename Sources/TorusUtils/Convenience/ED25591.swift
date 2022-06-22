@@ -1,8 +1,5 @@
-
 import TweetNacl
 import CTweetNacl
-
-
 
 import Foundation
 public struct ED25519 {

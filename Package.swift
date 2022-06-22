@@ -15,7 +15,6 @@ let package = Package(
     dependencies: [
         .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git",from: "2.7.0"),
         .package(name:"PMKFoundation", url: "https://github.com/PromiseKit/Foundation.git", from: "3.4.0"),
-        .package(name:"CryptorECC", url: "https://github.com/IBM-Swift/BlueECC.git", from: "1.2.4"),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
         .package(name:"web3.swift", url: "https://github.com/argentlabs/web3.swift", from:"0.9.3"),
@@ -25,10 +24,10 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "web3.swift", "CryptorECC", "secp256k1", "PMKFoundation", "TweetNacl"]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "web3.swift", "PMKFoundation", "TweetNacl"]),
         .testTarget(
             name: "TorusUtilsTests",
-            dependencies: ["TorusUtils","CryptoSwift",.product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "web3.swift", "PMKFoundation", "CryptorECC"]),
+            dependencies: ["TorusUtils","CryptoSwift",.product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "web3.swift", "PMKFoundation"]),
     ]
     ,swiftLanguageVersions: [.v5]
     

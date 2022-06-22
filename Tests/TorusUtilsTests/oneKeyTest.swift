@@ -6,7 +6,6 @@
 //
 
 import BigInt
-import CryptorECC
 import CryptoSwift
 import FetchNodeDetails
 import JWTKit
