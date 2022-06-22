@@ -20,53 +20,53 @@ public enum TypeOfUser: String {
 }
 
 public struct GetUserAndAddressModel {
-    var typeOfUser: TypeOfUser
-    var pubNonce: PubNonce?
-    var nonceResult: String?
-    var address: String
-    var x: String
-    var y: String
+    public var typeOfUser: TypeOfUser
+    public var pubNonce: PubNonce?
+    public var nonceResult: String?
+    public var address: String
+    public var x: String
+    public var y: String
 }
 
 public struct GetPublicAddressModel {
-    var address: String
-    var typeOfUser: TypeOfUser?
-    var x: String?
-    var y: String?
-    var metadataNonce: BigUInt?
-    var pubNonce: PubNonce?
+    public var address: String
+    public var typeOfUser: TypeOfUser?
+    public var x: String?
+    public var y: String?
+    public var metadataNonce: BigUInt?
+    public var pubNonce: PubNonce?
 }
 
 public struct GetOrSetNonceResultModel: Decodable {
-    var typeOfUser: String
-    var nonce: String?
-    var pubNonce: PubNonce?
-    var ifps: String?
-    var upgraded: Bool?
+    public var typeOfUser: String
+    public var nonce: String?
+    public var pubNonce: PubNonce?
+    public var ifps: String?
+    public var upgraded: Bool?
 }
 
 public struct PubNonce: Decodable {
-    var x: String
-    var y: String
+    public var x: String
+    public var y: String
 }
 
 public struct UserTypeAndAddressModel {
-    var typeOfUser: String
-    var nonce: BigInt?
-    var x: String
-    var y: String
-    var address: String
+    public var typeOfUser: String
+    public var nonce: BigInt?
+    public var x: String
+    public var y: String
+    public var address: String
 }
 
 public struct MetadataParams: Codable {
-    struct SetData: Codable {
-        var data: String
-        var timestamp: String
+   public struct SetData: Codable {
+        public var data: String
+        public var timestamp: String
     }
 
-    var namespace: String?
-    var pub_key_X: String
-    var pub_key_Y: String
-    var set_data: SetData
-    var signature: String
+    public var namespace: String?
+    public var pub_key_X: String
+    public var pub_key_Y: String
+    public var set_data: SetData
+    public var signature: String
 }
