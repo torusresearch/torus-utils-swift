@@ -23,9 +23,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift.git",
         "state": {
-          "branch": null,
-          "revision": "c9a5eda1965d3d84c2c834bce703386cba2f5d95",
-          "version": "2.7.0"
+          "branch": "fix/dependency",
+          "revision": "2dff1dd6c7372e90176324e9c73db00e8fc8b722",
+          "version": null
         }
       },
       {
@@ -53,15 +53,6 @@
           "branch": null,
           "revision": "3537dd319dfbcc403a5165d8c19c4834e8e64730",
           "version": "4.5.0"
-        }
-      },
-      {
-        "package": "PromiseKit",
-        "repositoryURL": "https://github.com/mxcl/PromiseKit.git",
-        "state": {
-          "branch": null,
-          "revision": "c946b7561fbe11379a874e59faa2c5f8077ae0e1",
-          "version": "6.17.1"
         }
       },
       {
