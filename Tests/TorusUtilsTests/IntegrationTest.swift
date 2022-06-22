@@ -183,7 +183,7 @@ class IntegrationTests: XCTestCase {
             XCTFail()
         }
 
-        wait(for: [exp1], timeout: 5)
+        wait(for: [exp1], timeout: 10)
     }
 
     func test_keyAssignAggregateLogin() {
