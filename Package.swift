@@ -14,7 +14,7 @@ let package = Package(
             targets: ["TorusUtils"]),
     ],
     dependencies: [
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", .branch("fix/dependency")),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", .branch("fix/dependency2")),
         .package(name:"PMKFoundation", url: "https://github.com/PromiseKit/Foundation.git", from: "3.4.0"),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
