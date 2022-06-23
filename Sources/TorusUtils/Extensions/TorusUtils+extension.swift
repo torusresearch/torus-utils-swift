@@ -5,7 +5,6 @@
 //  Created by Shubham on 25/3/20.
 //
 
-import CommonCrypto
 import FetchNodeDetails
 import Foundation
 import PromiseKit
@@ -17,7 +16,6 @@ import PromiseKit
 #endif
 import BigInt
 import CryptoSwift
-import os
 import OSLog
 
 extension TorusUtils {

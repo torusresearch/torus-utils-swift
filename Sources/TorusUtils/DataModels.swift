@@ -6,13 +6,7 @@
 //
 
 import BigInt
-import FetchNodeDetails
 import Foundation
-import OSLog
-import PromiseKit
-import secp256k1
-import SwiftUI
-import web3
 
 public enum TypeOfUser: String {
     case v1
@@ -59,7 +53,7 @@ public struct UserTypeAndAddressModel {
 }
 
 public struct MetadataParams: Codable {
-   public struct SetData: Codable {
+    public struct SetData: Codable {
         public var data: String
         public var timestamp: String
     }
