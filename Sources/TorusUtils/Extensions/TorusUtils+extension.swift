@@ -630,7 +630,11 @@ extension TorusUtils {
         }
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys
+        if #available(macOS 10.13, *) {
+            encoder.outputFormatting = .sortedKeys
+        } else {
+            // Fallback on earlier versions
+        }
         os_log("newEndpoints2 : %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, endpoints)
 
         let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier": verifier, "verifier_id": verifierId])
@@ -650,7 +654,11 @@ extension TorusUtils {
                 let keyassignRequest = KeyAssignRequest(params: ["verifier": verifier, "verifier_id": verifierId], signerResponse: decodedSignerResponse)
 
                 // Combine signer respose and request data
-                encoder.outputFormatting = .sortedKeys
+                if #available(macOS 10.13, *) {
+                    encoder.outputFormatting = .sortedKeys
+                } else {
+                    // Fallback on earlier versions
+                }
                 let newData = try encoder.encode(keyassignRequest)
                 var request = try self.makeUrlRequest(url: endpoints[nodeNum])
                 request.httpBody = newData
