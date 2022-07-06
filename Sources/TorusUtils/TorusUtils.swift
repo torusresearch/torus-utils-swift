@@ -126,7 +126,7 @@ open class TorusUtils: AbstractTorusUtils {
                     } else {
                         modifiedPubKey = String(modifiedPubKey.suffix(128))
                     }
-                    seal.fulfill(GetPublicAddressModel(address: self.publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce, pubNonce: nil))
+                    seal.fulfill(GetPublicAddressModel(address: self.publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce))
                 }
             }
             return promise

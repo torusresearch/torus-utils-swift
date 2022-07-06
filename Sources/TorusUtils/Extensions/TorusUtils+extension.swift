@@ -751,7 +751,7 @@ extension TorusUtils {
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
                 }
-                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address: self.publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY)
+                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, address: self.publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce)
                 seal.fulfill(val)
             }
         }
@@ -805,7 +805,7 @@ extension TorusUtils {
             }
             let pubKeyX = String(publicKey.prefix(64))
             let pubKeyY = String(publicKey.suffix(64))
-            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, set_data: setData, signature: sigData.base64EncodedString())
+            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
         }

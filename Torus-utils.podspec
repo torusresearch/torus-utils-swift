@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "Torus-utils"
-  spec.version      = "2.1.8"
+  spec.version      = "3.0.0"
   spec.platform = :ios, "13.0"
   spec.summary      = "Retrieve user shares"
   spec.homepage     = "https://github.com/torusresearch/torus-utils-swift"
