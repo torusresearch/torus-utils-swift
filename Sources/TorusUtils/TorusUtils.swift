@@ -1,23 +1,19 @@
+import BigInt
+import FetchNodeDetails
 /**
  torus utils class
  Author: Shubham Rathi
  */
-
-import BigInt
-import CryptoSwift
-import FetchNodeDetails
 import Foundation
 import OSLog
 import PromiseKit
 import secp256k1
-import web3
 
 @available(macOSApplicationExtension 10.12, *)
 var utilsLogType = OSLogType.default
 
 @available(macOS 10.12, *)
 open class TorusUtils: AbstractTorusUtils {
-
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
 
     var urlSession: URLSession
@@ -30,7 +26,7 @@ open class TorusUtils: AbstractTorusUtils {
     var network: EthereumNetworkFND
     var modulusValue = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
 
-    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false,serverTimeOffset:TimeInterval = 0, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET) {
+    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET) {
         self.urlSession = urlSession
         utilsLogType = loglevel
         self.metaDataHost = metaDataHost
@@ -127,11 +123,10 @@ open class TorusUtils: AbstractTorusUtils {
                             throw TorusUtilError.decryptionFailed
                         }
                         modifiedPubKey = self.combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
-                    }
-                    else{
+                    } else {
                         modifiedPubKey = String(modifiedPubKey.suffix(128))
                     }
-                    seal.fulfill(GetPublicAddressModel(address: self.publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce, pubNonce: nil))
+                    seal.fulfill(GetPublicAddressModel(address: self.publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce))
                 }
             }
             return promise
@@ -151,7 +146,7 @@ open class TorusUtils: AbstractTorusUtils {
         return promise
     }
 
-    public func retrieveShares(torusNodePubs: Array<TorusNodePubModel>,endpoints: Array<String>, verifierIdentifier: String, verifierId: String, idToken: String, extraParams: Data) -> Promise<[String: String]> {
+    public func retrieveShares(torusNodePubs: Array<TorusNodePubModel>, endpoints: Array<String>, verifierIdentifier: String, verifierId: String, idToken: String, extraParams: Data) -> Promise<[String: String]> {
         let (promise, seal) = Promise<[String: String]>.pending()
 
         // Generate keypair

@@ -5,7 +5,6 @@
 //  Created by Shubham on 25/3/20.
 //
 
-import CommonCrypto
 import FetchNodeDetails
 import Foundation
 import PromiseKit
@@ -17,7 +16,6 @@ import PromiseKit
 #endif
 import BigInt
 import CryptoSwift
-import os
 import OSLog
 
 extension TorusUtils {
@@ -632,7 +630,11 @@ extension TorusUtils {
         }
 
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .sortedKeys
+        if #available(macOS 10.13, *) {
+            encoder.outputFormatting = .sortedKeys
+        } else {
+            // Fallback on earlier versions
+        }
         os_log("newEndpoints2 : %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, endpoints)
 
         let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier": verifier, "verifier_id": verifierId])
@@ -652,7 +654,11 @@ extension TorusUtils {
                 let keyassignRequest = KeyAssignRequest(params: ["verifier": verifier, "verifier_id": verifierId], signerResponse: decodedSignerResponse)
 
                 // Combine signer respose and request data
-                encoder.outputFormatting = .sortedKeys
+                if #available(macOS 10.13, *) {
+                    encoder.outputFormatting = .sortedKeys
+                } else {
+                    // Fallback on earlier versions
+                }
                 let newData = try encoder.encode(keyassignRequest)
                 var request = try self.makeUrlRequest(url: endpoints[nodeNum])
                 request.httpBody = newData
@@ -745,7 +751,7 @@ extension TorusUtils {
                 } else {
                     seal.reject(TorusUtilError.runtime("getOrSetNonce should always return typeOfUser."))
                 }
-                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce, address: self.publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY)
+                let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, address: self.publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce)
                 seal.fulfill(val)
             }
         }
@@ -799,7 +805,7 @@ extension TorusUtils {
             }
             let pubKeyX = String(publicKey.prefix(64))
             let pubKeyY = String(publicKey.suffix(64))
-            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, set_data: setData, signature: sigData.base64EncodedString())
+            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
         }
