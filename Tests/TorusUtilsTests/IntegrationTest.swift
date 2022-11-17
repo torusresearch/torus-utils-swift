@@ -7,7 +7,7 @@ import XCTest
 
 @testable import TorusUtils
 
-@available(iOS 11.0, *)
+@available(iOS 13.0, *)
 class IntegrationTests: XCTestCase {
     static var fetchNodeDetails: FetchNodeDetails?
     // static var nodeDetails: NodeDetails?
