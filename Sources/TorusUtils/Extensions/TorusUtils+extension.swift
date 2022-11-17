@@ -17,6 +17,7 @@ import BigInt
 import CryptoSwift
 import OSLog
 
+@available(iOS 13.0,OSX 10.15, *)
 extension TorusUtils {
     // MARK: - utils
 
