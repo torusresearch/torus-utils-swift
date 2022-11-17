@@ -135,7 +135,7 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
 
-    public func retrieveShares(torusNodePubs: Array<TorusNodePubModel>, endpoints: Array<String>, verifierIdentifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> [String: String] {
+    public func retrieveShares(torusNodePubs: Array<TorusNodePubModel>, endpoints: Array<String>, verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> [String: String] {
         // Generate keypair
         guard
             let privateKey = generatePrivateKeyData(),
@@ -165,7 +165,7 @@ open class TorusUtils: AbstractTorusUtils {
 //        }
         var pk: String = ""
         do {
-            let getPublicAddressData = try await getPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifierIdentifier, verifierId: verifierId, isExtended: true)
+            let getPublicAddressData = try await getPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, isExtended: true)
             publicAddress = getPublicAddressData.address
             guard
                 let localPubkeyX = getPublicAddressData.x?.addLeading0sForLength64(),
@@ -173,9 +173,9 @@ open class TorusUtils: AbstractTorusUtils {
             else { throw TorusUtilError.runtime("Empty pubkey returned from getPublicAddress.") }
             lookupPubkeyX = localPubkeyX
             lookupPubkeyY = localPubkeyY
-            let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifierIdentifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
+            let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
             os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
-            let (x, y, key) = try await retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifierIdentifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
+            let (x, y, key) = try await retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
             if enableOneKey {
                 let result = try await getOrSetNonce(x: x, y: y, privateKey: key, getOnly: true)
                 let nonce = BigUInt(result.nonce ?? "0", radix: 16) ?? 0
