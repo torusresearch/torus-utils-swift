@@ -69,7 +69,6 @@ func generateIdToken(email: String) throws -> String {
         let jwt = try signers.sign(payload)
         return jwt
     } catch {
-        print(error)
         throw error
     }
 }

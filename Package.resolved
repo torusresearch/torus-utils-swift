@@ -23,18 +23,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift.git",
         "state": {
-          "branch": null,
-          "revision": "cdc3cdf57ac1589ace727476c5fbc4c3dbc8c190",
-          "version": "3.0.0"
-        }
-      },
-      {
-        "package": "PMKFoundation",
-        "repositoryURL": "https://github.com/PromiseKit/Foundation.git",
-        "state": {
-          "branch": null,
-          "revision": "985f17fa69ee0e5b7eb3ff9be87ffc4e05fc0927",
-          "version": "3.4.0"
+          "branch": "feat/async_await_update",
+          "revision": "9a69c8c6aad7adc1b97f595256408cfc092cad05",
+          "version": null
         }
       },
       {
@@ -53,15 +44,6 @@
           "branch": null,
           "revision": "3537dd319dfbcc403a5165d8c19c4834e8e64730",
           "version": "4.5.0"
-        }
-      },
-      {
-        "package": "PromiseKit",
-        "repositoryURL": "https://github.com/mxcl/PromiseKit.git",
-        "state": {
-          "branch": null,
-          "revision": "c946b7561fbe11379a874e59faa2c5f8077ae0e1",
-          "version": "6.17.1"
         }
       },
       {

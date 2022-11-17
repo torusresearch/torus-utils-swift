@@ -5,9 +5,9 @@
 //  Created by Shubham on 7/9/21.
 //
 
+import FetchNodeDetails
 import Foundation
 import os
-import FetchNodeDetails
 
 let subsystem = Bundle.main.bundleIdentifier ?? "com.torus.utils"
 
