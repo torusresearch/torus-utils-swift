@@ -5,7 +5,7 @@ import PackageDescription
 let package = Package(
     name: "TorusUtils",
     platforms: [
-        .iOS(.v13),.macOS(.v10_12)
+        .iOS(.v13),.macOS(.v10_15)
     ],
     products: [
         .library(
@@ -13,8 +13,9 @@ let package = Package(
             targets: ["TorusUtils"]),
     ],
     dependencies: [
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git",from: "4.0.0"),
-        .package(name:"PMKFoundation", url: "https://github.com/PromiseKit/Foundation.git", from: "3.4.0"),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git",
+            .branch("feat/async_await_update")),
+       // .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git",from: "3.0.0"),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
         .package(name: "TweetNacl", url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", from: "1.0.0")
@@ -22,10 +23,10 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "PMKFoundation", "TweetNacl"]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "TweetNacl"]),
         .testTarget(
             name: "TorusUtilsTests",
-            dependencies: ["TorusUtils","CryptoSwift",.product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails", "PMKFoundation"]),
+            dependencies: ["TorusUtils","CryptoSwift",.product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails"]),
     ]
     ,swiftLanguageVersions: [.v5]
     

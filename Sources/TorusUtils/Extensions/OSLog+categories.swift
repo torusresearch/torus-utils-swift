@@ -5,9 +5,9 @@
 //  Created by Shubham on 7/9/21.
 //
 
+import FetchNodeDetails
 import Foundation
 import os
-import FetchNodeDetails
 
 let subsystem = Bundle.main.bundleIdentifier ?? "com.torus.utils"
 
@@ -18,7 +18,7 @@ public struct TorusUtilsLogger {
     static let core = OSLog(subsystem: subsystem, category: "core")
 }
 
-@available(macOS 10.12, iOS 10.0, watchOS 3.0, tvOS 10.0, *)
+@available(macOS 10.15, iOS 13.0, *)
 func getTorusLogger(log: OSLog = .default, type: OSLogType = .default) -> OSLog {
     var logCheck: OSLog { utilsLogType.rawValue <= type.rawValue ? log : TorusUtilsLogger.inactiveLog }
     return logCheck
