@@ -29,7 +29,7 @@ class IntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = FetchNodeDetails(proxyAddress: FetchNodeDetails.proxyAddressRopsten, network: .CUSTOM(path: "https://rpc.ankr.com/eth_ropsten"))
+        fnd = FetchNodeDetails(proxyAddress: FetchNodeDetails.proxyAddressTestnet, network: .TESTNET)
     }
 
     override func setUpWithError() throws {
@@ -38,7 +38,7 @@ class IntegrationTests: XCTestCase {
 
     func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-        tu = TorusUtils(enableOneKey: enableOneKey, network: .ROPSTEN)
+        tu = TorusUtils(enableOneKey: enableOneKey, network: .TESTNET)
         return nodeDetails
     }
 
@@ -100,7 +100,7 @@ class IntegrationTests: XCTestCase {
         let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: email)
-            let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email, signerHost: tu.signerHost, network: .ROPSTEN)
+            let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email, signerHost: tu.signerHost, network: .TESTNET)
             let result = val.result as! [String: Any]
             let keys = result["keys"] as! [[String: String]]
             let address = keys[0]["address"]
@@ -183,7 +183,7 @@ class IntegrationTests: XCTestCase {
         let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email, signerHost: signerHost, network: .ROPSTEN)
+            let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email, signerHost: signerHost, network: .TESTNET)
             let result = val.result as! [String: Any]
             let keys = result["keys"] as! [[String: String]]
             let address = keys[0]["address"]

@@ -12,7 +12,7 @@ import secp256k1
 @available(macOSApplicationExtension 10.15, *)
 var utilsLogType = OSLogType.default
 
-@available(iOS 13,macOS 10.15, *)
+@available(iOS 13, macOS 10.15, *)
 open class TorusUtils: AbstractTorusUtils {
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
 

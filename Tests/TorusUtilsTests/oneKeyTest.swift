@@ -24,13 +24,13 @@ class OneKeyTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = FetchNodeDetails(proxyAddress: FetchNodeDetails.proxyAddressRopsten, network: .CUSTOM(path: "https://rpc.ankr.com/eth_ropsten"))
+        fnd = FetchNodeDetails(proxyAddress: FetchNodeDetails.proxyAddressTestnet, network: .TESTNET)
     }
 
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = true) async throws -> AllNodeDetailsModel {
         do {
             let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-            tu = TorusUtils(enableOneKey: enableOneKey, network: .ROPSTEN)
+            tu = TorusUtils(enableOneKey: enableOneKey, network: .TESTNET)
             return nodeDetails
         } catch {
             throw error

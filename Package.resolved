@@ -29,15 +29,6 @@
         }
       },
       {
-        "package": "PMKFoundation",
-        "repositoryURL": "https://github.com/PromiseKit/Foundation.git",
-        "state": {
-          "branch": null,
-          "revision": "985f17fa69ee0e5b7eb3ff9be87ffc4e05fc0927",
-          "version": "3.4.0"
-        }
-      },
-      {
         "package": "GenericJSON",
         "repositoryURL": "https://github.com/zoul/generic-json-swift",
         "state": {
