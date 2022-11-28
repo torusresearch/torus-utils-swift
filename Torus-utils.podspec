@@ -14,5 +14,4 @@ Pod::Spec.new do |spec|
   spec.dependency 'Torus-fetchNodeDetails', '~> 3.0.0'
   spec.dependency 'CryptoSwift', '~> 1.5.1'
   spec.dependency 'secp256k1.swift', '~> 0.1.4'
-  spec.dependency 'TweetNacl'
 end
