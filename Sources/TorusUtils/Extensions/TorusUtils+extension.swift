@@ -373,8 +373,9 @@ extension TorusUtils {
                 guard let finalPrivateKey = data.web3.hexData, let publicKey = SECP256K1.privateToPublic(privateKey: finalPrivateKey)?.subdata(in: 1 ..< 65) else {
                     throw TorusUtilError.decodingFailed("\(data)")
                 }
-                let pubKeyX = publicKey.prefix(publicKey.count / 2).toHexString()
-                let pubKeyY = publicKey.suffix(publicKey.count / 2).toHexString()
+                let paddedPubKey = publicKey.toHexString().padLeft(padChar: "0", count: 128)
+                let pubKeyX = String(paddedPubKey.prefix(paddedPubKey.count / 2))
+                let pubKeyY = String(paddedPubKey.suffix(paddedPubKey.count / 2))
                 os_log("retrieveDecryptAndReconstuct: private key rebuild %@ %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data, pubKeyX, pubKeyY)
 
                 // Verify
@@ -696,7 +697,7 @@ extension TorusUtils {
     func generateParams(message: String, privateKey: String) throws -> MetadataParams {
         do {
             guard let privKeyData = Data(hex: privateKey),
-                  let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString()
+                  let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
             else {
                 throw TorusUtilError.runtime("invalid priv key")
             }

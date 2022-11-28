@@ -8,6 +8,19 @@
 import Foundation
 extension String {
     
+    func padLeft(padChar:Character,count:Int) -> String{
+        let str = self
+        if str.count >= count{
+            return str
+        }
+        var resultStr = ""
+        while(str.count < count - str.count){
+            resultStr.append(padChar)
+        }
+        resultStr.append(str)
+        return resultStr
+    }
+    
     mutating func stripPaddingLeft(padChar: Character) {
         while self.count > 1 && self.first == padChar {
             self.removeFirst()
