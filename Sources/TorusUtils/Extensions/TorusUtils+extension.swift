@@ -281,19 +281,12 @@ extension TorusUtils {
         var resultArrayObjects = Array<JSONRPCresponse?>.init(repeating: nil, count: endpoints.count)
       
         var requestArr = [URLRequest]()
-        let randomElement = Int(arc4random_uniform(3))
         var lookupCount = 0
         for (i, el) in endpoints.enumerated() {
             do {
-                if i == randomElement{
-                    let rq = URLRequest(url: URL(string:"bfjdbfjdbjfbvj/random")!)
-                    requestArr.append(rq)
-                }
-                else{
                     var rq = try makeUrlRequest(url: el)
                     rq.httpBody = rpcdata
                     requestArr.append(rq)
-                }
             } catch {
                 throw error
             }
@@ -301,6 +294,7 @@ extension TorusUtils {
         return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: { group in
 
           var localLookUpCount = 0
+         var passedRequest = 0
           for (i,rq) in requestArr.enumerated(){
 
               group.addTask {
@@ -317,7 +311,7 @@ extension TorusUtils {
                 do{
                     switch val{
                     case.success(let model):
-                        
+                        passedRequest += 1
                           print("index of the request \( model.index)")
                         let data = model.data
                         let i = model.index
@@ -370,6 +364,7 @@ extension TorusUtils {
                     }
                 }
             }
+            print("\(passedRequest) / \(requestArr.count)")
             throw TorusUtilError.commitmentRequestFailed
               })
     }

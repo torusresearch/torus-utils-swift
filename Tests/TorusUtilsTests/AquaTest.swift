@@ -35,6 +35,7 @@ class AquaTest: XCTestCase {
         return nodeDetails
     }
 
+
     func test_get_public_address() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let verifier: String = "tkey-google-aqua"
@@ -121,6 +122,31 @@ class AquaTest: XCTestCase {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer)
             XCTAssertEqual(data["publicAddress"], "0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D")
+            exp1.fulfill()
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+        wait(for: [exp1], timeout: 10)
+    }
+}
+
+extension AquaTest{
+    func test_retrieveShares_some_nodes_down() async{
+        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let verifier: String = TORUS_TEST_VERIFIER
+        let verifierID: String = TORUS_TEST_EMAIL
+        let jwt = try! generateIdToken(email: verifierID)
+        let extraParams = ["verifieridentifier": verifier, "verifier_id": verifierID] as [String: Any]
+        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
+        do {
+            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+            var endpoints = nodeDetails.getTorusNodeEndpoints()
+            endpoints[0] = "https://ndjnfjbfrj/random"
+            //should fail if un-commented threshold 4/5
+            //endpoints[1] = "https://ndjnfjbfrj/random"
+            let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: endpoints, verifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer)
+            XCTAssertEqual(data["privateKey"], "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
