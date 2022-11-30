@@ -149,14 +149,9 @@ extension TorusUtils {
         var requestArr = [URLRequest]()
         for (i,el) in endpoints.enumerated(){
             do{
-                if i == 0{
-                    let rq = URLRequest(url: URL(string:"bfjdbfjdbjfbvj/random")!)
-                    requestArr.append(rq)
-                }else{
                     var rq = try makeUrlRequest(url: el)
                     rq.httpBody = rpcdata
                     requestArr.append(rq)
-                }
             }catch{
                 throw error
             }
