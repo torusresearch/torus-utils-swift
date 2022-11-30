@@ -161,11 +161,11 @@ extension TorusUtils {
                 throw error
             }
         }
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: { group in
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: {[unowned self] group in
             for (i,rq) in requestArr.enumerated() {
                         group.addTask {
                             do{
-                                let val = try await self.urlSession.data(for: rq)
+                                let val = try await urlSession.data(for: rq)
                                 return .success(.init(data: val.0, urlResponse: val.1, index: i))
                             }
                             catch{
@@ -217,6 +217,7 @@ extension TorusUtils {
                     let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
                     
                     // Comparing dictionaries, so the order of keys doesn't matter
+                    
                     let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: Int(endpoints.count / 2) + 1) // Check if threshold is satisfied
                     var data: [Int: String] = [:]
                     if keyResult != nil {
@@ -291,7 +292,7 @@ extension TorusUtils {
                 throw error
             }
         }
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: { group in
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: {[unowned self] group in
 
           var localLookUpCount = 0
          var passedRequest = 0
@@ -299,7 +300,7 @@ extension TorusUtils {
 
               group.addTask {
                   do{
-                      let val = try await self.urlSession.data(for: rq)
+                      let val = try await urlSession.data(for: rq)
                       return .success(.init(data: val.0, urlResponse: val.1, index: i))
                   }
                   catch{
@@ -554,11 +555,11 @@ extension TorusUtils {
             }
         }
         
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: { group in
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: {[unowned self] group in
             for (i,rq) in requestArray.enumerated(){
                 group.addTask {
                     do{
-                        let val = try await self.urlSession.data(for: rq)
+                        let val = try await urlSession.data(for: rq)
                         return .success(.init(data: val.0, urlResponse: val.1, index: i))
                     }
                     catch{
