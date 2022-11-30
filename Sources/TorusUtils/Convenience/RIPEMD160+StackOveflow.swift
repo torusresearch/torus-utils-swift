@@ -5,7 +5,7 @@
 ////  Created by Alexander Vlasov on 10.01.2018.
 ////
 //
-////From https://stackoverflow.com/questions/43091858/swift-hash-a-string-using-hash-hmac-with-ripemd160/43191938
+//// From https://stackoverflow.com/questions/43091858/swift-hash-a-string-using-hash-hmac-with-ripemd160/43191938
 //
 // import Foundation
 //

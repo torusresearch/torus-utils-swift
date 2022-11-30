@@ -8,11 +8,11 @@
 import BigInt
 import Foundation
 
-public struct TaskGroupResponse{
+public struct TaskGroupResponse {
    public var data:Data
    public var urlResponse:URLResponse
    public var index:Int
-    
+
     public init(data: Data, urlResponse: URLResponse, index: Int) {
         self.data = data
         self.urlResponse = urlResponse

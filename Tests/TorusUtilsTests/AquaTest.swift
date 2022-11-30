@@ -142,9 +142,9 @@ extension AquaTest{
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             var endpoints = nodeDetails.getTorusNodeEndpoints()
-            endpoints[0] = "https://ndjnfjbfrj/random"
-            //should fail if un-commented threshold 4/5
-            //endpoints[1] = "https://ndjnfjbfrj/random"
+            endpoints[0] =    "https://ndjnfjbfrj/random"
+            // should fail if un-commented threshold 4/5
+            // endpoints[1] = "https://ndjnfjbfrj/random"
             let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: endpoints, verifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer)
             XCTAssertEqual(data["privateKey"], "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d")
             exp1.fulfill()

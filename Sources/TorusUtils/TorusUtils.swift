@@ -37,7 +37,7 @@ open class TorusUtils: AbstractTorusUtils {
         self.serverTimeOffset = serverTimeOffset
     }
 
-    public func getPublicAddress(endpoints: Array<String>, torusNodePubs: Array<TorusNodePubModel>, verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
+    public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
         do {
             let lookupData = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
             let error = lookupData["err"]
@@ -135,7 +135,7 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
 
-    public func retrieveShares(torusNodePubs: Array<TorusNodePubModel>, endpoints: Array<String>, verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> [String: String] {
+    public func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> [String: String] {
         // Generate keypair
         guard
             let privateKey = generatePrivateKeyData(),
