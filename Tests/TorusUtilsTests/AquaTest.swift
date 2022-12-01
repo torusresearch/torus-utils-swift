@@ -56,11 +56,11 @@ class AquaTest: XCTestCase {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let exp2 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let exp3 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        var verifier: String = "tkey-google-aqua"
-        var verifierID: String = TORUS_TEST_EMAIL
+        let verifier: String = "tkey-google-aqua"
+        let verifierID: String = TORUS_TEST_EMAIL
         do {
-            var nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            var data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
+            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+            let data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
             XCTAssertEqual(data.address, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
             exp1.fulfill()
         } catch let err {

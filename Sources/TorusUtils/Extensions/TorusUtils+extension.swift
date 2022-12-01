@@ -149,84 +149,85 @@ extension TorusUtils {
         var requestArr = [URLRequest]()
         for (_, el) in endpoints.enumerated() {
             do {
-                    var rq = try makeUrlRequest(url: el)
-                    rq.httpBody = rpcdata
-                    requestArr.append(rq)
+                var rq = try makeUrlRequest(url: el)
+                rq.httpBody = rpcdata
+                requestArr.append(rq)
             } catch {
                 throw error
             }
         }
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { [unowned self] group in
             for (i, rq) in requestArr.enumerated() {
-                        group.addTask {
-                            do {
-                                let val = try await urlSession.data(for: rq)
-                                return .success(.init(data: val.0, urlResponse: val.1, index: i))
-                            } catch {
-                                return .failure(error)
-                            }
-                        }
+                group.addTask { [unowned self] in
+                    do {
+                        let val = try await urlSession.data(for: rq)
+                        return .success(.init(data: val.0, urlResponse: val.1, index: i))
+                    } catch {
+                        return .failure(error)
                     }
+                }
+            }
 
             for try await val in group {
                 do {
-                switch val {
-                case .success(let model):
-                    let _data = model.data
-                    let i = model.index
-                    let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
-                    if decoded.error != nil {
-                        throw TorusUtilError.decodingFailed(decoded.error?.data)
-                    }
-                    os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-
-                    guard
-                        let decodedResult = decoded.result as? [String: Any],
-                        let keyObj = decodedResult["keys"] as? [[String: Any]]
-                    else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
-
-                    // Due to multiple keyAssign
-                    if let first = keyObj.first {
-                        guard
-                            let metadata = first["Metadata"] as? [String: String],
-                            let share = first["Share"] as? String,
-                            let publicKey = first["PublicKey"] as? [String: String],
-                            let iv = metadata["iv"],
-                            let ephemPublicKey = metadata["ephemPublicKey"],
-                            let pubKeyX = publicKey["X"],
-                            let pubKeyY = publicKey["Y"]
-                        else {
-                            throw TorusUtilError.decodingFailed("\(first)")
+                    try Task.checkCancellation()
+                    switch val {
+                    case let .success(model):
+                        let _data = model.data
+                        let i = model.index
+                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
+                        if decoded.error != nil {
+                            throw TorusUtilError.decodingFailed(decoded.error?.data)
                         }
-                        shareResponses[i] = publicKey // For threshold
-                        resultArray[i] = [
-                            "iv": iv,
-                            "ephermalPublicKey": ephemPublicKey,
-                            "share": share,
-                            "pubKeyX": pubKeyX,
-                            "pubKeyY": pubKeyY
-                        ]
-                    }
+                        os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
 
-                    let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
+                        guard
+                            let decodedResult = decoded.result as? [String: Any],
+                            let keyObj = decodedResult["keys"] as? [[String: Any]]
+                        else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
 
-                    // Comparing dictionaries, so the order of keys doesn't matter
+                        // Due to multiple keyAssign
+                        if let first = keyObj.first {
+                            guard
+                                let metadata = first["Metadata"] as? [String: String],
+                                let share = first["Share"] as? String,
+                                let publicKey = first["PublicKey"] as? [String: String],
+                                let iv = metadata["iv"],
+                                let ephemPublicKey = metadata["ephemPublicKey"],
+                                let pubKeyX = publicKey["X"],
+                                let pubKeyY = publicKey["Y"]
+                            else {
+                                throw TorusUtilError.decodingFailed("\(first)")
+                            }
+                            shareResponses[i] = publicKey // For threshold
+                            resultArray[i] = [
+                                "iv": iv,
+                                "ephermalPublicKey": ephemPublicKey,
+                                "share": share,
+                                "pubKeyX": pubKeyX,
+                                "pubKeyY": pubKeyY
+                            ]
+                        }
 
-                    let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: Int(endpoints.count / 2) + 1) // Check if threshold is satisfied
-                    var data: [Int: String] = [:]
-                    if keyResult != nil {
-                        os_log("retreiveIndividualNodeShares - result: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, resultArray)
-                        data = try decryptIndividualShares(shares: resultArray, privateKey: privateKey)
-                    } else {
-                        throw TorusUtilError.empty
-                    }
-                    os_log("retrieveDecryptAndReconstuct - data after decryptIndividualShares: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data)
-                    let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
-                    if filteredData.count < Int(endpoints.count / 2) + 1 { throw TorusUtilError.thresholdError }
-                    let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
-                    return thresholdLagrangeInterpolationData
-                case .failure(let error):
-                    throw error
+                        let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
+
+                        // Comparing dictionaries, so the order of keys doesn't matter
+
+                        let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: Int(endpoints.count / 2) + 1) // Check if threshold is satisfied
+                        var data: [Int: String] = [:]
+                        if keyResult != nil {
+                            os_log("retreiveIndividualNodeShares - result: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, resultArray)
+                            data = try decryptIndividualShares(shares: resultArray, privateKey: privateKey)
+                        } else {
+                            throw TorusUtilError.empty
+                        }
+                        os_log("retrieveDecryptAndReconstuct - data after decryptIndividualShares: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data)
+                        let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
+                        if filteredData.count < Int(endpoints.count / 2) + 1 { throw TorusUtilError.thresholdError }
+                        let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
+                        return thresholdLagrangeInterpolationData
+                    case let .failure(error):
+                        throw error
                     }
                 }
                 // print("index of the request \( val.1)")
@@ -234,6 +235,10 @@ extension TorusUtils {
                     errorStack.append(error)
                     let nsErr = error as NSError
                     let userInfo = nsErr.userInfo as [String: Any]
+                    if error as? TorusUtilError == .timeout {
+                        group.cancelAll()
+                        throw error
+                    }
                     if nsErr.code == -1003 {
                         // In case node is offline
                         os_log("retrieveDecryptAndReconstuct: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
@@ -248,7 +253,6 @@ extension TorusUtils {
             }
             throw TorusUtilError.runtime("retrieveDecryptAndReconstuct func failed")
         })
-
     }
 
     // MARK: - commitment request
@@ -277,31 +281,31 @@ extension TorusUtils {
         var lookupCount = 0
         for (_, el) in endpoints.enumerated() {
             do {
-                    var rq = try makeUrlRequest(url: el)
-                    rq.httpBody = rpcdata
-                    requestArr.append(rq)
+                var rq = try makeUrlRequest(url: el)
+                rq.httpBody = rpcdata
+                requestArr.append(rq)
             } catch {
                 throw error
             }
         }
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { [unowned self] group in
+            for (i, rq) in requestArr.enumerated() {
+                group.addTask { [unowned self] in
+                    do {
+                        let val = try await urlSession.data(for: rq)
+                        return .success(.init(data: val.0, urlResponse: val.1, index: i))
+                    } catch {
+                        return .failure(error)
+                    }
+                }
+            }
 
-          for (i, rq) in requestArr.enumerated() {
-
-              group.addTask {
-                  do {
-                      let val = try await urlSession.data(for: rq)
-                      return .success(.init(data: val.0, urlResponse: val.1, index: i))
-                  } catch {
-                      return .failure(error)
-                  }
-              }
-          }
             for try await val in group {
                 do {
+                    try Task.checkCancellation()
                     switch val {
-                    case.success(let model):
-                         // print("index of the request \( model.index)")
+                    case let .success(model):
+                        // print("index of the request \( model.index)")
                         let data = model.data
                         let i = model.index
                         let encoder = JSONEncoder()
@@ -323,19 +327,24 @@ extension TorusUtils {
                                 guard
                                     let r = a.result as? [String: String]
                                 else {
-                                    throw TorusUtilError.decodingFailed("\(a.result) not found in \(a)")
+                                    throw TorusUtilError.decodingFailed("\(a.result ?? "") not found in \(a)")
                                 }
                                 return r
                             }
                             os_log("commitmentRequest - nodeSignatures: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, nodeSignatures)
+                            group.cancelAll()
                             return nodeSignatures
                         }
-                    case.failure(let error):
+                    case let .failure(error):
                         throw error
                     }
                 } catch {
                     let nsErr = error as NSError
                     let userInfo = nsErr.userInfo as [String: Any]
+                    if error as? TorusUtilError == .timeout {
+                        group.cancelAll()
+                        throw error
+                    }
                     if nsErr.code == -1003 {
                         // In case node is offline
                         os_log("commitmentRequest: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
@@ -343,6 +352,7 @@ extension TorusUtils {
                         // Reject if threshold nodes unavailable
                         lookupCount += 1
                         if lookupCount > endpoints.count {
+                            group.cancelAll()
                             throw TorusUtilError.nodesUnavailable
                         }
                     } else {
@@ -351,7 +361,7 @@ extension TorusUtils {
                 }
             }
             throw TorusUtilError.commitmentRequestFailed
-              })
+        })
     }
 
     // MARK: - decrypt shares
@@ -533,13 +543,13 @@ extension TorusUtils {
                 rq.httpBody = rpcdata
                 requestArray.append(rq)
             } catch {
-              throw error
+                throw error
             }
         }
 
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { [unowned self] group in
             for (i, rq) in requestArray.enumerated() {
-                group.addTask {
+                group.addTask { [unowned self] in
                     do {
                         let val = try await urlSession.data(for: rq)
                         return .success(.init(data: val.0, urlResponse: val.1, index: i))
@@ -550,10 +560,11 @@ extension TorusUtils {
             }
 
             for try await val in group {
-              //  print("index of the request \( val.1)")
+                //  print("index of the request \( val.1)")
                 do {
+                    try Task.checkCancellation()
                     switch val {
-                    case .success(let model):
+                    case let .success(model):
                         let data = model.data
                         let i = model.index
                         do {
@@ -569,7 +580,7 @@ extension TorusUtils {
                                     let decodedResult = result as? [String: [[String: String]]],
                                     let k = decodedResult["keys"]
                                 else {
-                                    throw TorusUtilError.decodingFailed("keys not found in \(result)")
+                                    throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
                                 }
                                 let keys = k[0] as [String: String]
                                 resultArray[i] = keys
@@ -585,12 +596,16 @@ extension TorusUtils {
                         } catch let err {
                             throw TorusUtilError.decodingFailed(err.localizedDescription)
                         }
-                    case .failure(let error):
+                    case let .failure(error):
                         throw error
                     }
                 } catch {
                     let tmpError = error as NSError
                     let userInfo = tmpError.userInfo as [String: Any]
+                    if error as? TorusUtilError == .timeout {
+                        group.cancelAll()
+                        throw error
+                    }
                     if tmpError.code == -1003 {
                         // In case node is offline
                         os_log("keyLookup: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
@@ -598,6 +613,7 @@ extension TorusUtils {
                         // reject if threshold nodes unavailable
                         lookupCount += 1
                         if lookupCount > Int(endpoints.count / 2) {
+                            group.cancelAll()
                             throw TorusUtilError.nodesUnavailable
                         }
                     } else {
@@ -694,7 +710,7 @@ extension TorusUtils {
                         throw TorusUtilError.runtime("Verifier + VerifierID has not yet been assigned")
                     }
                     // Assign key to the user and return (wrapped in a promise)
-                    try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, signerHost: signerHost, network: network)
+                    _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, signerHost: signerHost, network: network)
                     // Do keylookup again
                     data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID, timeout: 1)
                     isNewKey = true

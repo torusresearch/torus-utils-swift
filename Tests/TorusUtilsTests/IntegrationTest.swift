@@ -67,9 +67,9 @@ class IntegrationTests: XCTestCase {
         let exp2 = XCTestExpectation(description: "Should throw if verifier not supported")
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER_FAKE, veriferID: TORUS_TEST_EMAIL)
-            try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL, isExtended: false)
+            _ = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL, isExtended: false)
             XCTFail()
-        } catch let err {
+        } catch _ {
             exp2.fulfill()
         }
 
@@ -236,6 +236,30 @@ class IntegrationTests: XCTestCase {
 }
 
 extension IntegrationTests {
+
+    func test_retrieveShares_timeout() async {
+        // change the timeout variable in TorusUtil to 0 the test should fail
+        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
+        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
+        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
+        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
+        do {
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+            var endpoints = nodeDetails.getTorusNodeEndpoints()
+            endpoints[0] = "https://ndjnfjbfrj/random"
+            // should fail if un-commented threshold 4/5
+            // endpoints[1] = "https://ndjnfjbfrj/random"
+            let data = try await tu.handleRetrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: endpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
+            XCTAssertEqual(data["privateKey"], "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
+            exp1.fulfill()
+        } catch let error {
+            XCTFail(error.localizedDescription)
+            exp1.fulfill()
+        }
+
+        wait(for: [exp1], timeout: 10)
+    }
+
     func test_retrieveShares_some_nodes_down() async {
         let exp1 = XCTestExpectation(description: "Should be able to do a Login")
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
@@ -259,7 +283,6 @@ extension IntegrationTests {
     }
 
     func test_keyLookup_some_nodes_down() async {
-        let email = generateRandomEmail(of: 6)
 
         let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
         do {
