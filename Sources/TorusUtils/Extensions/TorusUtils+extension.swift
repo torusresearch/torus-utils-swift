@@ -799,7 +799,7 @@ extension TorusUtils {
             else {
                 throw TorusUtilError.runtime("invalid priv key")
             }
-            
+
             let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
@@ -808,7 +808,7 @@ extension TorusUtils {
             }
             var pubKeyX = String(publicKey.prefix(64))
             var pubKeyY = String(publicKey.suffix(64))
-            if !legacyNonce{
+            if !legacyNonce {
              pubKeyX.stripPaddingLeft(padChar: "0")
              pubKeyY.stripPaddingLeft(padChar: "0")
             }
@@ -855,10 +855,6 @@ extension TorusUtils {
 }
 
 // Necessary for decryption
-
-
-
-
 
 extension Sequence where Element == UInt8 {
     var data: Data { .init(self) }

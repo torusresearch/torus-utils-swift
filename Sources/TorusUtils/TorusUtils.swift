@@ -38,7 +38,6 @@ open class TorusUtils: AbstractTorusUtils {
         self.serverTimeOffset = serverTimeOffset
         self.legacyNonce = legacyNonce
     }
-    
 
     public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
         do {
@@ -142,7 +141,7 @@ open class TorusUtils: AbstractTorusUtils {
         // Generate keypair
         guard
            let _privateKey = generatePrivateKeyData(),
-           
+
             let publicKey = SECP256K1.privateToPublic(privateKey: _privateKey)?.subdata(in: 1 ..< 65)
         else {
             throw TorusUtilError.runtime("Unable to generate SECP256K1 keypair.")
