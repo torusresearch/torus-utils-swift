@@ -12,8 +12,8 @@ class IntegrationTests: XCTestCase {
     static var fetchNodeDetails: FetchNodeDetails?
     // static var nodeDetails: NodeDetails?
     static var utils: TorusUtils?
-    static var endpoints: Array<String> = []
-    static var nodePubKeys: Array<TorusNodePubModel> = []
+    static var endpoints: [String] = []
+    static var nodePubKeys: [TorusNodePubModel] = []
     static var privKey: String = ""
 
     let TORUS_TEST_VERIFIER = "torus-test-health"
@@ -235,8 +235,8 @@ class IntegrationTests: XCTestCase {
     }
 }
 
-extension IntegrationTests{
-    func test_retrieveShares_some_nodes_down() async{
+extension IntegrationTests {
+    func test_retrieveShares_some_nodes_down() async {
         let exp1 = XCTestExpectation(description: "Should be able to do a Login")
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
         let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
@@ -245,8 +245,8 @@ extension IntegrationTests{
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             var endpoints = nodeDetails.getTorusNodeEndpoints()
             endpoints[0] = "https://ndjnfjbfrj/random"
-            //should fail if un-commented threshold 4/5
-            //endpoints[1] = "https://ndjnfjbfrj/random"
+            // should fail if un-commented threshold 4/5
+            // endpoints[1] = "https://ndjnfjbfrj/random"
             let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: endpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
             XCTAssertEqual(data["privateKey"], "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
             exp1.fulfill()
@@ -257,8 +257,8 @@ extension IntegrationTests{
 
         wait(for: [exp1], timeout: 10)
     }
-    
-    func test_keyLookup_some_nodes_down() async{
+
+    func test_keyLookup_some_nodes_down() async {
         let email = generateRandomEmail(of: 6)
 
         let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
@@ -267,8 +267,8 @@ extension IntegrationTests{
             var endpoints = nodeDetails.getTorusNodeEndpoints()
             endpoints[0] = "https://ndjnfjbfrj/random"
             endpoints[1] = "https://ndjnfjbfrj/random"
-            //should fail if un-commented threshold 3/5 in case of key lookup
-            //endpoints[2] = "https://ndjnfjbfrj/random"
+            // should fail if un-commented threshold 3/5 in case of key lookup
+            // endpoints[2] = "https://ndjnfjbfrj/random"
             let val = try await tu.keyLookup(endpoints: endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
             XCTAssertEqual(val["address"], "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
             exp1.fulfill()
@@ -279,7 +279,7 @@ extension IntegrationTests{
 
         wait(for: [exp1], timeout: 10)
     }
-    
+
 }
 
 struct ROPSTEN_CONSTANTS {

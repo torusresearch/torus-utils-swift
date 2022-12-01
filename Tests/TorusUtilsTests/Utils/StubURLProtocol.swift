@@ -1,10 +1,10 @@
 import Foundation
 
-fileprivate func mustDecodeJSON(_ s: String) -> [String: Any] {
+private func mustDecodeJSON(_ s: String) -> [String: Any] {
     return try! JSONSerialization.jsonObject(with: Data(s.utf8), options: []) as! [String: Any]
 }
 
-fileprivate func httpBodyStreamToData(stream: InputStream?) -> Data? {
+private func httpBodyStreamToData(stream: InputStream?) -> Data? {
     guard let bodyStream = stream else { return nil }
     bodyStream.open()
 
@@ -27,7 +27,7 @@ fileprivate func httpBodyStreamToData(stream: InputStream?) -> Data? {
     return dat
 }
 
-fileprivate func stubMatcher(host: String, scheme: String, path: String, method: String, requestHeaders: [String: String]) -> (URLRequest) -> Bool {
+private func stubMatcher(host: String, scheme: String, path: String, method: String, requestHeaders: [String: String]) -> (URLRequest) -> Bool {
     return { (req: URLRequest) -> Bool in
         if req.url?.host != host || req.url?.scheme != scheme || req.url?.path != path || req.httpMethod != method {
             return false
@@ -41,7 +41,7 @@ fileprivate func stubMatcher(host: String, scheme: String, path: String, method:
     }
 }
 
-fileprivate func stubMatcherWithBody(host: String, scheme: String, path: String, method: String, requestHeaders: [String: String], body: [String: Any]) -> (URLRequest) -> Bool {
+private func stubMatcherWithBody(host: String, scheme: String, path: String, method: String, requestHeaders: [String: String], body: [String: Any]) -> (URLRequest) -> Bool {
     return { (req: URLRequest) -> Bool in
         if !stubMatcher(host: host, scheme: scheme, path: path, method: method, requestHeaders: requestHeaders)(req) {
             return false
@@ -56,7 +56,7 @@ fileprivate func stubMatcherWithBody(host: String, scheme: String, path: String,
     }
 }
 
-fileprivate let injectedURLs: Set = [
+private let injectedURLs: Set = [
     URL(string: "https://www.googleapis.com/userinfo/v2/me"),
     URL(string: "https://ropsten.infura.io/v3/b8cdb0e4cff24599a286bf8e87ff1c96"),
     URL(string: "https://teal-15-4.torusnode.com/jrpc"),
@@ -65,12 +65,12 @@ fileprivate let injectedURLs: Set = [
     URL(string: "https://teal-15-3.torusnode.com/jrpc"),
     URL(string: "https://teal-15-5.torusnode.com/jrpc"),
     URL(string: "https://metadata.tor.us/get"),
-    URL(string: "https://signer.tor.us/api/allow"),
+    URL(string: "https://signer.tor.us/api/allow")
 ]
 
-fileprivate let httpBodyKey = "StubURLProtocolHTTPBody"
+private let httpBodyKey = "StubURLProtocolHTTPBody"
 
-fileprivate struct Stub {
+private struct Stub {
     let requestMatcher: (URLRequest) -> Bool
     let responseBody: Data?
     let statusCode: Int
@@ -153,7 +153,7 @@ public class StubURLProtocol: URLProtocol {
     }
 }
 
-fileprivate let injectedStubs: [Stub] = [
+private let injectedStubs: [Stub] = [
     Stub(
         requestMatcher: stubMatcher(
             host: "www.googleapis.com",
@@ -514,5 +514,5 @@ fileprivate let injectedStubs: [Stub] = [
         responseBody: Data(#"{"message":""}"#.utf8),
         statusCode: 200,
         responseHeaders: mustDecodeJSON(#"{"Content-Type":"application/json; charset=utf-8","Etag":"W/\"e-JWOqSwGs6lhRJiUZe/mVb6Mua74\"","x-xss-protection":"0","x-content-type-options":"nosniff","Vary":"Origin, Accept-Encoding","x-frame-options":"SAMEORIGIN","referrer-policy":"no-referrer","content-security-policy":"default-src 'self';base-uri 'self';block-all-mixed-content;font-src 'self' https: data:;frame-ancestors 'self';img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests","Date":"Sun, 17 Oct 2021 10:57:33 GMT","x-dns-prefetch-control":"off","x-permitted-cross-domain-policies":"none","Strict-Transport-Security":"max-age=15552000; includeSubDomains","x-download-options":"noopen","Content-Length":"14","expect-ct":"max-age=0"}"#) as! [String: String]
-    ),
+    )
 ]
