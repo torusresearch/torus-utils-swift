@@ -13,15 +13,14 @@ let package = Package(
             targets: ["TorusUtils"])
     ],
     dependencies: [
-        .package(name: "FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", from: "4.0.0"),
-        .package(name: "CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git", from: "1.5.1"),
-        .package(name: "jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
-        .package(name: "TweetNacl", url: "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git", from: "1.0.0")
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git",from: "4.0.0"),
+        .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
+        .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0")
     ],
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "TweetNacl"]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift"]),
         .testTarget(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", "CryptoSwift", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails"])

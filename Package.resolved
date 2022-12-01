@@ -65,15 +65,6 @@
         }
       },
       {
-        "package": "TweetNacl",
-        "repositoryURL": "https://github.com/bitmark-inc/tweetnacl-swiftwrap.git",
-        "state": {
-          "branch": null,
-          "revision": "f8fd111642bf2336b11ef9ea828510693106e954",
-          "version": "1.1.0"
-        }
-      },
-      {
         "package": "web3.swift",
         "repositoryURL": "https://github.com/argentlabs/web3.swift",
         "state": {

@@ -444,8 +444,9 @@ extension TorusUtils {
                 guard let finalPrivateKey = data.web3.hexData, let publicKey = SECP256K1.privateToPublic(privateKey: finalPrivateKey)?.subdata(in: 1 ..< 65) else {
                     throw TorusUtilError.decodingFailed("\(data)")
                 }
-                let pubKeyX = publicKey.prefix(publicKey.count / 2).toHexString()
-                let pubKeyY = publicKey.suffix(publicKey.count / 2).toHexString()
+                let paddedPubKey = publicKey.toHexString().padLeft(padChar: "0", count: 128)
+                let pubKeyX = String(paddedPubKey.prefix(paddedPubKey.count / 2))
+                let pubKeyY = String(paddedPubKey.suffix(paddedPubKey.count / 2))
                 os_log("retrieveDecryptAndReconstuct: private key rebuild %@ %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data, pubKeyX, pubKeyY)
 
                 // Verify
@@ -794,18 +795,23 @@ extension TorusUtils {
     func generateParams(message: String, privateKey: String) throws -> MetadataParams {
         do {
             guard let privKeyData = Data(hex: privateKey),
-                  let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString()
+                  let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
             else {
                 throw TorusUtilError.runtime("invalid priv key")
             }
+            
             let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
             guard let sigData = SECP256K1.signForRecovery(hash: encodedData.web3.keccak256, privateKey: privKeyData).serializedSignature else {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
             }
-            let pubKeyX = String(publicKey.prefix(64))
-            let pubKeyY = String(publicKey.suffix(64))
+            var pubKeyX = String(publicKey.prefix(64))
+            var pubKeyY = String(publicKey.suffix(64))
+            if !legacyNonce{
+             pubKeyX.stripPaddingLeft(padChar: "0")
+             pubKeyY.stripPaddingLeft(padChar: "0")
+            }
             return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
@@ -850,55 +856,9 @@ extension TorusUtils {
 
 // Necessary for decryption
 
-extension String {
-    func fromBase64() -> String? {
-        guard let data = Data(base64Encoded: self) else {
-            return nil
-        }
-        return String(data: data, encoding: .utf8)
-    }
 
-    func toBase64() -> String {
-        return Data(utf8).base64EncodedString()
-    }
 
-    func strip04Prefix() -> String {
-        if hasPrefix("04") {
-            let indexStart = index(startIndex, offsetBy: 2)
-            return String(self[indexStart...])
-        }
-        return self
-    }
 
-    func strip0xPrefix() -> String {
-        if hasPrefix("0x") {
-            let indexStart = index(startIndex, offsetBy: 2)
-            return String(self[indexStart...])
-        }
-        return self
-    }
-
-    func addLeading0sForLength64() -> String {
-        if count < 64 {
-            let toAdd = String(repeating: "0", count: 64 - count)
-            return toAdd + self
-        } else {
-            return self
-        }
-        // String(format: "%064d", self)
-    }
-}
-
-extension StringProtocol {
-    var hexa: [UInt8] {
-        var startIndex = self.startIndex
-        return (0 ..< count / 2).compactMap { _ in
-            let endIndex = index(after: startIndex)
-            defer { startIndex = index(after: endIndex) }
-            return UInt8(self[startIndex ... endIndex], radix: 16)
-        }
-    }
-}
 
 extension Sequence where Element == UInt8 {
     var data: Data { .init(self) }
