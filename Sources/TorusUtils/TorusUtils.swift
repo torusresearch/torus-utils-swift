@@ -159,7 +159,7 @@ open class TorusUtils: AbstractTorusUtils {
         })
     }
 
-    public func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> [String: String] {
+     func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> [String: String] {
 
                 guard
                     let privateKey = generatePrivateKeyData(),
