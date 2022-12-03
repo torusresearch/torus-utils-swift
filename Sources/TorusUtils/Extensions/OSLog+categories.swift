@@ -5,7 +5,6 @@
 //  Created by Shubham on 7/9/21.
 //
 
-import FetchNodeDetails
 import Foundation
 import os
 

@@ -7,9 +7,6 @@
 
 import FetchNodeDetails
 import Foundation
-// #if canImport(PMKFoundation)
-//    import PMKFoundation
-// #endif
 #if canImport(secp256k1)
 import secp256k1
 #endif
