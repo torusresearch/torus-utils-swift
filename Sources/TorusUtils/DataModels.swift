@@ -8,6 +8,18 @@
 import BigInt
 import Foundation
 
+public struct TaskGroupResponse {
+   public var data:Data
+   public var urlResponse:URLResponse
+   public var index:Int
+
+    public init(data: Data, urlResponse: URLResponse, index: Int) {
+        self.data = data
+        self.urlResponse = urlResponse
+        self.index = index
+    }
+}
+
 public enum TypeOfUser: String {
     case v1
     case v2

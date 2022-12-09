@@ -186,7 +186,6 @@ public struct JSONRPCresponse: Codable {
         } else if let rawValue = try? container.decodeIfPresent([String: Any].self, forKey: .result) {
             result = rawValue
         }
-        // print("result is", result)
         self.init(id: id, jsonrpc: jsonrpc, result: result, error: nil)
     }
 }
