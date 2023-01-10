@@ -596,6 +596,7 @@ extension TorusUtils {
 
                             if keyResult != nil {
                                 os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult!.debugDescription)
+                                group.cancelAll()
                                 return keyResult!!
                             }
                         } catch let err {
