@@ -6,7 +6,7 @@ import FetchNodeDetails
  */
 import Foundation
 import OSLog
-
+import Combine
 import secp256k1
 
 @available(macOSApplicationExtension 10.15, *)
@@ -26,6 +26,7 @@ open class TorusUtils: AbstractTorusUtils {
     var network: EthereumNetworkFND
     var modulusValue = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
     var legacyNonce:Bool
+    var subscription = Set<AnyCancellable>()
 
     public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession.shared, enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET,legacyNonce:Bool = false) {
         self.urlSession = urlSession
@@ -159,11 +160,6 @@ open class TorusUtils: AbstractTorusUtils {
         var lookupPubkeyY: String = ""
 
          os_log("Pubkeys: %s, %s, %s, %s", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, paddedPubKey, pubKeyX, pubKeyY, hashedToken)
-
-        // Reject if not resolved in 30 seconds
-//        after(.seconds(300)).done {
-//            seal.reject(TorusUtilError.timeout)
-//        }
         var privateKey: String = ""
         do {
             let getPublicAddressData = try await getPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, isExtended: true)

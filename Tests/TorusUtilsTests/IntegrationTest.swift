@@ -3,6 +3,7 @@ import FetchNodeDetails
 import JWTKit
 import secp256k1
 import web3
+import Dispatch
 import XCTest
 
 @testable import TorusUtils
@@ -292,8 +293,14 @@ extension IntegrationTests {
             endpoints[1] = "https://ndjnfjbfrj/random"
             // should fail if un-commented threshold 3/5 in case of key lookup
             // endpoints[2] = "https://ndjnfjbfrj/random"
-            let val = try await tu.keyLookup(endpoints: endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val["address"], "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
+         //   let val = try await tu.keyLookup(endpoints: endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
+//             endpoints = ["https://node-1.torus-cluster-1.com/jrpc",
+//                            "https://node-2.torus-cluster-1.com/jrpc",
+//                            "https://node-3.torus-cluster-1.com/jrpc",
+//                            "https://node-4.torus-cluster-1.com/jrpc",
+//                            "https://node-5.torus-cluster-1.com/jrpc"]
+            let val = try await tu.keyLookup(endpoints: endpoints, verifier: "torus-test-health", verifierId: TORUS_TEST_EMAIL)
+            XCTAssertEqual(val["address"], "0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
