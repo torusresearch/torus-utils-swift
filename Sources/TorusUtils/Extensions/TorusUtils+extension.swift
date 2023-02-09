@@ -317,6 +317,14 @@ extension TorusUtils {
                             os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
                             throw TorusUtilError.runtime(decoded.error?.message ?? "")
                         }
+                        
+                        // Ensure that we don't add bad data to result arrays.
+                        guard
+                            let _ = decoded.result as? [String: String]
+                        else {
+                            throw TorusUtilError.decodingFailed("\(decoded.result ?? "") is not a [String: String]")
+                        }
+
                         // Check if k+t responses are back
                         resultArrayStrings[i] = String(data: try encoder.encode(decoded), encoding: .utf8)
                         resultArrayObjects[i] = decoded
