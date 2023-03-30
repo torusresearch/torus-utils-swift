@@ -358,7 +358,15 @@ extension TorusUtils {
                     if nsErr.code == -1003 {
                         // In case node is offline
                         os_log("commitmentRequest: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
-
+                        // Reject if threshold nodes unavailable
+                        lookupCount += 1
+                        if lookupCount > endpoints.count {
+                            group.cancelAll()
+                            throw TorusUtilError.nodesUnavailable
+                        }
+                    } else if (nsErr.code == -1001) {
+                        // Node times out
+                        os_log("commitmentRequest: Connection timed out, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
                         // Reject if threshold nodes unavailable
                         lookupCount += 1
                         if lookupCount > endpoints.count {
