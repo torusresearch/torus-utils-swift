@@ -23,7 +23,8 @@ let package = Package(
             dependencies: ["FetchNodeDetails", "CryptoSwift"]),
         .testTarget(
             name: "TorusUtilsTests",
-            dependencies: ["TorusUtils", "CryptoSwift", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails"])
+            dependencies: ["TorusUtils", "CryptoSwift", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails"]
+        )
     ],                                                                                                                         swiftLanguageVersions: [.v5]
 
 )

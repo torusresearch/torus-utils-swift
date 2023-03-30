@@ -38,14 +38,14 @@ extension TorusUtils {
         return combinations(elements: ArraySlice(elements), k: k)
     }
 
-    func makeUrlRequest(url: String) throws -> URLRequest {
+    func makeUrlRequest(url: String,httpMethod:HTTPMethod = .post) throws -> URLRequest {
         guard
             let url = URL(string: url)
         else {
             throw TorusUtilError.runtime("Invalid Url \(url)")
         }
         var rq = URLRequest(url: url)
-        rq.httpMethod = "POST"
+        rq.httpMethod = httpMethod.name
         rq.addValue("application/json", forHTTPHeaderField: "Content-Type")
         rq.addValue("application/json", forHTTPHeaderField: "Accept")
         return rq
@@ -123,6 +123,7 @@ extension TorusUtils {
 
     func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [[String: String]], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
         // Rebuild extraParams
+        let session = createURLSession()
         var rpcdata: Data = Data()
         do {
             if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String: Any] {
@@ -157,7 +158,7 @@ extension TorusUtils {
             for (i,rq) in requestArr.enumerated() {
                 group.addTask {
                     do {
-                        let val = try await urlSession.data(for: rq)
+                        let val = try await session.data(for: rq)
                         return .success(.init(data: val.0, urlResponse: val.1, index: i))
                     } catch {
                         return .failure(error)
@@ -222,6 +223,7 @@ extension TorusUtils {
                         let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
                         if filteredData.count < Int(endpoints.count / 2) + 1 { throw TorusUtilError.thresholdError }
                         let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
+                        session.invalidateAndCancel()
                         return thresholdLagrangeInterpolationData
                     case .failure(let error):
                         throw error
@@ -232,6 +234,7 @@ extension TorusUtils {
                     let userInfo = nsErr.userInfo as [String: Any]
                     if error as? TorusUtilError == .timeout {
                         group.cancelAll()
+                        session.invalidateAndCancel()
                         throw error
                     }
                     if nsErr.code == -1003 {
@@ -254,6 +257,7 @@ extension TorusUtils {
     // MARK: - commitment request
 
     func commitmentRequest(endpoints: [String], verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) async throws -> [[String: String]] {
+        let session = createURLSession()
         let encoder = JSONEncoder()
         let jsonRPCRequest = JSONRPCrequest(
             method: "CommitmentRequest",
@@ -292,7 +296,7 @@ extension TorusUtils {
 
                 group.addTask {
                     do {
-                        let val = try await urlSession.data(for: rq)
+                        let val = try await session.data(for: rq)
                         return .success(.init(data: val.0, urlResponse: val.1, index: i))
                     } catch {
                         return .failure(error)
@@ -341,7 +345,7 @@ extension TorusUtils {
                                 return r
                             }
                             os_log("commitmentRequest - nodeSignatures: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, nodeSignatures)
-                            group.cancelAll()
+                            session.invalidateAndCancel()
                             return nodeSignatures
                         }
                     case.failure(let error):
@@ -362,7 +366,7 @@ extension TorusUtils {
                         // Reject if threshold nodes unavailable
                         lookupCount += 1
                         if lookupCount > endpoints.count {
-                            group.cancelAll()
+                            session.invalidateAndCancel()
                             throw TorusUtilError.nodesUnavailable
                         }
                     } else {
@@ -525,7 +529,7 @@ extension TorusUtils {
     public func keyLookup(endpoints: [String], verifier: String, verifierId: String) async throws -> [String: String] {
         // Enode data
         let encoder = JSONEncoder()
-
+        let session = createURLSession()
         let jsonRPCRequest = JSONRPCrequest(
             method: "VerifierLookupRequest",
             params: ["verifier": verifier, "verifier_id": verifierId])
@@ -533,12 +537,11 @@ extension TorusUtils {
         else {
             throw TorusUtilError.encodingFailed("\(jsonRPCRequest)")
         }
-        var allowHostRequest = try! makeUrlRequest(url: allowHost)
-        allowHostRequest.httpMethod = "GET"
+        var allowHostRequest = try makeUrlRequest(url: allowHost,httpMethod: .get)
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
         do {
-            _ = try await urlSession.data(for: allowHostRequest)
+            _ = try await session.data(for: allowHostRequest)
         } catch {
             os_log("KeyLookup: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error
@@ -550,11 +553,11 @@ extension TorusUtils {
         var resultArray = [[String: String]?].init(repeating: nil, count: endpoints.count)
         // var promisesArray: [(data: Data, response: URLResponse)] = []
         var requestArray = [URLRequest]()
-        for (_,el) in endpoints.enumerated() {
+        for endpoint in endpoints{
             do {
-                var rq = try makeUrlRequest(url: el)
-                rq.httpBody = rpcdata
-                requestArray.append(rq)
+                var request = try makeUrlRequest(url: endpoint)
+                request.httpBody = rpcdata
+                requestArray.append(request)
             } catch {
                 throw error
             }
@@ -564,7 +567,7 @@ extension TorusUtils {
             for (i,rq) in requestArray.enumerated() {
                 group.addTask {
                     do {
-                        let val = try await urlSession.data(for: rq)
+                        let val = try await session.data(for: rq)
                         return .success(.init(data: val.0, urlResponse: val.1, index: i))
                     } catch {
                         return .failure(error)
@@ -604,6 +607,8 @@ extension TorusUtils {
 
                             if keyResult != nil {
                                 os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult!.debugDescription)
+                                session.invalidateAndCancel()
+                                print("session has been cancelled and shoud return")
                                 return keyResult!!
                             }
                         } catch let err {
@@ -626,7 +631,7 @@ extension TorusUtils {
                         // reject if threshold nodes unavailable
                         lookupCount += 1
                         if lookupCount > Int(endpoints.count / 2) {
-                            group.cancelAll()
+                           session.invalidateAndCancel()
                             throw TorusUtilError.nodesUnavailable
                         }
                     } else {
