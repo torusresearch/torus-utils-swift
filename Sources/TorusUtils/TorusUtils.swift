@@ -213,7 +213,7 @@ open class TorusUtils: AbstractTorusUtils {
             }
             group.addTask { [unowned self] in
                 // 5 second timeout for login
-                try await _Concurrency.Task.sleep(nanoseconds: UInt64(timeout * 5_000_000_000))
+                try await _Concurrency.Task.sleep(nanoseconds: UInt64(timeout * 60_000_000_000))
                 throw TorusUtilError.timeout
             }
 
