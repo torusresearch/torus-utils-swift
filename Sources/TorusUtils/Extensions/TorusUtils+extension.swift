@@ -517,7 +517,7 @@ extension TorusUtils {
     // MARK: - keylookup
 
     func awaitKeyLookup(endpoints: [String], verifier: String, verifierId: String, timeout: Int = 0) async throws -> [String: String] {
-        let durationInNanoseconds = UInt64(timeout * 1000000000)
+        let durationInNanoseconds = UInt64(timeout * 1_000_000_000)
         try await Task.sleep(nanoseconds: durationInNanoseconds)
         do {
             return try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
@@ -578,7 +578,6 @@ extension TorusUtils {
             for try await val in group {
                 //  print("index of the request \( val.1)")
                 do {
-                    try Task.checkCancellation()
                     switch val {
                     case .success(let model):
                         let data = model.data

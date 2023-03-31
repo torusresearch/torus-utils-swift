@@ -23,7 +23,7 @@ class MainnetTests: XCTestCase {
     static var nodePubKeys: [TorusNodePubModel] = []
     static var privKey: String = ""
     
-    let TORUS_TEST_VERIFIER = "google"
+    let TORUS_TEST_VERIFIER = "torus-test-health"
     let TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
     let TORUS_TEST_EMAIL = "hello@tor.us"
     var signerHost = "https://signer.tor.us/api/sign"
@@ -55,8 +55,8 @@ class MainnetTests: XCTestCase {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: "hello@tor.us", isExtended: true)
-            XCTAssertEqual(data.address, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
+            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: true)
+            XCTAssertEqual(data.address, "0x90A926b698047b4A87265ba1E9D8b512E8489067")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -75,38 +75,18 @@ class MainnetTests: XCTestCase {
         wait(for: [exp1], timeout: 10)
     }
 
-//    func test_shouldLogin() async {
-//        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
-//        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-//        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
-//        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-//        do {
-//            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-//            let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
-//            XCTAssertEqual(data["privateKey"], "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
-//            exp1.fulfill()
-//        } catch let error {
-//            XCTFail(error.localizedDescription)
-//            exp1.fulfill()
-//        }
-//        
-//        wait(for: [exp1], timeout: 10)
-//    }
-    
-    
-    func test_keyLookup_some_nodes_waiting() async {
-        
-        let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
+    func test_shouldLogin() async {
+        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
+        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
+        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
+        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            var endpoints = nodeDetails.getTorusNodeEndpoints()
-            
-            // should fail if un-commented threshold 3/5 in case of key lookup
-            let val = try await tu.keyLookup(endpoints: endpoints, verifier: "torus-test-health", verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val["address"], "0x90A926b698047b4A87265ba1E9D8b512E8489067")
+            let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
+            XCTAssertEqual(data["privateKey"], "0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44")
             exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
+        } catch let error {
+            XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
         
