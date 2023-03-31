@@ -54,9 +54,9 @@ class MainnetTests: XCTestCase {
     func test_getPublicAddress() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: true)
-            XCTAssertEqual(data.address, "0x90A926b698047b4A87265ba1E9D8b512E8489067")
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: "google", veriferID: TORUS_TEST_EMAIL)
+            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "google", verifierId: TORUS_TEST_EMAIL, isExtended: true)
+            XCTAssertEqual(data.address, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
