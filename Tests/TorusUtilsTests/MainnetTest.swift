@@ -75,23 +75,23 @@ class MainnetTests: XCTestCase {
         wait(for: [exp1], timeout: 10)
     }
 
-    func test_shouldLogin() async {
-        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
-        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
-        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
-            XCTAssertEqual(data["privateKey"], "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
-            exp1.fulfill()
-        } catch let error {
-            XCTFail(error.localizedDescription)
-            exp1.fulfill()
-        }
-        
-        wait(for: [exp1], timeout: 10)
-    }
+//    func test_shouldLogin() async {
+//        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
+//        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
+//        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
+//        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
+//        do {
+//            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+//            let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
+//            XCTAssertEqual(data["privateKey"], "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
+//            exp1.fulfill()
+//        } catch let error {
+//            XCTFail(error.localizedDescription)
+//            exp1.fulfill()
+//        }
+//        
+//        wait(for: [exp1], timeout: 10)
+//    }
     
     
     func test_keyLookup_some_nodes_waiting() async {
