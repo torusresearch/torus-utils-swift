@@ -39,17 +39,11 @@ class MainnetTests: XCTestCase {
         fnd = FetchNodeDetails(proxyAddress: FetchNodeDetails.proxyAddressMainnet, network: .MAINNET)
     }
     
-    override func setUpWithError() throws {
-        continueAfterFailure = false
-    }
-    
     func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
         tu = TorusUtils(enableOneKey: enableOneKey, network: .MAINNET)
         return nodeDetails
     }
-    
-    
     
     func test_getPublicAddress() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
