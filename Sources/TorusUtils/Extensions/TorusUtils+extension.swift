@@ -608,7 +608,6 @@ extension TorusUtils {
                             if keyResult != nil {
                                 os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult!.debugDescription)
                                 session.invalidateAndCancel()
-                                print("session has been cancelled and shoud return")
                                 return keyResult!!
                             }
                         } catch let err {

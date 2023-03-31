@@ -212,7 +212,8 @@ open class TorusUtils: AbstractTorusUtils {
                 try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
             }
             group.addTask { [unowned self] in
-                try await _Concurrency.Task.sleep(nanoseconds: UInt64(timeout * 1000000000))
+                // 5 second timeout for login
+                try await _Concurrency.Task.sleep(nanoseconds: UInt64(timeout * 5_000_000_000))
                 throw TorusUtilError.timeout
             }
 
