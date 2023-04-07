@@ -73,7 +73,7 @@ class IntegrationTests: XCTestCase {
             exp2.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_getUserTypeAndAddress() async {
@@ -91,7 +91,7 @@ class IntegrationTests: XCTestCase {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyAssign() async {
@@ -113,7 +113,7 @@ class IntegrationTests: XCTestCase {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyLookup() async {
@@ -121,7 +121,7 @@ class IntegrationTests: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val["address"], "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
+            XCTAssertEqual(val.address, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -132,14 +132,16 @@ class IntegrationTests: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val["err"]!, "Verifier not supported")
-            exp2.fulfill()
+          XCTFail()
         } catch let error {
-            XCTFail(error.localizedDescription)
+            if let keylookupError = error as? KeyLookupError{
+                XCTAssertEqual(keylookupError, KeyLookupError.verifierNotSupported)
+               
+            }
             exp2.fulfill()
         }
 
-        wait(for: [exp1, exp2], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_shouldLogin() async {
@@ -157,7 +159,7 @@ class IntegrationTests: XCTestCase {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     // MARK: Aggregate tests
@@ -174,7 +176,7 @@ class IntegrationTests: XCTestCase {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyAssignAggregateLogin() async {
@@ -196,7 +198,7 @@ class IntegrationTests: XCTestCase {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 5)
+        await fulfillment(of: [exp1],timeout: 5)
     }
 
     func test_keyLookupAggregateLogin() async {
@@ -204,14 +206,14 @@ class IntegrationTests: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val["address"], "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
+            XCTAssertEqual(val.address, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
             exp1.fulfill()
         } catch let error {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 5)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_shouldAggregateLogin() async {
@@ -231,7 +233,7 @@ class IntegrationTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 }
 
@@ -257,7 +259,7 @@ extension IntegrationTests {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_retrieveShares_some_nodes_down() async {
@@ -270,7 +272,7 @@ extension IntegrationTests {
             var endpoints = nodeDetails.getTorusNodeEndpoints()
             endpoints[0] = "https://ndjnfjbfrj/random"
             // should fail if un-commented threshold 4/5
-            // endpoints[1] = "https://ndjnfjbfrj/random"
+           endpoints[1] = "https://ndjnfjbfrj/random"
             let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: endpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
             XCTAssertEqual(data["privateKey"], "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
             exp1.fulfill()
@@ -279,7 +281,7 @@ extension IntegrationTests {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyLookup_some_nodes_down() async {
@@ -291,16 +293,15 @@ extension IntegrationTests {
             endpoints[0] = "https://ndjnfjbfrj/random"
             endpoints[1] = "https://ndjnfjbfrj/random"
             // should fail if un-commented threshold 3/5 in case of key lookup
-            // endpoints[2] = "https://ndjnfjbfrj/random"
+             endpoints[2] = "https://ndjnfjbfrj/random"
             let val = try await tu.keyLookup(endpoints: endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val["address"], "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
+            XCTAssertEqual(val.address, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
     
     func test_keyLookup_some_nodes_waiting() async {
@@ -319,14 +320,14 @@ extension IntegrationTests {
                              "https://node-4.torus-cluster-1.com/jrpc",
                              "https://node-5.torus-cluster-1.com/jrpc"]
              let val = try await tu.keyLookup(endpoints: endpoints, verifier: "torus-test-health", verifierId: TORUS_TEST_EMAIL)
-             XCTAssertEqual(val["address"], "0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA")
+             XCTAssertEqual(val.address, "0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA")
              exp1.fulfill()
          } catch let err {
              XCTFail(err.localizedDescription)
              exp1.fulfill()
          }
 
-         wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
      }
 
 }

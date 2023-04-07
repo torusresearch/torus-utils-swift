@@ -41,41 +41,31 @@ open class TorusUtils: AbstractTorusUtils {
 
     public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
         do {
-            let lookupData = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-            let error = lookupData["err"]
-            var data: [String: String] = [:]
-            if error != nil, let errorString = error {
-                if errorString.contains("Verifier not supported") {
-                    throw TorusUtilError.runtime("Verifier not supported. Check if you: \n1. Are on the right network (Torus testnet/mainnet) \n2. Have setup a verifier on dashboard.web3auth.io?")
+                var data:KeyLookupResponseModel
+                do{
+                    data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 }
-                // Only assign key in case: Verifier exists and the verifierID doesn't.
-                else if errorString.contains("Verifier + VerifierID has not yet been assigned") {
-                    // Assign key to the user and return (wrapped in a promise)
-                    _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network)
-                    // Do keylookup again
-                    data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-                    let error = data["err"]
-                    if error != nil {
-                        throw TorusUtilError.configurationError
+                catch{
+                    if let keyLookupError = error as? KeyLookupError,keyLookupError == .verifierAndVerifierIdNotAssigned{
+                            do{
+                                _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network)
+                                data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId, timeout: 1)
+                            }
+                            catch{
+                                throw TorusUtilError.configurationError
+                            }
                     }
-                } else {
-                    throw error!
+                    else{
+                        throw error
+                    }
                 }
-            } else {
-                data = lookupData
-            }
-
-            guard
-                let pubKeyX = data["pub_key_X"],
-                let pubKeyY = data["pub_key_Y"]
-            else {
-                throw TorusUtilError.runtime("pub_key_X and pub_key_Y missing from \(data)")
-            }
+                let pubKeyX = data.pubKeyX
+                let pubKeyY = data.pubKeyY
             var modifiedPubKey: String = ""
             var nonce: BigUInt = 0
             var typeOfUser: TypeOfUser = .v1
             var pubNonce: PubNonce?
-            let result: GetPublicAddressModel!
+            let result: GetPublicAddressModel
             if enableOneKey {
                 let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !isNewKey)
                 pubNonce = localNonceResult.pubNonce
@@ -94,7 +84,7 @@ open class TorusUtils: AbstractTorusUtils {
                     }
                 } else if typeOfUser == .v2 {
                     if localNonceResult.upgraded ?? false {
-                        modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + "04" + pubKeyY.addLeading0sForLength64()
+                        modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     } else {
                         guard localNonceResult.pubNonce != nil else { throw TorusUtilError.decodingFailed("No pub nonce found") }
                         modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
@@ -110,10 +100,8 @@ open class TorusUtils: AbstractTorusUtils {
                 typeOfUser = .v1
                 let localNonce = try await getMetadata(dictionary: ["pub_key_X": pubKeyX, "pub_key_Y": pubKeyY])
                 nonce = localNonce
-                guard
-                    let localPubkeyX = data["pub_key_X"],
-                    let localPubkeyY = data["pub_key_Y"]
-                else { throw TorusUtilError.runtime("Empty pubkey returned from getMetadata.") }
+                let localPubkeyX = data.pubKeyX
+                let localPubkeyY = data.pubKeyY
                 modifiedPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
                 if localNonce != BigInt(0) {
                     let nonce2 = BigInt(localNonce).modulus(modulusValue)
@@ -212,7 +200,7 @@ open class TorusUtils: AbstractTorusUtils {
                 try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
             }
             group.addTask { [unowned self] in
-                // 5 second timeout for login
+                // 60 second timeout for login
                 try await _Concurrency.Task.sleep(nanoseconds: UInt64(timeout * 60_000_000_000))
                 throw TorusUtilError.timeout
             }
