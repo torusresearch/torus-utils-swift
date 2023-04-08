@@ -343,7 +343,7 @@ extension TorusUtils {
                     if failedLookUpCount > endpoints.count - threshold {
                             os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, TorusUtilError.runtime("threshold node unavailable").localizedDescription)
                             session.invalidateAndCancel()
-                        throw TorusUtilError.nodesUnavailable
+                        throw error
                         }
                 }
             }
@@ -520,7 +520,6 @@ extension TorusUtils {
 
      
         var resultArray = [KeyLookupResponseModel]()
-        // var promisesArray: [(data: Data, response: URLResponse)] = []
         var requestArray = [URLRequest]()
         for endpoint in endpoints{
             do {
@@ -589,10 +588,10 @@ extension TorusUtils {
                 } catch {
                     failedLookupCount += 1
                     os_log("keyLookup: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
-                    if failedLookupCount > endpoints.count -  threshold {
+                    if failedLookupCount > (endpoints.count -  threshold) {
                         os_log("keyLookup: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, TorusUtilError.runtime("threshold nodes unavailable").localizedDescription)
                         session.invalidateAndCancel()
-                        throw TorusUtilError.nodesUnavailable
+                        throw error
                     }
                 }
             }
@@ -655,7 +654,6 @@ extension TorusUtils {
                 }
             } catch {
                 os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(error)")
-                // seal.reject(err)
                 return try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
             }
         } catch let err {
