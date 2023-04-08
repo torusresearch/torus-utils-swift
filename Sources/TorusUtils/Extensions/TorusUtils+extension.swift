@@ -304,7 +304,6 @@ extension TorusUtils {
                     try Task.checkCancellation()
                     switch val {
                     case.success(let model):
-                        // print("index of the request \( model.index)")
                         let data = model.data
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                         os_log("commitmentRequest - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")

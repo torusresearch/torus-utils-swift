@@ -49,7 +49,7 @@ class PolygonTest: XCTestCase {
             exp1.fulfill()
         }
 
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_getUserTypeAndAddress_polygon() async {
@@ -85,7 +85,7 @@ class PolygonTest: XCTestCase {
             exp2.fulfill()
             exp3.fulfill()
         }
-        wait(for: [exp1, exp2, exp3], timeout: 10)
+        await fulfillment(of: [exp1,exp2,exp3],timeout: 10)
     }
 
     func test_key_assign_polygon() async {
@@ -103,7 +103,7 @@ class PolygonTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_login_polygon() async {
@@ -122,7 +122,7 @@ class PolygonTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_aggregate_login_polygon() async throws {
@@ -142,6 +142,6 @@ class PolygonTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
+        await fulfillment(of: [exp1],timeout: 10)
     }
 }
