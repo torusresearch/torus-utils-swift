@@ -124,6 +124,7 @@ extension TorusUtils {
     func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponseModel], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
         // Rebuild extraParams
         let session = createURLSession()
+        let threshold = Int(endpoints.count / 2) + 1
         var rpcdata: Data = Data()
         do {
             if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String: Any] {
@@ -134,7 +135,7 @@ extension TorusUtils {
                                       "id": 10,
                                       "method": "ShareRequest",
                                       "params": ["encrypted": "yes",
-                                                 "item": [keepingCurrent]]] as [String: Any]
+                                                 "item": [keepingCurrent]] as [String : Any]] as [String: Any]
                 rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
             }
         } catch {
@@ -206,7 +207,7 @@ extension TorusUtils {
 
                         // Comparing dictionaries, so the order of keys doesn't matter
 
-                        let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: Int(endpoints.count / 2) + 1) // Check if threshold is satisfied
+                        let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: threshold) // Check if threshold is satisfied
                         var data: [Int: String] = [:]
                         if keyResult != nil {
                             os_log("retreiveIndividualNodeShares - result: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, resultArray)
@@ -216,7 +217,7 @@ extension TorusUtils {
                         }
                         os_log("retrieveDecryptAndReconstuct - data after decryptIndividualShares: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data)
                         let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
-                        if filteredData.count < Int(endpoints.count / 2) + 1 { throw TorusUtilError.thresholdError }
+                        if filteredData.count < threshold { throw TorusUtilError.thresholdError }
                         let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
                         session.invalidateAndCancel()
                         return thresholdLagrangeInterpolationData
@@ -272,8 +273,6 @@ extension TorusUtils {
 
         // Build promises array
         var nodeSignatures = [CommitmentRequestResponseModel]()
-        var resultArrayObjects = [JSONRPCresponse?].init(repeating: nil, count: endpoints.count)
-
         var requestArr = [URLRequest]()
         for (_, el) in endpoints.enumerated() {
             do {
@@ -559,7 +558,7 @@ extension TorusUtils {
                                 guard
                                     let decodedResult = result as? [String: [[String: String]]],
                                     let k = decodedResult["keys"],
-                                    let keys = k[0] as? [String:String],
+                                    let keys = k.first,
                                     let pubKeyX = keys["pub_key_X"],
                                     let pubKeyY = keys["pub_key_Y"],
                                     let keyIndex = keys["key_index"],
@@ -781,34 +780,5 @@ extension TorusUtils {
 
     func array32toTuple(_ arr: [UInt8]) -> (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) {
         return (arr[0] as UInt8, arr[1] as UInt8, arr[2] as UInt8, arr[3] as UInt8, arr[4] as UInt8, arr[5] as UInt8, arr[6] as UInt8, arr[7] as UInt8, arr[8] as UInt8, arr[9] as UInt8, arr[10] as UInt8, arr[11] as UInt8, arr[12] as UInt8, arr[13] as UInt8, arr[14] as UInt8, arr[15] as UInt8, arr[16] as UInt8, arr[17] as UInt8, arr[18] as UInt8, arr[19] as UInt8, arr[20] as UInt8, arr[21] as UInt8, arr[22] as UInt8, arr[23] as UInt8, arr[24] as UInt8, arr[25] as UInt8, arr[26] as UInt8, arr[27] as UInt8, arr[28] as UInt8, arr[29] as UInt8, arr[30] as UInt8, arr[31] as UInt8, arr[32] as UInt8, arr[33] as UInt8, arr[34] as UInt8, arr[35] as UInt8, arr[36] as UInt8, arr[37] as UInt8, arr[38] as UInt8, arr[39] as UInt8, arr[40] as UInt8, arr[41] as UInt8, arr[42] as UInt8, arr[43] as UInt8, arr[44] as UInt8, arr[45] as UInt8, arr[46] as UInt8, arr[47] as UInt8, arr[48] as UInt8, arr[49] as UInt8, arr[50] as UInt8, arr[51] as UInt8, arr[52] as UInt8, arr[53] as UInt8, arr[54] as UInt8, arr[55] as UInt8, arr[56] as UInt8, arr[57] as UInt8, arr[58] as UInt8, arr[59] as UInt8, arr[60] as UInt8, arr[61] as UInt8, arr[62] as UInt8, arr[63] as UInt8)
-    }
-}
-
-// Necessary for decryption
-
-extension Sequence where Element == UInt8 {
-    var data: Data { .init(self) }
-    var hexa: String { map { .init(format: "%02x", $0) }.joined() }
-}
-
-extension Data {
-    init?(hexString: String) {
-        let length = hexString.count / 2
-        var data = Data(capacity: length)
-        for i in 0 ..< length {
-            let j = hexString.index(hexString.startIndex, offsetBy: i * 2)
-            let k = hexString.index(j, offsetBy: 2)
-            let bytes = hexString[j ..< k]
-            if var byte = UInt8(bytes, radix: 16) {
-                data.append(&byte, count: 1)
-            } else {
-                return nil
-            }
-        }
-        self = data
-    }
-
-    func addLeading0sForLength64() -> Data {
-        Data(hex: toHexString().addLeading0sForLength64())
     }
 }

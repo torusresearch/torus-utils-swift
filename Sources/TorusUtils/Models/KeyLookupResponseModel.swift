@@ -47,7 +47,7 @@ extension KeyLookupError:LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .verifierNotSupported:
-            return "Verifier not supported. Check if you: \n1. Are on the right network (Torus testnet/mainnet) \n2. Have setup a verifier on dashboard.web3auth.io?"
+            return "Verifier not supported. Check if you: \n1. Are on the right network (Torus testnet/mainnet) \n2. Have setup a verifier on dashboterard.web3auth.io?"
         case .verifierAndVerifierIdNotAssigned:
             return "Verifier + VerifierID has not yet been assigned"
         case .configError:
