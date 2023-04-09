@@ -7,11 +7,11 @@
 
 import Foundation
 
-enum HTTPMethod{
+enum HTTPMethod {
     case get
     case post
-    
-    var name:String{
+
+    var name:String {
         switch self {
         case .get:
             return "GET"
@@ -21,8 +21,8 @@ enum HTTPMethod{
     }
 }
 
-extension TorusUtils{
-    func createURLSession() -> URLSession{
+extension TorusUtils {
+    func createURLSession() -> URLSession {
         let session = URLSession(configuration: urlSession.configuration)
         return session
     }

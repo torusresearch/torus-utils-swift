@@ -42,20 +42,17 @@ open class TorusUtils: AbstractTorusUtils {
     public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
         do {
                 var data:KeyLookupResponseModel
-                do{
+                do {
                     data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-                }
-                catch{
-                    if let keyLookupError = error as? KeyLookupError,keyLookupError == .verifierAndVerifierIdNotAssigned{
-                            do{
+                } catch {
+                    if let keyLookupError = error as? KeyLookupError,keyLookupError == .verifierAndVerifierIdNotAssigned {
+                            do {
                                 _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network)
                                 data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId, timeout: 1)
-                            }
-                            catch{
+                            } catch {
                                 throw TorusUtilError.configurationError
                             }
-                    }
-                    else{
+                    } else {
                         throw error
                     }
                 }
@@ -124,7 +121,7 @@ open class TorusUtils: AbstractTorusUtils {
             throw error
         }
     }
-    
+
     public func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
         return try await withThrowingTaskGroup(of: RetrieveSharesResponseModel.self, body: { [unowned self] group in
             group.addTask { [unowned self] in

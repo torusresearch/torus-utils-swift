@@ -286,7 +286,6 @@ extension TorusUtils {
         }
         return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: { group in
 
-        
             for (i,rq) in requestArr.enumerated() {
 
                 group.addTask {
@@ -312,7 +311,7 @@ extension TorusUtils {
                             os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
                             throw TorusUtilError.runtime(decoded.error?.message ?? "")
                         }
-                        
+
                         // Ensure that we don't add bad data to result arrays.
                         guard
                             let response = decoded.result as? [String: String],
@@ -323,7 +322,7 @@ extension TorusUtils {
                         else {
                             throw TorusUtilError.decodingFailed("\(decoded.result ?? "") is not a [String: String]")
                         }
-                        
+
                         // Check if k+t responses are back
                         let val = CommitmentRequestResponseModel(data: data, nodepubx: nodepubx, nodepuby: nodepuby, signature: signature)
                         nodeSignatures.append(val)
@@ -358,7 +357,7 @@ extension TorusUtils {
 
         for (_, el) in shares.enumerated() {
             let nodeIndex = el.key
-            
+
             let k = el.value.ephemPublicKey
             let ephermalPublicKey = k.strip04Prefix()
             let ephermalPublicKeyBytes = ephermalPublicKey.hexa
@@ -518,10 +517,9 @@ extension TorusUtils {
 
         // Create Array of URLRequest Promises
 
-     
         var resultArray = [KeyLookupResponseModel]()
         var requestArray = [URLRequest]()
-        for endpoint in endpoints{
+        for endpoint in endpoints {
             do {
                 var request = try makeUrlRequest(url: endpoint)
                 request.httpBody = rpcdata
@@ -551,7 +549,7 @@ extension TorusUtils {
                         do {
                             let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                             os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)")
-                        
+
                             let result = decoded.result
                             let error = decoded.error
                             if let _ = error {
@@ -664,20 +662,17 @@ extension TorusUtils {
     public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) async throws -> GetUserAndAddressModel {
         do {
             var data:KeyLookupResponseModel
-            do{
+            do {
                 data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
-            }
-            catch{
-                if let keyLookupError = error as? KeyLookupError,keyLookupError == .verifierAndVerifierIdNotAssigned{
-                        do{
+            } catch {
+                if let keyLookupError = error as? KeyLookupError,keyLookupError == .verifierAndVerifierIdNotAssigned {
+                        do {
                             _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, signerHost: signerHost, network: network)
                             data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID, timeout: 1)
-                        }
-                        catch{
+                        } catch {
                             throw TorusUtilError.configurationError
                         }
-                }
-                else{
+                } else {
                     throw error
                 }
             }
@@ -711,7 +706,7 @@ extension TorusUtils {
             }
             let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, address: publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce)
             return val
-        } catch(let error){
+        } catch(let error) {
            throw error
         }
     }
