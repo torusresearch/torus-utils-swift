@@ -51,8 +51,6 @@ class OneKeyTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
-
     }
 
     func test_login() async {
@@ -71,7 +69,6 @@ class OneKeyTest: XCTestCase {
             XCTFail()
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_login_v2() async {
@@ -91,7 +88,6 @@ class OneKeyTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_aggregate_login() async {
@@ -111,7 +107,6 @@ class OneKeyTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 30)
     }
 
     func test_key_assign() async {
@@ -129,6 +124,5 @@ class OneKeyTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 }

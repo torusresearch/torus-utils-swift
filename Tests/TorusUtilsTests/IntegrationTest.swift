@@ -72,8 +72,6 @@ class IntegrationTests: XCTestCase {
         } catch _ {
             exp2.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_getUserTypeAndAddress() async {
@@ -90,8 +88,6 @@ class IntegrationTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyAssign() async {
@@ -112,8 +108,6 @@ class IntegrationTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyLookup() async {
@@ -140,8 +134,6 @@ class IntegrationTests: XCTestCase {
             }
             exp2.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_shouldLogin() async {
@@ -158,8 +150,6 @@ class IntegrationTests: XCTestCase {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     // MARK: Aggregate tests
@@ -175,8 +165,6 @@ class IntegrationTests: XCTestCase {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyAssignAggregateLogin() async {
@@ -197,8 +185,6 @@ class IntegrationTests: XCTestCase {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 5)
     }
 
     func test_keyLookupAggregateLogin() async {
@@ -212,8 +198,6 @@ class IntegrationTests: XCTestCase {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_shouldAggregateLogin() async {
@@ -233,7 +217,6 @@ class IntegrationTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 }
 
@@ -258,8 +241,6 @@ extension IntegrationTests {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_retrieveShares_some_nodes_down() async {
@@ -280,8 +261,6 @@ extension IntegrationTests {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_keyLookup_some_nodes_down() async {
@@ -301,7 +280,6 @@ extension IntegrationTests {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
     
     func test_keyLookup_some_nodes_waiting() async {
@@ -326,8 +304,6 @@ extension IntegrationTests {
              XCTFail(err.localizedDescription)
              exp1.fulfill()
          }
-
-        await fulfillment(of: [exp1],timeout: 10)
      }
 
 }

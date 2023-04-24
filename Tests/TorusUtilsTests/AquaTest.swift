@@ -48,8 +48,6 @@ class AquaTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_getUserTypeAndAddress_aqua() async {
@@ -69,7 +67,6 @@ class AquaTest: XCTestCase {
             exp2.fulfill()
             exp3.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_key_assign_aqua() async {
@@ -87,7 +84,6 @@ class AquaTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_login_aqua() async {
@@ -106,7 +102,6 @@ class AquaTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_aggregate_login_aqua() async throws {
@@ -126,7 +121,6 @@ class AquaTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 }
 
@@ -151,6 +145,5 @@ extension AquaTest {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
 }

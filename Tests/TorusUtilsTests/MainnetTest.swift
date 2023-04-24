@@ -56,8 +56,6 @@ class MainnetTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
     
     func test_getUserTypeAndAddress() async {
@@ -89,8 +87,6 @@ class MainnetTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp2.fulfill()
         }
-
-        await fulfillment(of: [exp1,exp2],timeout: 10)
     }
     
     func test_keyAssign() async {
@@ -111,8 +107,6 @@ class MainnetTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
 
     func test_shouldLogin() async {
@@ -129,8 +123,6 @@ class MainnetTests: XCTestCase {
             XCTFail(error.localizedDescription)
             exp1.fulfill()
         }
-
-        await fulfillment(of: [exp1],timeout: 10)
     }
     
     
@@ -151,7 +143,6 @@ class MainnetTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        await fulfillment(of: [exp1],timeout: 10)
     }
     
 }
