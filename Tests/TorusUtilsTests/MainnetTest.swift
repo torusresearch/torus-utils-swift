@@ -57,7 +57,7 @@ class MainnetTests: XCTestCase {
             exp1.fulfill()
         }
     }
-    
+
     func test_getUserTypeAndAddress() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let verifier1: String = "tkey-google"
@@ -72,9 +72,9 @@ class MainnetTests: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        
+
         let exp2 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        
+
         let verifier2: String = "tkey-google"
         let verifierID2: String = "caspertorus@gmail.com"
         do {
@@ -88,7 +88,7 @@ class MainnetTests: XCTestCase {
             exp2.fulfill()
         }
     }
-    
+
     func test_keyAssign() async {
         let email = generateRandomEmail(of: 6)
 
@@ -124,8 +124,7 @@ class MainnetTests: XCTestCase {
             exp1.fulfill()
         }
     }
-    
-    
+
     func test_shouldAggregateLogin() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
@@ -144,6 +143,5 @@ class MainnetTests: XCTestCase {
             exp1.fulfill()
         }
     }
-    
-}
 
+}

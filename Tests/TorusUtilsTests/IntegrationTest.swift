@@ -128,9 +128,9 @@ class IntegrationTests: XCTestCase {
             let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL)
           XCTFail()
         } catch let error {
-            if let keylookupError = error as? KeyLookupError{
+            if let keylookupError = error as? KeyLookupError {
                 XCTAssertEqual(keylookupError, KeyLookupError.verifierNotSupported)
-               
+
             }
             exp2.fulfill()
         }
@@ -281,7 +281,7 @@ extension IntegrationTests {
             exp1.fulfill()
         }
     }
-    
+
     func test_keyLookup_some_nodes_waiting() async {
 
          let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
@@ -291,7 +291,6 @@ extension IntegrationTests {
 
              // should fail if un-commented threshold 3/5 in case of key lookup
 
-         
               endpoints = ["https://node-1.torus-cluster-1.com/jrpc",
                              "https://node-2.torus-cluster-1.com/jrpc",
                              "https://node-3.torus-cluster-1.com/jrpc",

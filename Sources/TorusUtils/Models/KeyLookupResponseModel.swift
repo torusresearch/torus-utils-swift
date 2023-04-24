@@ -7,12 +7,12 @@
 
 import Foundation
 
-public struct KeyLookupResponseModel:CustomStringConvertible,Hashable {
+public struct KeyLookupResponseModel: CustomStringConvertible, Hashable {
 
-    public let pubKeyX:String
-    public let pubKeyY:String
-    public let keyIndex:String
-    public let address:String
+    public let pubKeyX: String
+    public let pubKeyY: String
+    public let keyIndex: String
+    public let address: String
     public var description: String {
         return "public key X is \(pubKeyX) public key Y is \(pubKeyY) address is \(address)"
     }
@@ -26,12 +26,12 @@ public struct KeyLookupResponseModel:CustomStringConvertible,Hashable {
 
 }
 
-public enum KeyLookupError:Error {
+public enum KeyLookupError: Error {
     case verifierNotSupported
     case verifierAndVerifierIdNotAssigned
     case configError
 
-    static func createErrorFromString(errorString:String) -> Self {
+    static func createErrorFromString(errorString: String) -> Self {
         if errorString.contains("Verifier not supported") {
             return .verifierNotSupported
         } else if errorString.contains("Verifier + VerifierID has not yet been assigned") {
@@ -42,7 +42,7 @@ public enum KeyLookupError:Error {
     }
 }
 
-extension KeyLookupError:LocalizedError {
+extension KeyLookupError: LocalizedError {
 
     public var errorDescription: String? {
         switch self {

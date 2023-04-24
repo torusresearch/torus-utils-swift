@@ -7,11 +7,11 @@
 
 import Foundation
 
-public struct CommitmentRequestResponseModel:Decodable {
-    public var data:String
-    public var nodepubx:String
-    public var nodepuby:String
-    public var signature:String
+public struct CommitmentRequestResponseModel: Decodable {
+    public var data: String
+    public var nodepubx: String
+    public var nodepuby: String
+    public var signature: String
 
     public init(data: String, nodepubx: String, nodepuby: String, signature: String) {
         self.data = data
@@ -23,10 +23,10 @@ public struct CommitmentRequestResponseModel:Decodable {
 
 extension Array where Element == CommitmentRequestResponseModel {
 
-    public func tostringDict() -> [[String:String]] {
-        var dictArr = [[String:String]]()
+    public func tostringDict() -> [[String: String]] {
+        var dictArr = [[String: String]]()
         for val in self {
-            var dict = [String:String]()
+            var dict = [String: String]()
             dict["data"] = val.data
             dict["nodepubx"] = val.nodepubx
             dict["nodepuby"] = val.nodepuby

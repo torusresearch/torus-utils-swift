@@ -8,11 +8,11 @@
 import Foundation
 
 public struct RetrieveDecryptAndReconstuctResponseModel {
-    public let iv:String
-    public let ephemPublicKey:String
-    public let share:String
-    public let pubKeyX:String
-    public let pubKeyY:String
+    public let iv: String
+    public let ephemPublicKey: String
+    public let share: String
+    public let pubKeyX: String
+    public let pubKeyY: String
 
     public init(iv: String, ephemPublicKey: String, share: String, pubKeyX: String, pubKeyY: String) {
         self.iv = iv

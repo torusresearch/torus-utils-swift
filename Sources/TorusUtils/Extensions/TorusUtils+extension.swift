@@ -38,7 +38,7 @@ extension TorusUtils {
         return combinations(elements: ArraySlice(elements), k: k)
     }
 
-    func makeUrlRequest(url: String,httpMethod:HTTPMethod = .post) throws -> URLRequest {
+    func makeUrlRequest(url: String, httpMethod: HTTPMethod = .post) throws -> URLRequest {
         guard
             let url = URL(string: url)
         else {
@@ -135,7 +135,7 @@ extension TorusUtils {
                                       "id": 10,
                                       "method": "ShareRequest",
                                       "params": ["encrypted": "yes",
-                                                 "item": [keepingCurrent]] as [String : Any]] as [String: Any]
+                                                 "item": [keepingCurrent]] as [String: Any]] as [String: Any]
                 rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
             }
         } catch {
@@ -146,7 +146,7 @@ extension TorusUtils {
         var resultArray = [Int: RetrieveDecryptAndReconstuctResponseModel]()
         var errorStack = [Error]()
         var requestArr = [URLRequest]()
-        for (_,el) in endpoints.enumerated() {
+        for (_, el) in endpoints.enumerated() {
             do {
                 var rq = try makeUrlRequest(url: el)
                 rq.httpBody = rpcdata
@@ -155,8 +155,8 @@ extension TorusUtils {
                 throw error
             }
         }
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: {[unowned self] group in
-            for (i,rq) in requestArr.enumerated() {
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+            for (i, rq) in requestArr.enumerated() {
                 group.addTask {
                     do {
                         let val = try await session.data(for: rq)
@@ -283,9 +283,9 @@ extension TorusUtils {
                 throw error
             }
         }
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: { group in
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
 
-            for (i,rq) in requestArr.enumerated() {
+            for (i, rq) in requestArr.enumerated() {
 
                 group.addTask {
                     do {
@@ -504,7 +504,7 @@ extension TorusUtils {
         else {
             throw TorusUtilError.encodingFailed("\(jsonRPCRequest)")
         }
-        var allowHostRequest = try makeUrlRequest(url: allowHost,httpMethod: .get)
+        var allowHostRequest = try makeUrlRequest(url: allowHost, httpMethod: .get)
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
         do {
@@ -528,8 +528,8 @@ extension TorusUtils {
             }
         }
 
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse,Error>.self, body: {[unowned self] group in
-            for (i,rq) in requestArray.enumerated() {
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+            for (i, rq) in requestArray.enumerated() {
                 group.addTask {
                     do {
                         let val = try await session.data(for: rq)
@@ -660,11 +660,11 @@ extension TorusUtils {
 
     public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) async throws -> GetUserAndAddressModel {
         do {
-            var data:KeyLookupResponseModel
+            var data: KeyLookupResponseModel
             do {
                 data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
             } catch {
-                if let keyLookupError = error as? KeyLookupError,keyLookupError == .verifierAndVerifierIdNotAssigned {
+                if let keyLookupError = error as? KeyLookupError, keyLookupError == .verifierAndVerifierIdNotAssigned {
                         do {
                             _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, signerHost: signerHost, network: network)
                             data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID, timeout: 1)
@@ -705,7 +705,7 @@ extension TorusUtils {
             }
             let val: GetUserAndAddressModel = .init(typeOfUser: typeOfUser, address: publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce)
             return val
-        } catch(let error) {
+        } catch let error {
            throw error
         }
     }

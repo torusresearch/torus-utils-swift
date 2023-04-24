@@ -8,13 +8,13 @@
 import Foundation
 extension String {
 
-    func padLeft(padChar:Character,count:Int) -> String {
+    func padLeft(padChar: Character, count: Int) -> String {
         let str = self
         if str.count >= count {
             return str
         }
         var resultStr = ""
-        while(str.count < count - str.count) {
+        while str.count < count - str.count {
             resultStr.append(padChar)
         }
         resultStr.append(str)

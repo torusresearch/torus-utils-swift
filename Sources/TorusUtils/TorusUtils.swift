@@ -25,9 +25,9 @@ open class TorusUtils: AbstractTorusUtils {
     var allowHost: String
     var network: EthereumNetworkFND
     var modulusValue = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
-    var legacyNonce:Bool
+    var legacyNonce: Bool
 
-    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET,legacyNonce:Bool = false) {
+    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET, legacyNonce: Bool = false) {
         self.urlSession = urlSession
         utilsLogType = loglevel
         self.metaDataHost = metaDataHost
@@ -41,11 +41,11 @@ open class TorusUtils: AbstractTorusUtils {
 
     public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
         do {
-                var data:KeyLookupResponseModel
+                var data: KeyLookupResponseModel
                 do {
                     data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 } catch {
-                    if let keyLookupError = error as? KeyLookupError,keyLookupError == .verifierAndVerifierIdNotAssigned {
+                    if let keyLookupError = error as? KeyLookupError, keyLookupError == .verifierAndVerifierIdNotAssigned {
                             do {
                                 _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network)
                                 data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId, timeout: 1)
