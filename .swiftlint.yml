@@ -19,3 +19,5 @@ excluded: # paths to ignore during linting. Takes precedence over `included`.
   - .build
 analyzer_rules: # Rules run by `swiftlint analyze`
   - explicit_self
+
+line_length: 150
