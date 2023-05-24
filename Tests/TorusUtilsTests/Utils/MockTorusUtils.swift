@@ -21,8 +21,8 @@ class MockTorusUtils: AbstractTorusUtils {
         self.nodePubKeys = nodePubKeys
     }
 
-    func retrieveShares(torusNodePubs: Array<TorusNodePubModel>, endpoints: Array<String>, verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> [String: String] {
-        return [:]
+    func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
+        return .init(publicKey: "", privateKey: "")
     }
 
     func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {

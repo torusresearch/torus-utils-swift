@@ -34,7 +34,7 @@ extension TorusUtilError: CustomDebugStringConvertible {
         case .apiRequestFailed:
             return "API request failed or No response from the node"
         case let .decodingFailed(response):
-            return "JSON Decoding error \(response)"
+            return "JSON Decoding error \(response ?? "")"
         case let .errInResponse(str):
             return "API response error \(str)"
         case .decryptionFailed:
@@ -60,7 +60,7 @@ extension TorusUtilError: CustomDebugStringConvertible {
         case .invalidKeySize:
             return "Invalid key size. Expected 32 bytes"
         case let .encodingFailed(msg):
-            return "Could not encode data \(msg)"
+            return "Could not encode data \(msg ?? "")"
         }
     }
 
@@ -80,7 +80,7 @@ extension TorusUtilError: LocalizedError {
         case .apiRequestFailed:
             return "API request failed or No response from the node"
         case let .decodingFailed(response):
-            return "JSON Decoding error \(response)"
+            return "JSON Decoding error \(response ?? "")"
         case let .errInResponse(str):
             return "API response error \(str)"
         case .decryptionFailed:
@@ -106,7 +106,7 @@ extension TorusUtilError: LocalizedError {
         case .invalidKeySize:
             return "Invalid key size. Expected 32 bytes"
         case let .encodingFailed(msg):
-            return "Could not encode data \(msg)"
+            return "Could not encode data \(msg ?? "")"
         }
     }
 }

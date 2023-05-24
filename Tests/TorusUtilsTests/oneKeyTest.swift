@@ -51,7 +51,6 @@ class OneKeyTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
     }
 
     func test_login() async {
@@ -64,13 +63,12 @@ class OneKeyTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer)
-            XCTAssertEqual(data["privateKey"], "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
+            XCTAssertEqual(data.privateKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
             exp1.fulfill()
         } catch {
             XCTFail()
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
     }
 
     func test_login_v2() async {
@@ -83,14 +81,13 @@ class OneKeyTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer)
-            XCTAssertEqual(data["privateKey"], "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075")
-            XCTAssertEqual(data["publicAddress"], "0x2876820fd9536BD5dd874189A85d71eE8bDf64c2")
+            XCTAssertEqual(data.privateKey, "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075")
+            XCTAssertEqual(data.publicAddress, "0x2876820fd9536BD5dd874189A85d71eE8bDf64c2")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
     }
 
     func test_aggregate_login() async {
@@ -104,13 +101,12 @@ class OneKeyTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID, idToken: hashedIDToken, extraParams: buffer)
-            XCTAssertEqual(data["publicAddress"], "0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B")
+            XCTAssertEqual(data.publicAddress, "0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 30)
     }
 
     func test_key_assign() async {
@@ -128,6 +124,5 @@ class OneKeyTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
-        wait(for: [exp1], timeout: 10)
     }
 }

@@ -146,11 +146,6 @@ public struct JSONRPCresponse: Codable {
         self.error = error
     }
 
-//    public struct ErrorMessage: Decodable {
-//        public var code: Int
-//        public var message: String
-//    }
-
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: JSONRPCresponseKeys.self)
         let id: Int = try container.decode(Int.self, forKey: .id)
