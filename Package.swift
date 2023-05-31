@@ -25,6 +25,6 @@ let package = Package(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", "CryptoSwift", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails"]
         )
-    ],                                                                                                                         swiftLanguageVersions: [.v5]
-
+    ],
+    swiftLanguageVersions: [.v5]
 )

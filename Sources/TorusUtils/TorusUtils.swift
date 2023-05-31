@@ -17,28 +17,24 @@ open class TorusUtils: AbstractTorusUtils {
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     private var timeout: Int = 30
     var urlSession: URLSession
-    var enableOneKey: Bool
     var serverTimeOffset: TimeInterval = 0
     var isNewKey = false
-    var metaDataHost: String
-    var signerHost: String
     var allowHost: String
     var network: EthereumNetworkFND
     var modulusValue = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
     var legacyNonce: Bool
 
-    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, metaDataHost: String = "https://metadata.tor.us", signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET, legacyNonce: Bool = false) {
+    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET, legacyNonce: Bool = false) {
         self.urlSession = urlSession
         utilsLogType = loglevel
-        self.metaDataHost = metaDataHost
-        self.enableOneKey = enableOneKey
-        self.signerHost = signerHost
+
         self.allowHost = allowHost
         self.network = network
         self.serverTimeOffset = serverTimeOffset
         self.legacyNonce = legacyNonce
     }
 
+    // TODO: keyassign func changed.. 
     public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
         do {
                 var data: KeyLookupResponseModel
@@ -217,4 +213,8 @@ open class TorusUtils: AbstractTorusUtils {
     open func getTimestamp() -> TimeInterval {
         return Date().timeIntervalSince1970
     }
+    
+    // TODO: importPrivateKey
+    
+    
 }
