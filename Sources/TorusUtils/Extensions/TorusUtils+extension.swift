@@ -568,7 +568,75 @@ extension TorusUtils {
     }
 
     // MARK: - key assignment
-
+    
+    func GetPubKeyOrKeyAssign(
+        endpoints: [String],
+        verifier: String,
+        verifierId: String,
+        extendedVerifierId: String? = nil,
+        completion: @escaping (KeyLookupResponseModel?, Error?) -> Void
+    ) {
+        let lookupPromises = endpoints.map { x -> URLSessionDataTask in
+            let jsonRPCObject = generateJsonRPCObject("GET_OR_SET_KEY", [
+                "verifier": verifier,
+                "verifier_id": verifierId,
+                "extended_verifier_id": extendedVerifierId,
+                "one_key_flow": true,
+                "fetch_node_index": true
+            ])
+            
+            return post(x, jsonRPCObject, nil, ["logTracingHeader": config.logRequestTracing])
+        }
+        
+        var nonceResult: GetOrSetNonceResultModel?
+        var nodeIndexes: [Int] = []
+        
+        Some(lookupPromises) { lookupResults in
+            let lookupPubKeys = lookupResults.filter { x1 -> Bool in
+                if let x1 = x1 {
+                    if nonceResult == nil {
+                        let pubNonceX = x1.result?.keys[0].nonce_data?.pubNonce?.x
+                        if let pubNonceX = pubNonceX {
+                            nonceResult = x1.result.keys[0].nonce_data
+                        }
+                    }
+                    return true
+                }
+                return false
+            }
+            
+            let errorResult = thresholdSame(
+                lookupPubKeys.map { x2 -> Any? in x2?.error },
+                (endpoints.count / 2) + 1
+            )
+            
+            let keyResult = thresholdSame(
+                lookupPubKeys.map { x3 -> Any? in x3?.result },
+                (endpoints.count / 2) + 1
+            )
+            
+            if (keyResult != nil && (nonceResult != nil || extendedVerifierId != nil)) || errorResult != nil {
+                if let keyResult = keyResult {
+                    lookupResults.forEach { x1 in
+                        if let x1 = x1, let nodeIndex = x1.result?.node_index {
+                            nodeIndexes.append(nodeIndex)
+                        }
+                    }
+                }
+                completion(KeyLookupResponseModel(keyResult: keyResult, nodeIndexes: nodeIndexes,
+                                           errorResult: errorResult, nonceResult: nonceResult), nil)
+            } else {
+                let error = NSError(domain: "InvalidPublicKeyResult", code: 0, userInfo: [
+                    "lookupResults": lookupResults,
+                    "nonceResult": nonceResult ?? NSNull(),
+                    "verifier": verifier,
+                    "verifierId": verifierId,
+                    "extendedVerifierId": extendedVerifierId ?? NSNull()
+                ])
+                completion(nil, error)
+            }
+        }
+    }
     public func keyAssign(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, signerHost: String, network: EthereumNetworkFND, firstPoint: Int? = nil, lastPoint: Int? = nil) async throws -> JSONRPCresponse {
         var nodeNum: Int = 0
         var initialPoint: Int = 0

@@ -61,7 +61,21 @@ public struct GetPublicAddressModel {
     }
 }
 
+public struct GetOrSetNonceResultModel: Decodable {
+    public var typeOfUser: String
+    public var nonce: String?
+    public var pubNonce: PubNonce?
+    public var ifps: String?
+    public var upgraded: Bool?
 
+    public init(typeOfUser: String, nonce: String? = nil, pubNonce: PubNonce? = nil, ifps: String? = nil, upgraded: Bool? = nil) {
+        self.typeOfUser = typeOfUser
+        self.nonce = nonce
+        self.pubNonce = pubNonce
+        self.ifps = ifps
+        self.upgraded = upgraded
+    }
+}
 
 public struct PubNonce: Decodable {
     public var x: String
