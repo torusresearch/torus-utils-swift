@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Dhruv Jaiswal on 04/06/22.
-//
-
 import BigInt
 import Foundation
 
@@ -25,7 +18,7 @@ public enum TypeOfUser: String {
     case v2
 }
 
-public struct GetUserAndAddressModel {
+public struct GetUserAndAddress {
     public var typeOfUser: TypeOfUser
     public var pubNonce: PubNonce?
     public var nonceResult: String?
@@ -43,7 +36,7 @@ public struct GetUserAndAddressModel {
     }
 }
 
-public struct GetPublicAddressModel {
+public struct GetPublicAddressResult {
     public var address: String
     public var typeOfUser: TypeOfUser?
     public var x: String?
@@ -61,7 +54,7 @@ public struct GetPublicAddressModel {
     }
 }
 
-public struct GetOrSetNonceResultModel: Decodable {
+public struct GetOrSetNonceResult: Decodable {
     public var typeOfUser: String
     public var nonce: String?
     public var pubNonce: PubNonce?
@@ -87,7 +80,7 @@ public struct PubNonce: Decodable {
     }
 }
 
-public struct UserTypeAndAddressModel {
+public struct UserTypeAndAddress {
     public var typeOfUser: String
     public var nonce: BigInt?
     public var x: String
@@ -103,4 +96,18 @@ public struct UserTypeAndAddressModel {
     }
 }
 
+public enum BNString {
+    case string(String)
+    case bn(BigInt)
+    
+    func toString() -> String? {
+        switch self {
+        case .string(let str):
+            return str
+        case .bn(let bigint):
+            return String(bigint)
+        }
+    }
+}
 
+typealias StringifiedType = [String: Any]

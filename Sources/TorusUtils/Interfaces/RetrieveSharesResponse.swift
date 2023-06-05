@@ -1,13 +1,6 @@
-//
-//  File.swift
-//  
-//
-//  Created by Dhruv Jaiswal on 08/04/23.
-//
-
 import Foundation
 
-public struct RetrieveSharesResponseModel {
+public struct RetrieveSharesResponse {
     public let publicAddress: String
     public let privateKey: String
 

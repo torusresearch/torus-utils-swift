@@ -1,50 +1,72 @@
 import Foundation
-import CryptoKit
+import CryptorECC
+import BigInt
 import Security
 
-struct Point {
-    let x: Data
-    let y: Data
-    
-    init(x: String, y: String) {
-        self.x = Data(hexString: x)!
-        self.y = Data(hexString: y)!
-    }
-    
-    func encode(enc: String) throws -> Data {
-        switch enc {
-        case "arr":
-            let prefix = Data(hexString: "04")!
-            return prefix + x + y
-        case "elliptic-compressed":
-            do {
-                let publicKeyData = try createCompressedPublicKey(x: x, y: y)
-                return publicKeyData
-            } catch {
-                throw error
+extension Data {
+    init?(hex: String) {
+        var hexString = hex
+        // Remove any prefix or whitespace
+        hexString = hexString.replacingOccurrences(of: "0x", with: "")
+            .replacingOccurrences(of: " ", with: "")
+        
+        // Ensure the hex string has an even number of characters
+        guard hexString.count % 2 == 0 else { return nil }
+        
+        // Convert each 2 characters into a byte and append to data
+        var data = Data()
+        var index = hexString.startIndex
+        while index < hexString.endIndex {
+            let nextIndex = hexString.index(index, offsetBy: 2)
+            if let byte = UInt8(hexString[index..<nextIndex], radix: 16) {
+                data.append(byte)
+            } else {
+                return nil
             }
-        default:
-            throw EncodingError.unknownEncoding
+            index = nextIndex
         }
-    }
-    
-    private func createCompressedPublicKey(x: Data, y: Data) throws -> Data {
-        guard let ecPublicKeyData = ECPointData(x: x, y: y) else {
-            throw EncodingError.unableToCreatePublicKey
-        }
-        
-        let publicKeyData = SecKeyCreateWithData(ecPublicKeyData as CFData, [
-            kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeyClass: kSecAttrKeyClassPublic,
-            kSecAttrKeySizeInBits: 256,
-            kSecUseDataProtectionKeychain: false
-        ] as CFDictionary, nil)
-        
-        return publicKeyData! as Data
+        self = data
     }
 }
 
-enum EncodingError: Error {
-    case unknownEncoding
-    case unableToCreatePublicKey
+class Point {
+    let x: BigInt
+    let y: BigInt
+    let ecCurve: EllipticCurve
+
+    init(x: BNString, y: BNString, ecCurve: EllipticCurve) {
+        self.x = BigInt(x.toString()!, radix: 16)!
+        self.y = BigInt(y.toString()!, radix: 16)!
+        self.ecCurve = ecCurve
+    }
+
+    func encode(enc: String) throws -> Data {
+        switch enc {
+        case "arr":
+            let prefix = Data(hex: "04")!
+            let xData = Data(hex: x.description)!
+            let yData = Data(hex: y.description)!
+            return prefix + xData + yData
+        case "elliptic-compressed":
+            let publicKey = try getCompressedPublicKey()
+            return publicKey
+        default:
+            throw PointError.encodingNotSupported
+        }
+    }
+    
+    private func getCompressedPublicKey() throws -> Data {
+        var error: Unmanaged<CFError>?
+        guard let publicKeyData = SecKeyCopyExternalRepresentation(ecCurve as! SecKey, &error) as Data? else {
+            throw PointError.compressedPublicKeyGenerationFailed
+        }
+        
+        let compressedPublicKeyData = publicKeyData.subdata(in: 9..<publicKeyData.count)
+        return compressedPublicKeyData
+    }
+}
+
+enum PointError: Error {
+    case encodingNotSupported
+    case compressedPublicKeyGenerationFailed
 }

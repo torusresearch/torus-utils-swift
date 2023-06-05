@@ -92,7 +92,7 @@ extension TorusUtils {
 
     // MARK: - retreiveDecryptAndReconstuct
 
-    func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponseModel], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
+    func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
         // Rebuild extraParams
         let session = createURLSession()
         let threshold = Int(endpoints.count / 2) + 1
@@ -114,7 +114,7 @@ extension TorusUtils {
         }
 
         var shareResponses = [[String: String]?].init(repeating: nil, count: endpoints.count)
-        var resultArray = [Int: RetrieveDecryptAndReconstuctResponseModel]()
+        var resultArray = [Int: RetrieveDecryptAndReconstuctResponse]()
         var errorStack = [Error]()
         var requestArr = [URLRequest]()
         for (_, el) in endpoints.enumerated() {
@@ -170,7 +170,7 @@ extension TorusUtils {
                                 throw TorusUtilError.decodingFailed("\(first)")
                             }
                             shareResponses[i] = publicKey // For threshold
-                            let model = RetrieveDecryptAndReconstuctResponseModel(iv: iv, ephemPublicKey: ephemPublicKey, share: share, pubKeyX: pubKeyX, pubKeyY: pubKeyY)
+                            let model = RetrieveDecryptAndReconstuctResponse(iv: iv, ephemPublicKey: ephemPublicKey, share: share, pubKeyX: pubKeyX, pubKeyY: pubKeyY)
                             resultArray[i] = model
                         }
 
@@ -223,7 +223,7 @@ extension TorusUtils {
 
     // MARK: - commitment request
 
-    func commitmentRequest(endpoints: [String], verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) async throws -> [CommitmentRequestResponseModel] {
+    func commitmentRequest(endpoints: [String], verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) async throws -> [CommitmentRequestResponse] {
         let session = createURLSession()
         let threshold = Int(endpoints.count / 4) * 3 + 1
         let encoder = JSONEncoder()
@@ -243,7 +243,7 @@ extension TorusUtils {
         }
 
         // Build promises array
-        var nodeSignatures = [CommitmentRequestResponseModel]()
+        var nodeSignatures = [CommitmentRequestResponse]()
         var requestArr = [URLRequest]()
         for (_, el) in endpoints.enumerated() {
             do {
@@ -294,7 +294,7 @@ extension TorusUtils {
                         }
 
                         // Check if k+t responses are back
-                        let val = CommitmentRequestResponseModel(data: data, nodepubx: nodepubx, nodepuby: nodepuby, signature: signature)
+                        let val = CommitmentRequestResponse(data: data, nodepubx: nodepubx, nodepuby: nodepuby, signature: signature)
                         nodeSignatures.append(val)
                         if nodeSignatures.count >= threshold {
                             os_log("commitmentRequest - nodeSignatures: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, nodeSignatures)
@@ -322,7 +322,7 @@ extension TorusUtils {
 
     // MARK: - decrypt shares
 
-    func decryptIndividualShares(shares: [Int: RetrieveDecryptAndReconstuctResponseModel], privateKey: String) throws -> [Int: String] {
+    func decryptIndividualShares(shares: [Int: RetrieveDecryptAndReconstuctResponse], privateKey: String) throws -> [Int: String] {
         var result = [Int: String]()
 
         for (_, el) in shares.enumerated() {
@@ -452,7 +452,7 @@ extension TorusUtils {
 
     // MARK: - keylookup
 
-    func awaitKeyLookup(endpoints: [String], verifier: String, verifierId: String, timeout: Int = 0) async throws -> KeyLookupResponseModel {
+    func awaitKeyLookup(endpoints: [String], verifier: String, verifierId: String, timeout: Int = 0) async throws -> KeyLookupResponse {
         let durationInNanoseconds = UInt64(timeout * 1_000_000_000)
         try await Task.sleep(nanoseconds: durationInNanoseconds)
         do {
@@ -462,7 +462,7 @@ extension TorusUtils {
         }
     }
 
-    public func keyLookup(endpoints: [String], verifier: String, verifierId: String) async throws -> KeyLookupResponseModel {
+    public func keyLookup(endpoints: [String], verifier: String, verifierId: String) async throws -> KeyLookupResponse {
         // Enode data
         let encoder = JSONEncoder()
         let session = createURLSession()
@@ -487,7 +487,7 @@ extension TorusUtils {
 
         // Create Array of URLRequest Promises
 
-        var resultArray = [KeyLookupResponseModel]()
+        var resultArray = [KeyLookupResponse]()
         var requestArray = [URLRequest]()
         for endpoint in endpoints {
             do {
@@ -537,7 +537,7 @@ extension TorusUtils {
                                 else {
                                     throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
                                 }
-                                let model = KeyLookupResponseModel(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
+                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
                                 resultArray.append(model)
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
@@ -574,7 +574,7 @@ extension TorusUtils {
         verifier: String,
         verifierId: String,
         extendedVerifierId: String? = nil,
-        completion: @escaping (KeyLookupResponseModel?, Error?) -> Void
+        completion: @escaping (KeyLookupResponse?, Error?) -> Void
     ) {
         let lookupPromises = endpoints.map { x -> URLSessionDataTask in
             let jsonRPCObject = generateJsonRPCObject("GET_OR_SET_KEY", [
@@ -588,7 +588,7 @@ extension TorusUtils {
             return post(x, jsonRPCObject, nil, ["logTracingHeader": config.logRequestTracing])
         }
         
-        var nonceResult: GetOrSetNonceResultModel?
+        var nonceResult: GetOrSetNonceResult?
         var nodeIndexes: [Int] = []
         
         Some(lookupPromises) { lookupResults in
@@ -623,7 +623,7 @@ extension TorusUtils {
                         }
                     }
                 }
-                completion(KeyLookupResponseModel(keyResult: keyResult, nodeIndexes: nodeIndexes,
+                completion(KeyLookupResponse(keyResult: keyResult, nodeIndexes: nodeIndexes,
                                            errorResult: errorResult, nonceResult: nonceResult), nil)
             } else {
                 let error = NSError(domain: "InvalidPublicKeyResult", code: 0, userInfo: [

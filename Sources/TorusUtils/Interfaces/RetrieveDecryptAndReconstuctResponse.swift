@@ -1,13 +1,6 @@
-//
-//  File.swift
-//  
-//
-//  Created by Dhruv Jaiswal on 06/04/23.
-//
-
 import Foundation
 
-public struct RetrieveDecryptAndReconstuctResponseModel {
+public struct RetrieveDecryptAndReconstuctResponse {
     public let iv: String
     public let ephemPublicKey: String
     public let share: String

@@ -1,13 +1,6 @@
-//
-//  File.swift
-//  
-//
-//  Created by Dhruv Jaiswal on 02/04/23.
-//
-
 import Foundation
 
-public struct KeyLookupResponseModel: CustomStringConvertible, Hashable {
+public struct KeyLookupResponse: CustomStringConvertible, Hashable {
 
     public let pubKeyX: String
     public let pubKeyY: String

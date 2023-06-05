@@ -1,13 +1,6 @@
-//
-//  File.swift
-//  
-//
-//  Created by Dhruv Jaiswal on 03/04/23.
-//
-
 import Foundation
 
-public struct CommitmentRequestResponseModel: Decodable {
+public struct CommitmentRequestResponse: Decodable {
     public var data: String
     public var nodepubx: String
     public var nodepuby: String
@@ -21,7 +14,7 @@ public struct CommitmentRequestResponseModel: Decodable {
     }
 }
 
-extension Array where Element == CommitmentRequestResponseModel {
+extension Array where Element == CommitmentRequestResponse {
 
     public func tostringDict() -> [[String: String]] {
         var dictArr = [[String: String]]()

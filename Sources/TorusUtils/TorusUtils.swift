@@ -35,9 +35,9 @@ open class TorusUtils: AbstractTorusUtils {
     }
 
     // TODO: keyassign func changed.. 
-    public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
+    public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressResult {
         do {
-                var data: KeyLookupResponseModel
+                var data: KeyLookupResponse
                 do {
                     data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 } catch {
@@ -58,7 +58,7 @@ open class TorusUtils: AbstractTorusUtils {
             var nonce: BigUInt = 0
             var typeOfUser: TypeOfUser = .v1
             var pubNonce: PubNonce?
-            let result: GetPublicAddressModel
+            let result: GetPublicAddressResult
             if enableOneKey {
                 let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !isNewKey)
                 pubNonce = localNonceResult.pubNonce
@@ -105,10 +105,10 @@ open class TorusUtils: AbstractTorusUtils {
                 } else {
                     modifiedPubKey = String(modifiedPubKey.suffix(128))
                 }
-                result = GetPublicAddressModel(address: publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce)
+                result = GetPublicAddressResult(address: publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce)
             }
             if !isExtended {
-                let val = GetPublicAddressModel(address: result.address)
+                let val = GetPublicAddressResult(address: result.address)
                 return val
             } else {
                 return result
@@ -118,8 +118,8 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
 
-    public func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
-        return try await withThrowingTaskGroup(of: RetrieveSharesResponseModel.self, body: { [unowned self] group in
+    public func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
+        return try await withThrowingTaskGroup(of: RetrieveSharesResponse.self, body: { [unowned self] group in
             group.addTask { [unowned self] in
                 try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
             }
@@ -143,7 +143,7 @@ open class TorusUtils: AbstractTorusUtils {
         })
     }
 
-    func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
+    func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
         guard
             let privateKey = generatePrivateKeyData(),
             let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1 ..< 65)
@@ -199,7 +199,7 @@ open class TorusUtils: AbstractTorusUtils {
                     pk = key
                 }
             }
-            return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk)
+            return RetrieveSharesResponse(publicKey: publicAddress, privateKey: pk)
         } catch {
             os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error

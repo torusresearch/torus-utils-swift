@@ -1,22 +1,15 @@
 import Foundation
 import CryptoKit
 import BigInt
+import CryptorECC
 
-struct Share {
-    let x: BigInt
-    let y: BigInt
-    
-    init(x: Data, y: Data) {
-        self.x = BigInt(data: x)
-        self.y = BigInt(data: y)
-    }
-}
+typealias ShareMap = [String: Share]
 
-struct Polynomial {
+public struct Polynomial {
     let polynomial: [BigInt]
-    let ecCurve: ECCurve
+    let ecCurve: EllipticCurve
     
-    init(polynomial: [BigInt], ecCurve: ECCurve) {
+    init(polynomial: [BigInt], ecCurve: EllipticCurve) {
         self.polynomial = polynomial
         self.ecCurve = ecCurve
     }
@@ -25,45 +18,42 @@ struct Polynomial {
         return polynomial.count
     }
     
-    func polyEval(x: Data) -> BigInt {
-        let tmpX = BigInt(data: x)
-        var xi = tmpX
+    func polyEval(x: BigInt) -> BigInt {
+        var xi = BigInt(x)
         var sum = BigInt(0)
         sum += polynomial[0]
-        
         for i in 1..<polynomial.count {
             let tmp = xi * polynomial[i]
             sum += tmp
-            sum = sum % ecCurve.curveOrder
-            xi *= tmpX
-            xi = xi % ecCurve.curveOrder
+            sum %= getOrderOfCurve()
+            xi *= x
+            xi %= getOrderOfCurve()
         }
-        
         return sum
     }
     
-    func generateShares(shareIndexes: [Data]) -> [String: Share] {
-        let newShareIndexes: [BigInt] = shareIndexes.map { index in
-            if let intValue = Int(String(data: index, encoding: .hexadecimal)!) {
-                return BigInt(intValue)
+    func generateShares(shareIndexes: [BNString]) -> ShareMap {
+        let newShareIndexes = shareIndexes.map { index -> BigInt in
+            if case .bn(let bigint) = index {
+                return bigint
+            } else if case .string(let str) = index {
+                return BigInt(str, radix: 16)!
             }
-            return BigInt(data: index)
+            // 0 will never be returned if index is valid
+            return BigInt(0)
         }
-        
-        var shares: [String: Share] = [:]
+
+        var shares: ShareMap = [:]
         for x in 0..<newShareIndexes.count {
-            let indexString = String(data: newShareIndexes[x].serialize(), encoding: .hexadecimal)!
-            shares[indexString] = Share(x: newShareIndexes[x], y: polyEval(x: newShareIndexes[x].serialize()))
+            let hexString = newShareIndexes[x].serialize().toHexString()
+            shares[hexString] = Share(shareIndex: BNString.bn(newShareIndexes[x]), share: BNString.bn(polyEval(x: newShareIndexes[x])))
         }
-        
         return shares
     }
-}
-
-struct ECCurve {
-    let curveOrder: BigInt
     
-    init(curveOrder: Data) {
-        self.curveOrder = BigInt(data: curveOrder)
-    }
+    private func getOrderOfCurve() -> BigInt {
+       let orderHex = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
+       let order = BigInt(orderHex, radix: 16)!
+       return order
+   }
 }
