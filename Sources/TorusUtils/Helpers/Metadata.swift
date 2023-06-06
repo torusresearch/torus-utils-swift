@@ -9,14 +9,11 @@ func convertMetadataToNonce(params: [String: Any]?) -> BigUInt {
     return BigUInt(message, radix: 16) ?? BigUInt(0)
 }
 
-func decryptNodeData(encryptedMessage: String, privateKey: String) -> String? {
-    guard let privateKeyData = Data(base64Encoded: privateKey),
-          let encryptedData = Data(base64Encoded: encryptedMessage) else {
+func decryptNodeData(ciphertextHex: String, privateKey: String) -> String? {
+    guard let ciphertextData = Data(hex: ciphertextHex) else {
         return nil
     }
-    
-    let privateKey = ECPrivateKey(raw: privateKeyData)
-    let decryptedData = try? encryptedData.decrypt(with: privateKey)
-    
+    guard let ecPrivateKey = try? ECPrivateKey(key: privateKey) else { return nil }
+    let decryptedData = try? ciphertextData.decrypt(with: ecPrivateKey)
     return decryptedData?.utf8String
 }
