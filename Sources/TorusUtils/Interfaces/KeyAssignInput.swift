@@ -22,3 +22,18 @@ public struct KeyAssignInput {
     let network: String
     let clientId: String
 }
+
+public struct KeyAssignment {
+    let index: KeyIndex
+    let publicKey: PublicKey
+    let threshold: Int
+    let nodeIndex: Int
+    let share: String
+    let shareMetadata: EciesHex
+    let nonceData: GetOrSetNonceResult?
+    
+    struct PublicKey {
+        let X: String
+        let Y: String
+    }
+}

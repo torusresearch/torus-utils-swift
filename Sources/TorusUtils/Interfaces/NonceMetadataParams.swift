@@ -14,9 +14,9 @@ public struct PartialSetNonceData {
 
 public struct NonceMetadataParams {
     let namespace: String?
-    let pub_key_X: String
-    let pub_key_Y: String
-    let set_data: PartialSetNonceData
+    let pubKeyX: String
+    let pubKeyY: String
+    let setData: PartialSetNonceData
     let signature: String
 }
 
