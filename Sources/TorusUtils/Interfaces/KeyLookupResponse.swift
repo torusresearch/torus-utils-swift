@@ -1,5 +1,6 @@
 import Foundation
 
+// TODO: make sure this struct is deprecated or not
 public struct KeyLookupResponse: CustomStringConvertible, Hashable {
 
     public let pubKeyX: String
