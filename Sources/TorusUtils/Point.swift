@@ -35,8 +35,20 @@ class Point {
     let ecCurve: EllipticCurve
 
     init(x: BNString, y: BNString, ecCurve: EllipticCurve) {
-        self.x = BigInt(x.toString()!, radix: 16)!
-        self.y = BigInt(y.toString()!, radix: 16)!
+        switch x {
+        case .string(let xStr):
+            self.x = BigInt(xStr, radix: 16)!
+        case .bn(let xBigInt):
+            self.x = xBigInt
+        }
+        
+        switch y {
+        case .string(let yStr):
+            self.y = BigInt(yStr, radix: 16)!
+        case .bn(let yBigInt):
+            self.y = yBigInt
+        }
+        
         self.ecCurve = ecCurve
     }
 

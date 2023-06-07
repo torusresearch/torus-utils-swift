@@ -51,9 +51,11 @@ public struct Polynomial {
         return shares
     }
     
-    private func getOrderOfCurve() -> BigInt {
-       let orderHex = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
-       let order = BigInt(orderHex, radix: 16)!
-       return order
-   }
+
+}
+
+public func getOrderOfCurve() -> BigInt {
+   let orderHex = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
+   let order = BigInt(orderHex, radix: 16)!
+   return order
 }
