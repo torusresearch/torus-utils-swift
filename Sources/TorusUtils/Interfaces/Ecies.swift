@@ -1,6 +1,13 @@
 import Foundation
 
-struct EciesHex: Ecies {
+protocol EciesProtocol {
+    var iv: Data { get }
+    var ephemPublicKey: Data { get }
+    var ciphertext: Data { get }
+    var mac: Data { get }
+}
+
+struct EciesHex: EciesProtocol {
     var iv: Data
     var ephemPublicKey: Data
     var ciphertext: Data
@@ -8,11 +15,16 @@ struct EciesHex: Ecies {
     var mode: String?
 }
 
-protocol Ecies {
-    var iv: Data { get }
-    var ephemPublicKey: Data { get }
-    var ciphertext: Data { get }
-    var mac: Data { get }
+struct Ecies: EciesProtocol {
+    var iv: Data
+    var ephemPublicKey: Data
+    var ciphertext: Data
+    var mac: Data
+
+    init(iv: Data, ephemPublicKey: Data, ciphertext: Data, mac: Data) {
+        self.iv = iv
+        self.ephemPublicKey = ephemPublicKey
+        self.ciphertext = ciphertext
+        self.mac = mac
+    }
 }
-
-
