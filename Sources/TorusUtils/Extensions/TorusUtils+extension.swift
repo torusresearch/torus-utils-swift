@@ -449,6 +449,120 @@ extension TorusUtils {
             throw TorusUtilError.interpolationFailed
         }
     }
+    
+    // MARK: - getPubKeyOrKeyAssign
+    
+    func getPubKeyOrKeyAssign(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> KeyLookupResponse {
+        // Encode data
+        let encoder = JSONEncoder()
+        let session = createURLSession()
+        let threshold = (endpoints.count / 2) + 1
+        var failedLookupCount = 0
+        let methodName = JRPC_METHODS.GET_OR_SET_KEY
+        // TODO: check what if extendedVerifierId is null?
+        let jsonRPCRequest = JSONRPCrequest(
+            method: methodName,
+            params: ["verifier": verifier, "verifier_id": verifierId, "extended_verifier_id": extendedVerifierId!, "one_key_flow": true, "fetch_node_index": true])
+        guard let rpcdata = try? encoder.encode(jsonRPCRequest)
+        else {
+            throw TorusUtilError.encodingFailed("\(jsonRPCRequest)")
+        }
+        
+        var allowHostRequest = try makeUrlRequest(url: allowHost, httpMethod: .get)
+        allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
+        allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
+        do {
+            _ = try await session.data(for: allowHostRequest)
+        } catch {
+            os_log("%@: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, methodName, error.localizedDescription)
+            throw error
+        }
+
+        // Create Array of URLRequest Promises
+
+        var resultArray = [KeyLookupResponse]()
+        var requestArray = [URLRequest]()
+        for endpoint in endpoints {
+            do {
+                var request = try makeUrlRequest(url: endpoint)
+                request.httpBody = rpcdata
+                requestArray.append(request)
+            } catch {
+                throw error
+            }
+        }
+        
+        var nonceResult: GetOrSetNonceResult?
+        var nodeIndexes: [Int] = []
+        
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+            for (i, rq) in requestArray.enumerated() {
+                group.addTask {
+                    do {
+                        let val = try await session.data(for: rq)
+                        return .success(.init(data: val.0, urlResponse: val.1, index: i))
+                    } catch {
+                        return .failure(error)
+                    }
+                }
+            }
+
+            for try await val in group {
+                do {
+                    switch val {
+                    case .success(let model):
+                        let data = model.data
+                        do {
+                            let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                            os_log("%@: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, "\(decoded)")
+
+                            let result = decoded.result
+                            let error = decoded.error
+                            if let _ = error {
+                                let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
+                                throw error
+                            } else {
+                                guard
+                                    let decodedResult = result as? [String: [[String: String]]],
+                                    let k = decodedResult["keys"],
+                                    let keys = k.first,
+                                    let pubKeyX = keys["pub_key_X"],
+                                    let pubKeyY = keys["pub_key_Y"],
+                                    let keyIndex = keys["key_index"],
+                                    let address = keys["address"]
+                                else {
+                                    throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
+                                }
+                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
+                                resultArray.append(model)
+                            }
+                            let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
+
+                            if let keyResult = keyResult {
+                                os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
+                                session.invalidateAndCancel()
+                                return keyResult
+                            }
+                        } catch let err {
+                            throw err
+                        }
+                    case let .failure(error):
+                        throw error
+                    }
+                } catch {
+                    failedLookupCount += 1
+                    os_log("%@: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, methodName, error.localizedDescription)
+                    if failedLookupCount > (endpoints.count -  threshold) {
+                        os_log("%@: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, methodName, TorusUtilError.runtime("threshold nodes unavailable").localizedDescription)
+                        session.invalidateAndCancel()
+                        throw error
+                    }
+                }
+            }
+            throw TorusUtilError.runtime("\(methodName) func failed")
+        })
+        
+    }
 
     // MARK: - keylookup
 
