@@ -1,5 +1,5 @@
 import Foundation
-import SwiftKeccak
+import SwiftECC
 
 func stripHexPrefix(_ str: String) -> String {
     return str.hasPrefix("0x") ? String(str.dropFirst(2)) : str

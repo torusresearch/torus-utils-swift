@@ -17,7 +17,7 @@ let package = Package(
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
         .package(name:"CryptorECC", url: "https://github.com/Kitura/BlueECC.git", from: "1.2.4"),
-        .package(name: "SwiftKeccak", url: "https://github.com/uport-project/SwiftKeccak", from: "0.0.4")
+        .package(name: "SwiftECC", url: "https://github.com/leif-ibsen/SwiftECC", from: "3.7.0"),
     ],
     targets: [
         .target(
