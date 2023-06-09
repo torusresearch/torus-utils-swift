@@ -1,6 +1,5 @@
 import Foundation
 import BigInt
-import CryptorECC
 
 // TODO: resolve generatePrivate()
 func generatePrivateExcludingIndexes(shareIndexes: [BigInt]) -> BigInt {
@@ -66,7 +65,7 @@ func pointSort(innerPoints: [Point]) -> [Point] {
     return pointArrClone
 }
 
-func lagrange(ecCurve: EllipticCurve, unsortedPoints: [Point]) -> Polynomial {
+func lagrange(unsortedPoints: [Point]) -> Polynomial {
     let sortedPoints = pointSort(innerPoints: unsortedPoints)
     var polynomial = generateEmptyBNArray(length: sortedPoints.count)
     for i in 0..<sortedPoints.count {
@@ -77,14 +76,14 @@ func lagrange(ecCurve: EllipticCurve, unsortedPoints: [Point]) -> Polynomial {
             polynomial[k] = (polynomial[k] + tmp) % getOrderOfCurve()
         }
     }
-    return Polynomial(polynomial: polynomial, ecCurve: ecCurve)
+    return Polynomial(polynomial: polynomial)
 }
 
-func lagrangeInterpolatePolynomial(ecCurve: EllipticCurve, points: [Point]) -> Polynomial {
-    return lagrange(ecCurve: ecCurve, unsortedPoints: points)
+func lagrangeInterpolatePolynomial(points: [Point]) -> Polynomial {
+    return lagrange(unsortedPoints: points)
 }
 
-func generateRandomPolynomial(ecCurve: EllipticCurve, degree: Int, secret: BigInt? = nil, deterministicShares: [Share]? = nil) throws -> Polynomial {
+func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicShares: [Share]? = nil) throws -> Polynomial {
     var actualS = secret
     if secret == nil {
         actualS = generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
@@ -97,7 +96,7 @@ func generateRandomPolynomial(ecCurve: EllipticCurve, degree: Int, secret: BigIn
             poly.append(share)
         }
         
-        return Polynomial(polynomial: poly, ecCurve: ecCurve)
+        return Polynomial(polynomial: poly)
     }
     
     guard let deterministicShares = deterministicShares else {
@@ -110,7 +109,7 @@ func generateRandomPolynomial(ecCurve: EllipticCurve, degree: Int, secret: BigIn
     
     var points = [String: Point]()
     for share in deterministicShares {
-        points[share.shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] = Point(x: .bn(share.shareIndex), y: .bn(share.share), ecCurve: ecCurve)
+        points[share.shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] = Point(x: .bn(share.shareIndex), y: .bn(share.share))
     }
     
     let remainingDegree = degree - deterministicShares.count
@@ -119,11 +118,11 @@ func generateRandomPolynomial(ecCurve: EllipticCurve, degree: Int, secret: BigIn
         while points[shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] != nil {
             shareIndex = generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
         }
-        points[shareIndex.toString(radix: 16, padding: 64)] = Point(x: shareIndex, y: BigInt(generatePrivate()), ecCurve: ecCurve)
+        points[shareIndex.toString(radix: 16, padding: 64)] = Point(x: shareIndex, y: BigInt(generatePrivate()))
     }
     
-    points["0"] = Point(x: .bn(BigInt(0)), y: .bn(actualS!), ecCurve: ecCurve)
-    return lagrangeInterpolatePolynomial(ecCurve: ecCurve, points: Array(points.values))
+    points["0"] = Point(x: .bn(BigInt(0)), y: .bn(actualS!))
+    return lagrangeInterpolatePolynomial(points: Array(points.values))
 }
 
 
