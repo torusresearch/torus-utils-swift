@@ -1,23 +1,23 @@
 import Foundation
-import SwiftECC
+import CryptorECC
 
 func stripHexPrefix(_ str: String) -> String {
     return str.hasPrefix("0x") ? String(str.dropFirst(2)) : str
 }
 
-func generateAddressFromPrivKey(domain dom, privateKey: privateKey) -> String {
-    let pubKey = ECPublicKey(privateKey: privKey)
+func generateAddressFromPrivKey(privateKey: privateKey) -> String {
+    let pubKey = try ECPublicKey(privateKey: privKey)
     print(pubKey, "public key")
     return publicKeyToAddress(pubKey)
 }
 
-func generateAddressFromPubKey(domain dom, w: pt) -> String {
-    let pubKey = try ECPublicKey(domain: dom, w: pt)
+func generateAddressFromPubKey(w: pt) -> String {
+    let pubKey = try ECPublicKey(w: pt)
     print(pubKey, "public key")
     return publicKeyToAddress(pubKey)
 }
 
-func getPostboxKeyFrom1OutOf1(domain dom, privKey: String, nonce: String) -> String {
+func getPostboxKeyFrom1OutOf1(privKey: String, nonce: String) -> String {
     let privKeyBN = BigInt(privKey, base: 16)
     let nonceBN = BigInt(nonce, base: 16)
     return (privKeyBN.magnitude.subtracting(nonceBN) % getOrderOfCurve()).toHexString();
