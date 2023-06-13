@@ -1,17 +1,14 @@
 import Foundation
 import CryptoKit
 import BigInt
-import CryptorECC
 
 typealias ShareMap = [String: Share]
 
 public struct Polynomial {
     let polynomial: [BigInt]
-    let ecCurve: EllipticCurve
     
-    init(polynomial: [BigInt], ecCurve: EllipticCurve) {
+    init(polynomial: [BigInt]) {
         self.polynomial = polynomial
-        self.ecCurve = ecCurve
     }
     
     func getThreshold() -> Int {

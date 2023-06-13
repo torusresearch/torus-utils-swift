@@ -11,15 +11,6 @@
         }
       },
       {
-        "package": "CryptorECC",
-        "repositoryURL": "https://github.com/Kitura/BlueECC.git",
-        "state": {
-          "branch": null,
-          "revision": "1485268a54f8135435a825a855e733f026fa6cc8",
-          "version": "1.2.201"
-        }
-      },
-      {
         "package": "CryptoSwift",
         "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift.git",
         "state": {
