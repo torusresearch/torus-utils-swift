@@ -1,23 +1,30 @@
 import Foundation
 import BigInt
-import CryptorECC
+import CryptoKit
 
 func convertMetadataToNonce(params: [String: Any]?) -> BigUInt {
     guard let params = params, let message = params["message"] as? String else {
         return BigUInt(0)
     }
-    return BigUInt(message, radix: 16)
+    return BigUInt(message, radix: 16)!
 }
 
-func decryptNodeData(ciphertextHex: String, privateKey: String) -> String? {
-    if let ciphertextData = Data(hex: ciphertextHex) {
-        guard let ecPrivateKey = try? ECPrivateKey(key: privateKey) else { return nil }
-        guard let decryptedData = try? ciphertextData.decrypt(with: ecPrivateKey) else {
-            return nil
-        }
-        let decryptedStr = String(data: decryptedData, encoding: .utf8)
-        return decryptedStr
-    } else {
-        return nil
+
+func decryptNodeData(eciesData: EciesHexOmitCiphertext, ciphertextHex: String, privKey: Data) throws -> Data {
+    let metadata = encParamsHexToBuf(eciesData: eciesData)
+    guard let ciphertext = Data(hexString: ciphertextHex) else {
+        throw DecryptionError.invalidCiphertext
     }
+    let eciesOpts = Ecies(
+        iv: metadata.iv,
+        ephemPublicKey: metadata.ephemPublicKey,
+        ciphertext: ciphertext,
+        mac: metadata.mac
+    )
+    let decryptedSigBuffer = try decryptOpts(privateKey: privKey, opts: eciesOpts)
+    return decryptedSigBuffer
+}
+
+enum DecryptionError: Error {
+    case invalidCiphertext
 }
