@@ -319,6 +319,47 @@ extension TorusUtils {
             throw TorusUtilError.commitmentRequestFailed
         })
     }
+    
+    // MARK: decrypt opts
+    // TODO: check toHexString() is right way or not
+    public func decryptOpts(privateKey: Data, opts: Ecies, padding: Bool = false) throws -> Data {
+        let k = opts.ephemPublicKey.toHexString()
+        let ephermalPublicKey = k.strip04Prefix()
+        let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+        var ephermOne = ephermalPublicKeyBytes.prefix(32)
+        var ephermTwo = ephermalPublicKeyBytes.suffix(32)
+        // Reverse because of C endian array storage
+        ephermOne.reverse(); ephermTwo.reverse()
+        ephermOne.append(contentsOf: ephermTwo)
+        let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
+
+        guard
+            // Calculate g^a^b, i.e., Shared Key
+            let data = Data(hexString: privateKey.toHexString()),
+            let secret = ecdh(pubKey: ephemPubKey, privateKey: data)
+        else {
+            throw TorusUtilError.decryptionFailed
+        }
+        
+        let secretData = secret.data
+        let secretPrefix = tupleToArray(secretData).prefix(32)
+        let reversedSecret = secretPrefix.reversed()
+        
+        let iv = opts.iv.toHexString()
+        let newXValue = reversedSecret.hexa
+        let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
+        let AesEncryptionKey = hash.prefix(64)
+        
+        var result: String = ""
+        do {
+            // AES-CBCblock-256
+            let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
+            let decrypt = try aes.decrypt(opts.ciphertext)
+            result = decrypt.hexa
+        } catch let err {
+            result = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
+        }
+    }
 
     // MARK: - decrypt shares
 

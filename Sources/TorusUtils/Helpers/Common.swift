@@ -60,16 +60,29 @@ func thresholdSame<T: Equatable>(arr: [T], t: Int) -> T? {
 }
 
 func encParamsBufToHex(encParams: Ecies) -> EciesHex {
-    return EciesHex(iv: encParams.iv,
-                    ephemPublicKey: encParams.ephemPublicKey,
-                    ciphertext: encParams.ciphertext,
-                    mac: encParams.mac,
+    let ivString = encParams.iv.hexString
+    let ephemPublicKeyString = encParams.ephemPublicKey.hexString
+    let ciphertextString = encParams.ciphertext.hexString
+    let macString = encParams.mac.hexString
+    
+    return EciesHex(iv: ivString,
+                    ephemPublicKey: ephemPublicKeyString,
+                    ciphertext: ciphertextString,
+                    mac: macString,
                     mode: "AES256")
 }
 
-func encParamsHexToBuf(eciesData: EciesHex) -> Ecies {
-    return Ecies(iv: eciesData.iv,
-                 ephemPublicKey: eciesData.ephemPublicKey,
-                 ciphertext: eciesData.ciphertext,
-                 mac: eciesData.mac)
+
+func encParamsHexToBuf(eciesData: EciesHexOmitCiphertext) -> EciesOmitCiphertext {
+    return EciesOmitCiphertext(iv: Data(hex: eciesData.iv),
+                               ephemPublicKey: Data(hex: eciesData.ephemPublicKey),
+                               mac: Data(hex: eciesData.mac))
+}
+
+
+
+extension Data {
+    var hexString: String {
+        return map { String(format: "%02x", $0) }.joined()
+    }
 }
