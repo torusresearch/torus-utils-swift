@@ -3,7 +3,7 @@ import BigInt
 
 // TODO: resolve generatePrivate()
 func generatePrivateExcludingIndexes(shareIndexes: [BigInt]) -> BigInt {
-    let key = BigInt(generatePrivate())
+    let key = BigInt(SECP256K1.generatePrivateKey()!)
     if shareIndexes.contains(where: { $0 == key }) {
         return generatePrivateExcludingIndexes(shareIndexes: shareIndexes)
     }
@@ -118,10 +118,10 @@ func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicS
         while points[shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] != nil {
             shareIndex = generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
         }
-        points[shareIndex.toString(radix: 16, padding: 64)] = Point(x: shareIndex, y: BigInt(generatePrivate()))
+        points[String(shareIndex, radix: 16).leftPadding(toLength: 64, withPad: "0")] = Point(x: shareIndex, y: BigInt(SECP256K1.generatePrivateKey()!))
     }
     
-    points["0"] = Point(x: .bn(BigInt(0)), y: .bn(actualS!))
+    points["0"] = Point(x: BigInt(0), y: actualS!)
     return lagrangeInterpolatePolynomial(points: Array(points.values))
 }
 

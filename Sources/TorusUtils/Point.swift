@@ -20,7 +20,11 @@ class Point {
         case .bn(let yBigInt):
             self.y = yBigInt
         }
-        
+    }
+    
+    init(x: BigInt, y: BigInt) {
+        self.x = x
+        self.y = y
     }
 
     func encode(enc: String) throws -> Data {

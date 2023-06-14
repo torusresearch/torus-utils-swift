@@ -21,7 +21,7 @@ open class TorusUtils: AbstractTorusUtils {
     var isNewKey = false
     var allowHost: String
     var network: EthereumNetworkFND
-    var modulusValue = BigInt("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141", radix: 16)!
+    var modulusValue = BigInt(CURVE_N, radix: 16)!
     var legacyNonce: Bool
 
     public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET, legacyNonce: Bool = false) {

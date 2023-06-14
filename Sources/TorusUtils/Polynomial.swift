@@ -52,7 +52,7 @@ public struct Polynomial {
 }
 
 public func getOrderOfCurve() -> BigInt {
-   let orderHex = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141"
+   let orderHex = CURVE_N
    let order = BigInt(orderHex, radix: 16)!
    return order
 }
