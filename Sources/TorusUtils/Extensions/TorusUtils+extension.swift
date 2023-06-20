@@ -320,6 +320,26 @@ extension TorusUtils {
         })
     }
     
+    func convertMetadataToNonce(params: [String: Any]?) -> BigUInt {
+        guard let params = params, let message = params["message"] as? String else {
+            return BigUInt(0)
+        }
+        return BigUInt(message, radix: 16)!
+    }
+    
+    func decryptNodeData(eciesData: EciesHexOmitCiphertext, ciphertextHex: String, privKey: Data) throws -> Data {
+        let metadata = encParamsHexToBuf(eciesData: eciesData)
+        let ciphertext = Data(hexString: ciphertextHex)!
+        let eciesOpts = Ecies(
+            iv: metadata.iv,
+            ephemPublicKey: metadata.ephemPublicKey,
+            ciphertext: ciphertext,
+            mac: metadata.mac
+        )
+        let decryptedSigBuffer = try decryptOpts(privateKey: privKey, opts: eciesOpts)
+        return decryptedSigBuffer
+    }
+    
     // MARK: decrypt opts
     // TODO: check toHexString() is right way or not
     public func decryptOpts(privateKey: Data, opts: Ecies, padding: Bool = false) throws -> Data {
@@ -345,7 +365,7 @@ extension TorusUtils {
         let secretPrefix = tupleToArray(secretData).prefix(32)
         let reversedSecret = secretPrefix.reversed()
         
-        let iv = opts.iv.toHexString()
+        let iv = opts.iv.toHexString().hexa
         let newXValue = reversedSecret.hexa
         let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
         let AesEncryptionKey = hash.prefix(64)
@@ -354,11 +374,12 @@ extension TorusUtils {
         do {
             // AES-CBCblock-256
             let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-            let decrypt = try aes.decrypt(opts.ciphertext)
+            let decrypt = try aes.decrypt(opts.ciphertext.bytes)
             result = decrypt.hexa
         } catch let err {
             result = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
         }
+        return Data(hex: result)
     }
 
     // MARK: - decrypt shares
@@ -500,7 +521,6 @@ extension TorusUtils {
         let threshold = (endpoints.count / 2) + 1
         var failedLookupCount = 0
         let methodName = JRPC_METHODS.GET_OR_SET_KEY
-        // TODO: check what if extendedVerifierId is null?
         let jsonRPCRequest = JSONRPCrequest(
             method: methodName,
             params: ["verifier": verifier, "verifier_id": verifierId, "extended_verifier_id": extendedVerifierId!, "one_key_flow": true, "fetch_node_index": true])
@@ -534,7 +554,8 @@ extension TorusUtils {
         }
         
         var nonceResult: GetOrSetNonceResult?
-        var nodeIndexes: [Int] = []
+        var nodeIndexesArray: [Int] = []
+        var keyArray = [VerifierLookupResponse.Key]()
         
         return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
             for (i, rq) in requestArray.enumerated() {
@@ -564,25 +585,35 @@ extension TorusUtils {
                                 throw error
                             } else {
                                 guard
-                                    let decodedResult = result as? [String: [[String: String]]],
-                                    let k = decodedResult["keys"],
+                                    let decodedResult = result as? KeyLookupResult,
+                                    let k = decodedResult.keyResult,
                                     let keys = k.first,
                                     let pubKeyX = keys["pub_key_X"],
                                     let pubKeyY = keys["pub_key_Y"],
-                                    let keyIndex = keys["key_index"],
-                                    let address = keys["address"]
+                                    let address = keys["address"],
+                                    let nonceData = keys["nonce_data"] as? GetOrSetNonceResult,
+                                    let pubNonceX = nonceData.pubNonce?.x
                                 else {
                                     throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
                                 }
-                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
+                                if pubNonceX {
+                                    nonceResult = nonceData
+                                }
+                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, address: address)
                                 resultArray.append(model)
+                                
+                                if (decodedResult.nodeIndexes) {
+                                    nodeIndexesArray.append(decodedResult.nodeIndexes)
+                                }
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
-
-                            if let keyResult = keyResult {
-                                os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
-                                session.invalidateAndCancel()
-                                return keyResult
+                            
+                            if (keyResult && (nonceResult || extendedVerifierId)) {
+                                if keyResult {
+                                    os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
+                                    session.invalidateAndCancel()
+                                    return (keyResult, nodeIndexesArray, nonceResult)
+                                }
                             }
                         } catch let err {
                             throw err
@@ -675,6 +706,7 @@ extension TorusUtils {
                             let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                             os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)")
 
+                            // result of decoded data
                             let result = decoded.result
                             let error = decoded.error
                             if let _ = error {
@@ -687,12 +719,11 @@ extension TorusUtils {
                                     let keys = k.first,
                                     let pubKeyX = keys["pub_key_X"],
                                     let pubKeyY = keys["pub_key_Y"],
-                                    let keyIndex = keys["key_index"],
                                     let address = keys["address"]
                                 else {
                                     throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
                                 }
-                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
+                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY,  address: address)
                                 resultArray.append(model)
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
@@ -724,74 +755,6 @@ extension TorusUtils {
 
     // MARK: - key assignment
     
-    func GetPubKeyOrKeyAssign(
-        endpoints: [String],
-        verifier: String,
-        verifierId: String,
-        extendedVerifierId: String? = nil,
-        completion: @escaping (KeyLookupResponse?, Error?) -> Void
-    ) {
-        let lookupPromises = endpoints.map { x -> URLSessionDataTask in
-            let jsonRPCObject = generateJsonRPCObject("GET_OR_SET_KEY", [
-                "verifier": verifier,
-                "verifier_id": verifierId,
-                "extended_verifier_id": extendedVerifierId,
-                "one_key_flow": true,
-                "fetch_node_index": true
-            ])
-            
-            return post(x, jsonRPCObject, nil, ["logTracingHeader": config.logRequestTracing])
-        }
-        
-        var nonceResult: GetOrSetNonceResult?
-        var nodeIndexes: [Int] = []
-        
-        Some(lookupPromises) { lookupResults in
-            let lookupPubKeys = lookupResults.filter { x1 -> Bool in
-                if let x1 = x1 {
-                    if nonceResult == nil {
-                        let pubNonceX = x1.result?.keys[0].nonce_data?.pubNonce?.x
-                        if let pubNonceX = pubNonceX {
-                            nonceResult = x1.result.keys[0].nonce_data
-                        }
-                    }
-                    return true
-                }
-                return false
-            }
-            
-            let errorResult = thresholdSame(
-                lookupPubKeys.map { x2 -> Any? in x2?.error },
-                (endpoints.count / 2) + 1
-            )
-            
-            let keyResult = thresholdSame(
-                lookupPubKeys.map { x3 -> Any? in x3?.result },
-                (endpoints.count / 2) + 1
-            )
-            
-            if (keyResult != nil && (nonceResult != nil || extendedVerifierId != nil)) || errorResult != nil {
-                if let keyResult = keyResult {
-                    lookupResults.forEach { x1 in
-                        if let x1 = x1, let nodeIndex = x1.result?.node_index {
-                            nodeIndexes.append(nodeIndex)
-                        }
-                    }
-                }
-                completion(KeyLookupResponse(keyResult: keyResult, nodeIndexes: nodeIndexes,
-                                           errorResult: errorResult, nonceResult: nonceResult), nil)
-            } else {
-                let error = NSError(domain: "InvalidPublicKeyResult", code: 0, userInfo: [
-                    "lookupResults": lookupResults,
-                    "nonceResult": nonceResult ?? NSNull(),
-                    "verifier": verifier,
-                    "verifierId": verifierId,
-                    "extendedVerifierId": extendedVerifierId ?? NSNull()
-                ])
-                completion(nil, error)
-            }
-        }
-    }
     public func keyAssign(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, signerHost: String, network: EthereumNetworkFND, firstPoint: Int? = nil, lastPoint: Int? = nil) async throws -> JSONRPCresponse {
         var nodeNum: Int = 0
         var initialPoint: Int = 0

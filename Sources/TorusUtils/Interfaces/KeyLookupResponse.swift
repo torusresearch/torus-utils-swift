@@ -1,20 +1,18 @@
 import Foundation
 
-// TODO: make sure this struct is deprecated or not
+// TODO: this struct is deprecated; delete this later
 public struct KeyLookupResponse: CustomStringConvertible, Hashable {
 
     public let pubKeyX: String
     public let pubKeyY: String
-    public let keyIndex: String
     public let address: String
     public var description: String {
         return "public key X is \(pubKeyX) public key Y is \(pubKeyY) address is \(address)"
     }
 
-    public init(pubKeyX: String, pubKeyY: String, keyIndex: String, address: String) {
+    public init(pubKeyX: String, pubKeyY: String, address: String) {
         self.pubKeyX = pubKeyX
         self.pubKeyY = pubKeyY
-        self.keyIndex = keyIndex
         self.address = address
     }
 

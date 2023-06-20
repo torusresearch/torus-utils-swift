@@ -1,7 +1,6 @@
 import Foundation
 import BigInt
 
-// TODO: resolve generatePrivate()
 func generatePrivateExcludingIndexes(shareIndexes: [BigInt]) -> BigInt {
     let key = BigInt(SECP256K1.generatePrivateKey()!)
     if shareIndexes.contains(where: { $0 == key }) {
