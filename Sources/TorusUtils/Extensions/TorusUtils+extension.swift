@@ -220,6 +220,70 @@ extension TorusUtils {
         })
 
     }
+    
+    // MARK: - retrieveOrImportShare
+    
+    func retrieveOrImportShare(
+        allowHost: String,
+        network: String,
+        clientId: String,
+        endpoints: [String],
+        verifier: String,
+        verifierParams: VerifierParams,
+        idToken: String,
+        importedShares: [ImportedShare]? = nil,
+        extraParams: [String: Any] = [:],
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) async throws -> RetrieveSharesResponse {
+        guard
+            let sessionAuthKey = generatePrivateKeyData(),
+            let publicKey = SECP256K1.privateToPublic(privateKey: sessionAuthKey)?.subdata(in: 1 ..< 65)
+        else {
+            throw TorusUtilError.runtime("Unable to generate SECP256K1 keypair.")
+        }
+
+        // Split key in 2 parts, X and Y
+        // let publicKeyHex = publicKey.toHexString()
+        let pubKeyX = publicKey.prefix(publicKey.count / 2).toHexString().addLeading0sForLength64()
+        let pubKeyY = publicKey.suffix(publicKey.count / 2).toHexString().addLeading0sForLength64()
+        
+        // Hash the token from OAuth login
+
+        let timestamp = String(Int(getTimestamp()))
+        let hashedToken = idToken.sha3(.keccak256)
+        
+        let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
+        os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
+        var promiseArrRequest = [ShareRequestResult]()
+        
+        // step 1, seperate logic with share importing
+        // TODO: isImportShareReq if condition here
+            // TODO: if yes, then put import share request logic here
+            // TODO: else, then GetShareOrKeyAssign logic here
+        // note that result of both two functions should be in same array, promiseArrRequest.push(p);
+        
+        var thresholdNonceData : GetOrSetNonceResult
+        
+        // step 2. 
+        
+        // check if threshold number of nodes have returned the same user public key
+
+        // if both thresholdNonceData and extended_verifier_id are not available
+        // then we need to throw other wise address would be incorrect.
+        
+        // optimistically run lagrange interpolation once threshold number of shares have been received
+        // this is matched against the user public key to ensure that shares are consistent
+        // Note: no need of thresholdMetadataNonce for extended_verifier_id key
+        
+        // TODO: deal with session token and get session token data
+        
+        // step3. prepare the final return
+        
+        // for tss key no need to add pub nonce
+        
+        // final return
+
+    }
 
     // MARK: - commitment request
 

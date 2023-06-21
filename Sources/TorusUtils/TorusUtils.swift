@@ -121,6 +121,7 @@ open class TorusUtils: AbstractTorusUtils {
     public func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
         return try await withThrowingTaskGroup(of: RetrieveSharesResponse.self, body: { [unowned self] group in
             group.addTask { [unowned self] in
+                // TODO: change handleRetrieveShares -> retrieveOrImportShare
                 try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
             }
             group.addTask { [unowned self] in
