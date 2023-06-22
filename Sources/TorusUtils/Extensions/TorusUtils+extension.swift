@@ -88,6 +88,79 @@ extension TorusUtils {
         return localPubkey
     }
 
+    // MARK: - shareRequest
+    
+    func importShare(clientId: String, endpoints: [String], nodeSigs: [CommitmentRequestResult], verifier: String, verifierParams: VerifierParams, idToken: String, importedShares: [ImportedShare], extraParams: [String: Any] = [:]) {
+        let session = createURLSession()
+        let threshold = Int(endpoints.count / 2) + 1
+        var rpcdata: Data = Data()
+        
+        for importedShare in importedShares {
+            do {
+                let loadedStrings = extraParams
+                let valueDict = ["idtoken": idToken,
+                             "nodesignatures": nodeSigs,
+                             "verifieridentifier": verifier,
+                             "pub_key_x": importedShare.pubKeyX,
+                             "pub_key_y": importedShare.pubKeyY,
+                             "encrypted_share": importedShare.encryptedShare,
+                             "encrypted_share_metadata": importedShare.encryptedShareMetadata,
+                             "node_index": importedShare.nodeIndex,
+                             "key_type": importedShare.keyType,
+                             "nonce_data": importedShare.nonceData,
+                             "nonce_signature": importedShare.nonceSignature,
+                ] as [String: Any]
+                let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
+                // Add properties from verifierParams
+                for (key, value) in verifierParams {
+                    valueDict[key] = value
+                }
+
+                // TODO: Look into hetrogeneous array encoding
+                let dataForRequest = ["jsonrpc": "2.0",
+                                      "id": 10,
+                                      "method": JRPC_METHODS.IMPORT_SHARE,
+                                      "params": ["encrypted": "yes",
+                                                 "use_temp": true,
+                                                 "one_key_flow": true,
+                                                 "item": [keepingCurrent]] as [String: Any]] as [String: Any],
+                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
+                
+            } catch {
+                os_log("retrieveDecryptAndReconstruct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+            }
+        }
+
+        
+        var resultArray = [KeyLookupResponse]()
+        var requestArray = [URLRequest]()
+
+
+        if let importedShares = importedShares {
+            for i in 0..<importedShares.count {
+                do {
+                    var request = try makeUrlRequest(url: endpoints[i])
+                    request.httpBody = rpcdata
+                    requestArray.append(request)
+                } catch {
+                    throw error
+                }
+                
+            }
+        }
+
+        
+       
+       
+    }
+    
+    // MARK: - getShareOrKeyAssign
+    
+    func getShareOrKeyAssign(endpoints: [String]) {
+        let session = createURLSession()
+        let threshold = Int(endpoints.count / 2) + 1
+        var rpcdata: Data = Data()
+    }
 
 
     // MARK: - retreiveDecryptAndReconstuct
@@ -252,19 +325,33 @@ extension TorusUtils {
         let timestamp = String(Int(getTimestamp()))
         let hashedToken = idToken.sha3(.keccak256)
         
+        var isImportShareReq = false
+        
+        if let importedShares = importedShares, !importedShares.isEmpty {
+            if importedShares.count != endpoints.count {
+                throw TorusUtilError.runtime("Invalid import share length.")
+            }
+            isImportShareReq = true
+        }
+
         let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
         var promiseArrRequest = [ShareRequestResult]()
-        
+        var nodeSigs = [CommitmentRequestResult]()
         // step 1, seperate logic with share importing
         // TODO: isImportShareReq if condition here
-            // TODO: if yes, then put import share request logic here
+        if (isImportShareReq) {
+            // TODO: if yes, then put import share logic here
+            promiseArrRequest = importShare()
+        } else {
             // TODO: else, then GetShareOrKeyAssign logic here
+            promiseArrRequest = getShareOrKeyAssign()
+        }
         // note that result of both two functions should be in same array, promiseArrRequest.push(p);
         
         var thresholdNonceData : GetOrSetNonceResult
         
-        // step 2. 
+        // step 2.
         
         // check if threshold number of nodes have returned the same user public key
 
