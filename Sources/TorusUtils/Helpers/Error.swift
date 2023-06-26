@@ -14,6 +14,7 @@ public enum TorusUtilError: Error, Equatable {
     case encodingFailed(String? = nil)
     case decodingFailed(String? = nil)
     case commitmentRequestFailed
+    case importShareFailed
     case decryptionFailed
     case thresholdError
     case promiseFulfilled
@@ -41,6 +42,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Decryption Failed"
         case .commitmentRequestFailed:
             return "commitment request failed"
+        case .importShareFailed:
+            return "import share failed"
         case .thresholdError:
             return "Threshold error"
         case .promiseFulfilled:

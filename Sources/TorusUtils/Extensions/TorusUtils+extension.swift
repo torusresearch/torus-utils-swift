@@ -88,34 +88,35 @@ extension TorusUtils {
         return localPubkey
     }
 
-    // MARK: - shareRequest
+    // MARK: - importShare
     
-    func importShare(clientId: String, endpoints: [String], nodeSigs: [CommitmentRequestResult], verifier: String, verifierParams: VerifierParams, idToken: String, importedShares: [ImportedShare], extraParams: [String: Any] = [:]) {
+    func importShare(endpoints: [String], nodeSigs: [CommitmentRequestResponse], verifier: String, verifierParams: VerifierParams, idToken: String, importedShares: [ImportedShare], extraParams: [String: Any] = [:]) async throws -> [ShareRequestResult] {
         let session = createURLSession()
         let threshold = Int(endpoints.count / 2) + 1
         var rpcdata: Data = Data()
+        var rpcArray = [Data]()
         
+        // put rpc data into array
         for importedShare in importedShares {
             do {
                 let loadedStrings = extraParams
                 let valueDict = ["idtoken": idToken,
-                             "nodesignatures": nodeSigs,
-                             "verifieridentifier": verifier,
-                             "pub_key_x": importedShare.pubKeyX,
-                             "pub_key_y": importedShare.pubKeyY,
-                             "encrypted_share": importedShare.encryptedShare,
-                             "encrypted_share_metadata": importedShare.encryptedShareMetadata,
-                             "node_index": importedShare.nodeIndex,
-                             "key_type": importedShare.keyType,
-                             "nonce_data": importedShare.nonceData,
-                             "nonce_signature": importedShare.nonceSignature,
+                                 "nodesignatures": nodeSigs,
+                                 "verifieridentifier": verifier,
+                                 "pub_key_x": importedShare.pubKeyX,
+                                 "pub_key_y": importedShare.pubKeyY,
+                                 "encrypted_share": importedShare.encryptedShare,
+                                 "encrypted_share_metadata": importedShare.encryptedShareMetadata,
+                                 "node_index": importedShare.nodeIndex,
+                                 "key_type": importedShare.keyType,
+                                 "nonce_data": importedShare.nonceData,
+                                 "nonce_signature": importedShare.nonceSignature,
+                                 "verifier_id": verifierParams.verifier_id,
+                                 "extended_verifier_id": verifierParams.extended_verifier_id,
+                         
                 ] as [String: Any]
                 let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
-                // Add properties from verifierParams
-                for (key, value) in verifierParams {
-                    valueDict[key] = value
-                }
-
+                let finalItem = keepingCurrent.merging(verifierParams.additionalParams) { current, _ in current }
                 // TODO: Look into hetrogeneous array encoding
                 let dataForRequest = ["jsonrpc": "2.0",
                                       "id": 10,
@@ -123,43 +124,169 @@ extension TorusUtils {
                                       "params": ["encrypted": "yes",
                                                  "use_temp": true,
                                                  "one_key_flow": true,
-                                                 "item": [keepingCurrent]] as [String: Any]] as [String: Any],
+                                                 "item": [finalItem]] as [String: Any]] as [String: Any]
                 rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
-                
+                rpcArray.append(rpcdata)
             } catch {
-                os_log("retrieveDecryptAndReconstruct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             }
         }
-
         
-        var resultArray = [KeyLookupResponse]()
+        var resultArray = [ShareRequestResult]()
         var requestArray = [URLRequest]()
 
 
-        if let importedShares = importedShares {
-            for i in 0..<importedShares.count {
-                do {
-                    var request = try makeUrlRequest(url: endpoints[i])
-                    request.httpBody = rpcdata
-                    requestArray.append(request)
-                } catch {
-                    throw error
-                }
-                
+        for i in 0..<importedShares.count {
+            do {
+                var request = try makeUrlRequest(url: endpoints[i])
+                request.httpBody = rpcArray[i]
+                requestArray.append(request)
+            } catch {
+                throw error
             }
+            
         }
-
         
-       
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
+
+            for (i, rq) in requestArray.enumerated() {
+
+                group.addTask {
+                    do {
+                        let val = try await session.data(for: rq)
+                        return .success(.init(data: val.0, urlResponse: val.1, index: i))
+                    } catch {
+                        return .failure(error)
+                    }
+                }
+            }
+
+            for try await val in group {
+                do {
+                    switch val {
+                        
+                        case.success(let model):
+                            let data = model.data
+                            let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                            os_log("import share - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
+                        
+                            if decoded.error != nil {
+                                os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
+                                throw TorusUtilError.runtime(decoded.error?.message ?? "")
+                            }
+
+                            // Ensure that we don't add bad data to result arrays.
+                            guard
+                                let response = decoded.result as? ShareRequestResult
+                            else {
+                                throw TorusUtilError.decodingFailed("\(decoded.result ?? "") is not a [String: String]")
+                            }
+                            resultArray.append(response)
+
+                        case.failure(let error):
+                            throw error
+                    }
+                } catch {
+                        os_log("importshare - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                }
+            }
+            throw TorusUtilError.importShareFailed
+        })
+
        
     }
     
     // MARK: - getShareOrKeyAssign
     
-    func getShareOrKeyAssign(endpoints: [String]) {
+    func getShareOrKeyAssign(endpoints: [String], nodeSigs: [CommitmentRequestResponse], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Any] = [:]) async throws -> [ShareRequestResult] {
         let session = createURLSession()
         let threshold = Int(endpoints.count / 2) + 1
         var rpcdata: Data = Data()
+        
+        let loadedStrings = extraParams
+        let valueDict = ["idtoken": idToken,
+                         "nodesignatures": nodeSigs,
+                         "verifieridentifier": verifier,
+                         "verifier_id": verifierParams.verifier_id,
+                         "extended_verifier_id": verifierParams.extended_verifier_id,
+                 
+        ] as [String: Any]
+        let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
+        let finalItem = keepingCurrent.merging(verifierParams.additionalParams) { current, _ in current }
+        let dataForRequest = ["jsonrpc": "2.0",
+                              "id": 10,
+                              "method": JRPC_METHODS.GET_SHARE_OR_KEY_ASSIGN,
+                              "params": ["encrypted": "yes",
+                                         "use_temp": true,
+                                         "one_key_flow": true,
+                                         "item": [finalItem]] as [String: Any]] as [String: Any]
+        
+        do {
+            rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
+        } catch {
+            os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+        }
+
+        // Create Array of URLRequest Promises
+
+        var resultArray = [ShareRequestResult]()
+        var requestArray = [URLRequest]()
+
+        for endpoint in endpoints {
+            do {
+                var request = try makeUrlRequest(url: endpoint, httpMethod: .post)
+                request.httpBody = rpcdata
+                requestArray.append(request)
+            } catch {
+                throw error
+            }
+        }
+
+        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
+
+            for (i, rq) in requestArray.enumerated() {
+
+                group.addTask {
+                    do {
+                        let val = try await session.data(for: rq)
+                        return .success(.init(data: val.0, urlResponse: val.1, index: i))
+                    } catch {
+                        return .failure(error)
+                    }
+                }
+            }
+
+            for try await val in group {
+                do {
+                    switch val {
+                        
+                        case.success(let model):
+                            let data = model.data
+                            let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                            os_log("getShareOrKeyAssign - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
+                        
+                            if decoded.error != nil {
+                                os_log("getShareOrKeyAssign - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
+                                throw TorusUtilError.runtime(decoded.error?.message ?? "")
+                            }
+
+                            // Ensure that we don't add bad data to result arrays.
+                            guard
+                                let response = decoded.result as? ShareRequestResult
+                            else {
+                                throw TorusUtilError.decodingFailed("\(decoded.result ?? "") is not a [String: String]")
+                            }
+                            resultArray.append(response)
+
+                        case.failure(let error):
+                            throw error
+                    }
+                } catch {
+                        os_log("getShareOrKeyAssign - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                }
+            }
+            throw TorusUtilError.importShareFailed
+        })
     }
 
 
@@ -334,18 +461,18 @@ extension TorusUtils {
             isImportShareReq = true
         }
 
-        let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
-        os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
+        let nodeSigs = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
+        os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, nodeSigs)
         var promiseArrRequest = [ShareRequestResult]()
-        var nodeSigs = [CommitmentRequestResult]()
+        
         // step 1, seperate logic with share importing
         // TODO: isImportShareReq if condition here
         if (isImportShareReq) {
             // TODO: if yes, then put import share logic here
-            promiseArrRequest = importShare()
+            promiseArrRequest = try await importShare(endpoints: endpoints, nodeSigs: nodeSigs, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: importedShares!)
         } else {
             // TODO: else, then GetShareOrKeyAssign logic here
-            promiseArrRequest = getShareOrKeyAssign()
+            promiseArrRequest = try await getShareOrKeyAssign(endpoints: endpoints, nodeSigs: nodeSigs, verifier: verifier, verifierParams: verifierParams, idToken: idToken)
         }
         // note that result of both two functions should be in same array, promiseArrRequest.push(p);
         
