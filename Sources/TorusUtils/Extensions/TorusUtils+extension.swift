@@ -849,7 +849,7 @@ extension TorusUtils {
     
     // MARK: - getPubKeyOrKeyAssign
     
-    func getPubKeyOrKeyAssign(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> KeyLookupResponse {
+    func getPubKeyOrKeyAssign(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> KeyLookupResult {
         // Encode data
         let encoder = JSONEncoder()
         let session = createURLSession()
@@ -890,7 +890,7 @@ extension TorusUtils {
         
         var nonceResult: GetOrSetNonceResult?
         var nodeIndexesArray: [Int] = []
-        var keyArray = [VerifierLookupResponse.Key]()
+        var keyArray: [VerifierLookupResponse.Key] = [];
         
         return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
             for (i, rq) in requestArray.enumerated() {
@@ -920,14 +920,15 @@ extension TorusUtils {
                                 throw error
                             } else {
                                 guard
-                                    let decodedResult = result as? [String: Any],
-                                    let nodeIndex = decodedResult["node_index"],
-                                    let k = decodedResult["keys"],
+                                    let decodedResult = result as? VerifierLookupResponse,
+                                    let nodeIndex = decodedResult.node_index,
+                                    let k = decodedResult.keys,
                                     let keys = k.first,
-                                    let pubKeyX = keys["pub_key_X"],
-                                    let pubKeyY = keys["pub_key_Y"],
-                                    let address = keys["address"],
-                                    let nonceData = keys["nonce_data"] as? GetOrSetNonceResult,
+                                    let pubKeyX = keys.pub_key_X,
+                                    let pubKeyY = keys.pub_key_Y,
+                                    let address = keys.address,
+                                    let nonceData = keys.nonce_data,
+//                                        as? GetOrSetNonceResult,
                                     let pubNonceX = nonceData.pubNonce?.x
                                 else {
                                     throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
@@ -944,11 +945,11 @@ extension TorusUtils {
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
 
-                            if (keyResult && (nonceResult || extendedVerifierId)) {
+                            if (keyResult? && (nonceResult || extendedVerifierId)) {
                                 if keyResult {
                                     os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
                                     session.invalidateAndCancel()
-                                    return (keyResult, nodeIndexesArray, nonceResult)
+                                    return KeyLookupResult( keyResult: keyResult, nodeIndexes: nodeIndexesArray, nonceResult: nonceResult)
                                 }
                             }
                         } catch let err {
