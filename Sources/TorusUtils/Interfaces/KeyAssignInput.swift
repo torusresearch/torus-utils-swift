@@ -32,7 +32,7 @@ public struct KeyAssignment {
     let shareMetadata: EciesHex
     let nonceData: GetOrSetNonceResult?
     
-    struct PublicKey {
+    struct PublicKey : Hashable {
         let X: String
         let Y: String
     }
