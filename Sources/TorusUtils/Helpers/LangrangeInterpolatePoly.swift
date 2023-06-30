@@ -107,8 +107,9 @@ func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicS
     }
     
     var points = [String: Point]()
-    for share in deterministicShares {
-        points[share.shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] = Point(x: .bn(share.shareIndex), y: .bn(share.share))
+    for share in deterministicShares {        
+        points[String(share.shareIndex, radix: 16).leftPadding(toLength: 64, withPad: "0")] =
+        Point(x: share.shareIndex, y: share.share)
     }
     
     let remainingDegree = degree - deterministicShares.count

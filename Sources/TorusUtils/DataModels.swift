@@ -43,14 +43,18 @@ public struct GetPublicAddressResult {
     public var y: String?
     public var metadataNonce: BigUInt?
     public var pubNonce: PubNonce?
+    public var nodeIndexes: [Int]?
+    public var upgarded : Bool?
 
-    public init(address: String, typeOfUser: TypeOfUser? = nil, x: String? = nil, y: String? = nil, metadataNonce: BigUInt? = nil, pubNonce: PubNonce? = nil) {
+    public init(address: String, typeOfUser: TypeOfUser? = nil, x: String? = nil, y: String? = nil, metadataNonce: BigUInt? = nil, pubNonce: PubNonce? = nil, nodeIndexes:[Int]? = [] , upgraded : Bool? = false) {
         self.typeOfUser = typeOfUser
         self.address = address
         self.x = x
         self.y = y
         self.metadataNonce = metadataNonce
         self.pubNonce = pubNonce
+        self.nodeIndexes = nodeIndexes
+        self.upgarded = upgraded
     }
 }
 
@@ -95,6 +99,32 @@ public struct UserTypeAndAddress {
         self.nonce = nonce
     }
 }
+
+public struct MetadataParams: Codable {
+     public struct SetData: Codable {
+         public var data: String
+         public var timestamp: String
+
+         public init(data: String, timestamp: String) {
+             self.data = data
+             self.timestamp = timestamp
+         }
+     }
+
+     public var namespace: String?
+     public var pub_key_X: String
+     public var pub_key_Y: String
+     public var set_data: SetData
+     public var signature: String
+
+     public init(pub_key_X: String, pub_key_Y: String, setData: SetData, signature: String, namespace: String? = nil) {
+         self.namespace = namespace
+         self.pub_key_X = pub_key_X
+         self.pub_key_Y = pub_key_Y
+         set_data = setData
+         self.signature = signature
+     }
+ }
 
 public enum BNString {
     case string(String)

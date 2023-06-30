@@ -1,7 +1,7 @@
 import Foundation
 
 struct KeyLookupResult {
-    let keyResult: VerifierLookupResponse.Key
+    let keyResult: KeyLookupResponse
     let nodeIndexes: [Int]
     let nonceResult: GetOrSetNonceResult?
 }

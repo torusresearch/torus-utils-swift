@@ -23,15 +23,26 @@ open class TorusUtils: AbstractTorusUtils {
     var network: EthereumNetworkFND
     var modulusValue = BigInt(CURVE_N, radix: 16)!
     var legacyNonce: Bool
+    var metadataHost: String = "https://metadata.tor.us"
+    var clientId: String
+    var signerHost: String
+    var enableOneKey: Bool
 
-    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET, legacyNonce: Bool = false) {
+    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET,
+                metadataHost: String = "https://metadata.tor.us",
+                clientId: String = "",
+                legacyNonce: Bool = false
+    ) {
         self.urlSession = urlSession
         utilsLogType = loglevel
-
+        self.metadataHost = metadataHost
+        self.enableOneKey = enableOneKey
+        self.signerHost = signerHost
         self.allowHost = allowHost
         self.network = network
         self.serverTimeOffset = serverTimeOffset
         self.legacyNonce = legacyNonce
+        self.clientId = clientId
     }
 
     // TODO: keyassign func changed.. 
@@ -60,7 +71,7 @@ open class TorusUtils: AbstractTorusUtils {
             var pubNonce: PubNonce?
             let result: GetPublicAddressResult
             if enableOneKey {
-                let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !isNewKey)
+                let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !isNewKey)
                 pubNonce = localNonceResult.pubNonce
                 nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
                 typeOfUser = .init(rawValue: localNonceResult.typeOfUser) ?? .v1
@@ -118,8 +129,8 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
 
-    public func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
-        return try await withThrowingTaskGroup(of: RetrieveSharesResponse.self, body: { [unowned self] group in
+    public func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
+        return try await withThrowingTaskGroup(of: RetrieveSharesResponseModel.self, body: { [unowned self] group in
             group.addTask { [unowned self] in
                 // TODO: change handleRetrieveShares -> retrieveOrImportShare
                 try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
@@ -144,7 +155,7 @@ open class TorusUtils: AbstractTorusUtils {
         })
     }
 
-    func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
+    func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
         guard
             let privateKey = generatePrivateKeyData(),
             let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1 ..< 65)
@@ -200,7 +211,7 @@ open class TorusUtils: AbstractTorusUtils {
                     pk = key
                 }
             }
-            return RetrieveSharesResponse(publicKey: publicAddress, privateKey: pk)
+            return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk)
         } catch {
             os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error

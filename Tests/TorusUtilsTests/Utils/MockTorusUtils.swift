@@ -8,8 +8,20 @@
 import FetchNodeDetails
 import Foundation
 import TorusUtils
+import BigInt
+
 
 class MockTorusUtils: AbstractTorusUtils {
+    func retrieveShares(endpoints: [String], verifier: String, verifierId: String, verifierParams: VerifierParams, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
+        return RetrieveSharesResponse(
+            ethAddress: "", privKey: "", sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(BigUInt("0")), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: []
+        )
+    }
+    
+    func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?, isExtended: Bool) async throws -> GetPublicAddressResult {
+        GetPublicAddressResult(address: "")
+    }
+    
 
     var nodePubKeys: [TorusNodePubModel]
 
@@ -21,7 +33,7 @@ class MockTorusUtils: AbstractTorusUtils {
         self.nodePubKeys = nodePubKeys
     }
 
-    func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
+    func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
         return .init(publicKey: "", privateKey: "")
     }
 

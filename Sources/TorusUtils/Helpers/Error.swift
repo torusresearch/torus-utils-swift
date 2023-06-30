@@ -110,6 +110,9 @@ extension TorusUtilError: LocalizedError {
             return "Invalid key size. Expected 32 bytes"
         case let .encodingFailed(msg):
             return "Could not encode data \(msg ?? "")"
+        default:
+            return "default Error msg"
+            
         }
     }
 }

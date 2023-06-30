@@ -6,20 +6,9 @@ class Point {
     let x: BigInt
     let y: BigInt
 
-    init(x: BNString, y: BNString) {
-        switch x {
-        case .string(let xStr):
-            self.x = BigInt(xStr, radix: 16)!
-        case .bn(let xBigInt):
-            self.x = xBigInt
-        }
-        
-        switch y {
-        case .string(let yStr):
-            self.y = BigInt(yStr, radix: 16)!
-        case .bn(let yBigInt):
-            self.y = yBigInt
-        }
+    init(x: String, y: String) {
+        self.x = BigInt(x, radix: 16)!
+        self.y = BigInt(y, radix: 16)!
     }
     
     init(x: BigInt, y: BigInt) {
