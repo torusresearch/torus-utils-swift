@@ -9,6 +9,7 @@ import FetchNodeDetails
 import Foundation
 import TorusUtils
 import BigInt
+import CommonSources
 
 
 class MockTorusUtils: AbstractTorusUtils {
@@ -18,7 +19,7 @@ class MockTorusUtils: AbstractTorusUtils {
         )
     }
     
-    func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?, isExtended: Bool) async throws -> GetPublicAddressResult {
+    func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String, isExtended: Bool) async throws -> GetPublicAddressResult {
         GetPublicAddressResult(address: "")
     }
     

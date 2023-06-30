@@ -6,6 +6,8 @@
 //
 
 import XCTest
+import CommonSources
+import FetchNodeDetails
 
 @testable import TorusUtils
 final class SapphireTest: XCTestCase {
@@ -55,24 +57,34 @@ final class SapphireTest: XCTestCase {
         super.setUp()
         
         torus = TorusUtils(
-            
             enableOneKey: true,
-            network: .CYAN,
-            metadataHost: "https://sapphire-dev-2-1.authnetwork.dev/metadata"
+            allowHost: "https://signer.tor.us/api/allow",
+            network: TorusNetwork.SAPPHIRE_DEVNET,
+            metadataHost: "https://sapphire-dev-2-1.authnetwork.dev/metadata",
+            clientId: "YOUR_CLIENT_ID"
         )
     }
     
-    func testFetchPublicAddress() {
+    func testFetchPublicAddress() async throws {
         let expectation = self.expectation(description: "Fetching public address")
         let verifierDetails = (verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
         
-//        let publicAddress = try? await torus?.getPublicAddress(endpoints: [], torusNodePubs: torusNodeEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false)
-//        
+        
+        
+
+
+//        // Wait for the expectation to be fulfilled with a timeout
+//        await XCTWaiter().wait(for: [expectation], timeout: 3)
+
+        let nm = NodeDetailManager(network: .SAPPHIRE_DEVNET)
+        let endpoint = try await nm.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
+        try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false)
+
 //        { publicAddress in
 //            XCTAssertEqual(publicAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
 //            expectation.fulfill()
 //        }
         
-        waitForExpectations(timeout: 10, handler: nil)
+//        waitForExpectations(timeout: 10, handler: nil)
     }
 }
