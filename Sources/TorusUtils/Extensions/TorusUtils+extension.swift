@@ -5,7 +5,7 @@
 //  Created by Shubham on 25/3/20.
 //
 
-import FetchNodeDetails
+//import FetchNodeDetails
 import Foundation
 #if canImport(secp256k1)
 import secp256k1
@@ -14,10 +14,13 @@ import BigInt
 import CryptoSwift
 import OSLog
 
+import FetchNodeDetails
+import CommonSources
+
 extension TorusUtils {
     
     // MARK: - getPublicAddress
-    public func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil, isExtended: Bool) async throws -> GetPublicAddressResult {
+    public func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String = "", isExtended: Bool) async throws -> GetPublicAddressResult {
         do {
             
             let result = try await getPubKeyOrKeyAssign(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId );
@@ -427,7 +430,7 @@ extension TorusUtils {
     
     func retrieveOrImportShare(
         allowHost: String,
-        network: EthereumNetworkFND,
+        network: TorusNetwork,
         clientId: String,
         endpoints: [String],
         verifier: String,
@@ -944,21 +947,33 @@ extension TorusUtils {
     
     // MARK: - getPubKeyOrKeyAssign
     
-    func getPubKeyOrKeyAssign(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> KeyLookupResult {
+    func getPubKeyOrKeyAssign(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String = "") async throws -> KeyLookupResult {
         // Encode data
         let encoder = JSONEncoder()
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
         var failedLookupCount = 0
         let methodName = JRPC_METHODS.GET_OR_SET_KEY
+        
+        let params: [String: MixedValue ] = [
+            "verifier": .string(verifier),
+            "verifier_id": .string(verifierId),
+            "extended_verifier_id": .string(extendedVerifierId),
+            "one_key_flow" : .boolean(true),
+            "fetch_node_index": .boolean(true)
+        ]
+
         let jsonRPCRequest = JSONRPCrequest(
             method: methodName,
-            params: ["verifier": verifier, "verifier_id": verifierId, "extended_verifier_id": extendedVerifierId!, "one_key_flow": true, "fetch_node_index": true])
+            params: params
+        )
+        
         guard let rpcdata = try? encoder.encode(jsonRPCRequest)
+        
         else {
             throw TorusUtilError.encodingFailed("\(jsonRPCRequest)")
         }
-        
+            
         var allowHostRequest = try makeUrlRequest(url: allowHost, httpMethod: .get)
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
@@ -1005,10 +1020,16 @@ extension TorusUtils {
                 do {
                     switch val {
                     case .success(let model):
+
                         let data = model.data
                         do {
+//                            let jsonString = String(data:data, encoding : .utf8 )
+                            let json = try JSONSerialization.jsonObject(with: data , options: [])
+                            
+                            os_log("%@: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, "\(json)")
+                            
                             let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                            os_log("%@: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, "\(decoded)")
+                            os_log("%@: API decoded: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, "\(decoded)")
 
                             let result = decoded.result
                             let error = decoded.error
@@ -1187,7 +1208,7 @@ extension TorusUtils {
 
     // MARK: - key assignment
     
-    public func keyAssign(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, signerHost: String, network: EthereumNetworkFND, firstPoint: Int? = nil, lastPoint: Int? = nil) async throws -> JSONRPCresponse {
+    public func keyAssign(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, signerHost: String, network: TorusNetwork, firstPoint: Int? = nil, lastPoint: Int? = nil) async throws -> JSONRPCresponse {
         var nodeNum: Int = 0
         var initialPoint: Int = 0
         os_log("KeyAssign: endpoints: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, endpoints)

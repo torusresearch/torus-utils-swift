@@ -1,5 +1,6 @@
 import BigInt
 import FetchNodeDetails
+import CommonSources
 /**
  torus utils class
  Author: Shubham Rathi
@@ -14,13 +15,14 @@ var utilsLogType = OSLogType.default
 
 @available(iOS 13, macOS 10.15, *)
 open class TorusUtils: AbstractTorusUtils {
+    
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     private var timeout: Int = 30
     var urlSession: URLSession
     var serverTimeOffset: TimeInterval = 0
     var isNewKey = false
     var allowHost: String
-    var network: EthereumNetworkFND
+    var network: TorusNetwork
     var modulusValue = BigInt(CURVE_N, radix: 16)!
     var legacyNonce: Bool
     var metadataHost: String = "https://metadata.tor.us"
@@ -28,7 +30,7 @@ open class TorusUtils: AbstractTorusUtils {
     var signerHost: String
     var enableOneKey: Bool
 
-    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: EthereumNetworkFND = .MAINNET,
+    public init(loglevel: OSLogType = .default, urlSession: URLSession = URLSession(configuration: .default), enableOneKey: Bool = false, serverTimeOffset: TimeInterval = 0, signerHost: String = "https://signer.tor.us/api/sign", allowHost: String = "https://signer.tor.us/api/allow", network: TorusNetwork = .MAINNET,
                 metadataHost: String = "https://metadata.tor.us",
                 clientId: String = "",
                 legacyNonce: Bool = false
