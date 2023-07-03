@@ -44,7 +44,7 @@ func generateAddressFromPrivKey(privateKey: String) -> String {
 }
 
 func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) -> String {
-    let publicKeyHex = "04" + publicKeyX + publicKeyY
+    let publicKeyHex = "04" + publicKeyX.addLeading0sForLength64()  + publicKeyY.addLeading0sForLength64()
     let publicKeyData = Data(hexString: publicKeyHex)!
     
     do {
@@ -69,3 +69,60 @@ func getPostboxKeyFrom1OutOf1(privKey: String, nonce: String) -> String {
     let result = (privKeyBigInt - nonceBigInt).modulus(modulus)
     return result.serialize().toHexString()
 }
+
+
+//import Foundation
+//import secp256k1
+//import CryptoKit
+//
+//func getPublicAddressFromCoordinates(x: String, y: String) -> String? {
+//    guard let xData = Data(hexString: x),
+//          let yData = Data(hexString: y) else {
+//        return nil
+//    }
+//
+//    // Combine the x and y coordinates into a single data object
+//    let publicKeyData = xData + yData
+//
+//    // Convert the combined data to a CryptoKit elliptic curve public key
+//    let publicKey = P256.Signing.PublicKey(rawRepresentation: publicKeyData)
+//
+//    // Compute the public address using the hash of the public key
+//    let addressData = Data(SHA256.hash(data: publicKey.rawRepresentation))
+//    let address = addressData.suffix(20).hexString  // Take the last 20 bytes as the address
+//
+//    return address
+//}
+//
+//// Extension to convert Data to hex string representation
+//extension Data {
+//    init?(hexString: String) {
+//        let string = hexString.trimmingCharacters(in: .whitespaces)
+//        var data = Data(capacity: string.count / 2)
+//
+//        var index = string.startIndex
+//        while index < string.endIndex {
+//            let byteString = string[index ..< string.index(index, offsetBy: 2)]
+//            guard let byte = UInt8(byteString, radix: 16) else {
+//                return nil
+//            }
+//            data.append(byte)
+//            index = string.index(index, offsetBy: 2)
+//        }
+//        self = data
+//    }
+//
+//    var hexString: String {
+//        return map { String(format: "%02hhx", $0) }.joined()
+//    }
+//}
+//
+//// Usage example
+//let xCoordinate = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"
+//let yCoordinate = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2e"
+//
+//if let publicAddress = getPublicAddressFromCoordinates(x: xCoordinate, y: yCoordinate) {
+//    print("Public Address:", publicAddress)
+//} else {
+//    print("Invalid coordinates")
+//}

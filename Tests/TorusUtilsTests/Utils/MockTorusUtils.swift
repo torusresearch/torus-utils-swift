@@ -19,8 +19,9 @@ class MockTorusUtils: AbstractTorusUtils {
         )
     }
     
-    func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String, isExtended: Bool) async throws -> GetPublicAddressResult {
-        GetPublicAddressResult(address: "")
+    func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> String {
+//        GetPublicAddressResult(address: "")
+        return ""
     }
     
 

@@ -8,6 +8,15 @@
 import BigInt
 import Foundation
 
+public struct GetPublicAddressOrKeyAssignParams : Encodable {
+    public var verifier : String
+    public var verifier_id : String
+    public var extended_verifier_id :String?
+    public var one_key_flow : Bool
+    public var fetch_node_index : Bool
+}
+
+
 public struct SignerResponse: Codable {
     public var torusNonce: String
     public var torusSignature: String
@@ -200,37 +209,44 @@ public struct JSONRPCresponse: Codable {
             self.init(id: id, jsonrpc: jsonrpc, result: nil, error: errorMessage)
             return
         }
+        
         var result: Codable?
-        if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
+        print("try decode")
+        if let rawValue = try? container.decodeIfPresent(VerifierLookupResponse.self, forKey: .result){
             result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent(Int.self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent(Bool.self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([Bool].self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([Int].self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([String].self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([String: String].self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([String: [[String: String]]].self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([String: Int].self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: String]]].self, forKey: .result) {
-//            result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: [String: String?]]]].self, forKey: .result) {
-//            result = rawValue
-        } else if let rawValue = try? container.decodeIfPresent([String: MixedValue].self, forKey: .result) {
-            print("mixed raw value")
+        }else if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent(Int.self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent(Bool.self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([Bool].self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([Int].self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String].self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String: String].self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String: [[String: String]]].self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String: Int].self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: String]]].self, forKey: .result) {
+            result = rawValue
+        } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: [String: String?]]]].self, forKey: .result) {
+            result = rawValue
+            //        } else if let rawValue = try? container.decodeIfPresent([String: MixedValue].self, forKey: .result) {
+            //            print("mixed raw value")
+            //            result = rawValue
+        }else if let rawValue = try? container.decodeIfPresent(Data.self, forKey: .result) {
             result = rawValue
         } else {
             print("empty raw value")
             print(result)
 //            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid mixed value")
         }
+        
         self.init(id: id, jsonrpc: jsonrpc, result: result, error: nil)
     }
 }

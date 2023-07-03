@@ -78,13 +78,10 @@ final class SapphireTest: XCTestCase {
 
         let nm = NodeDetailManager(network: .SAPPHIRE_DEVNET)
         let endpoint = try await nm.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
-        try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, isExtended: false)
+        print (endpoint.torusNodeSSSEndpoints)
+        let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
 
-//        { publicAddress in
-//            XCTAssertEqual(publicAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
-//            expectation.fulfill()
-//        }
-        
-//        waitForExpectations(timeout: 10, handler: nil)
+        XCTAssertEqual(publicAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
+        expectation.fulfill()
     }
 }

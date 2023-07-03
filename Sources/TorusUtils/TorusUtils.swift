@@ -76,7 +76,8 @@ open class TorusUtils: AbstractTorusUtils {
                 let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !isNewKey)
                 pubNonce = localNonceResult.pubNonce
                 nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
-                typeOfUser = .init(rawValue: localNonceResult.typeOfUser) ?? .v1
+                let test = localNonceResult.typeOfUser ?? "v1";
+                typeOfUser = .init(rawValue: test  ) ?? .v1
                 if typeOfUser == .v1 {
                     modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let nonce2 = BigInt(nonce).modulus(modulusValue)

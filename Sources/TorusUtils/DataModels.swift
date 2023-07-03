@@ -58,8 +58,8 @@ public struct GetPublicAddressResult {
     }
 }
 
-public struct GetOrSetNonceResult: Decodable {
-    public var typeOfUser: String
+public struct GetOrSetNonceResult: Codable {
+    public var typeOfUser: String?
     public var nonce: String?
     public var pubNonce: PubNonce?
     public var ifps: String?
@@ -72,15 +72,31 @@ public struct GetOrSetNonceResult: Decodable {
         self.ifps = ifps
         self.upgraded = upgraded
     }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        typeOfUser = try container.decodeIfPresent(String.self, forKey: .typeOfUser)
+        nonce = try container.decodeIfPresent(String.self, forKey: .nonce)
+        pubNonce = try container.decodeIfPresent(PubNonce.self, forKey: .pubNonce)
+        ifps = try container.decodeIfPresent(String.self, forKey: .ifps)
+        upgraded = try container.decodeIfPresent(Bool.self, forKey: .upgraded)
+    }
 }
 
-public struct PubNonce: Decodable {
+public struct PubNonce: Codable {
     public var x: String
     public var y: String
 
     public init(x: String, y: String) {
         self.x = x
         self.y = y
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.x = try container.decode(String.self, forKey: .x)
+        self.y = try container.decode(String.self, forKey: .y)
     }
 }
 
