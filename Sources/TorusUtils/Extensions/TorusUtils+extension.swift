@@ -23,7 +23,6 @@ extension TorusUtils {
     
     public func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> String {
         let result = try await getPublicAddressExtended(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId)
-        print(result)
         return result.address
     }
     
@@ -36,20 +35,15 @@ extension TorusUtils {
             let nonceResult = result.nonceResult;
             let nodeIndexes = result.nodeIndexes;
             
-            print("extended")
-            print(result)
-            
             let ( X,  Y ) = ( keyResult.pubKeyX, keyResult.pubKeyY);
             
             if ( nonceResult == nil ) { throw NSError(domain: "invalid nounce", code: 0) }
                 
             var modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
-//            var modifiedPubKey = generateAddressFromPubKey(publicKeyX: X, publicKeyY: Y)
             var pubNonce : PubNonce?
-            print(modifiedPubKey)
+            
             if (extendedVerifierId == nil ) {
                 let noncePub = "04" + (nonceResult?.pubNonce?.x ?? "0").addLeading0sForLength64() + (nonceResult?.pubNonce?.y ?? "0").addLeading0sForLength64();
-//                let noncePub = generateAddressFromPubKey(publicKeyX: nonceResult?.pubNonce?.x ?? "0", publicKeyY: nonceResult?.pubNonce?.y ?? "0");
                 modifiedPubKey =  combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
             }
@@ -69,8 +63,8 @@ extension TorusUtils {
     }
     
     // MARK - retrieveShares
-    public func retrieveShares( endpoints: [String], verifier: String, verifierId: String, verifierParams: VerifierParams, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse {
-        let result = try await retrieveOrImportShare(allowHost: self.allowHost, network: self.network, clientId: self.clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken)
+    public func retrieveShares( endpoints: [String], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String:Any] = [:]) async throws -> RetrieveSharesResponse {
+        let result = try await retrieveOrImportShare(allowHost: self.allowHost, network: self.network, clientId: self.clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, extraParams: extraParams)
         return result
     }
     
@@ -1031,8 +1025,6 @@ extension TorusUtils {
                         let data = model.data
                         do {
                             
-                            let testdata = try JSONSerialization.jsonObject(with: data);
-                            print(testdata)
                             let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
                             let result = decoded.result as? VerifierLookupResponse
                             
@@ -1055,17 +1047,18 @@ extension TorusUtils {
                                                 }
                                             }
                                         }
-                                        nodeIndexesArray.append(decodedResult.node_index )
                                     }
                                 }
                             }
-                            print("dione checking and appending")
                             
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
                             if (nonceResult != nil || extendedVerifierId != nil) {
                                 if let keyResult = keyResult {
                                     os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
                                     session.invalidateAndCancel()
+                                    keyArray.forEach( { body in
+                                        nodeIndexesArray.append(body.node_index)
+                                    })
                                     
                                     return KeyLookupResult( keyResult: keyResult, nodeIndexes: nodeIndexesArray, nonceResult: nonceResult)
                                 }
@@ -1079,8 +1072,6 @@ extension TorusUtils {
                     }
                 } catch {
                     failedLookupCount += 1
-                    print("error count")
-                    print(failedLookupCount)
                     os_log("%@: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, methodName, error.localizedDescription)
                     if failedLookupCount > (endpoints.count -  threshold) {
                         os_log("%@: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, methodName, TorusUtilError.runtime("threshold nodes unavailable").localizedDescription)

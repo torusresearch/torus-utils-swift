@@ -152,23 +152,6 @@ public struct JSONRPCrequest <T:Encodable>: Encodable {
         case id
     }
 
-//    public func encode(to encoder: Encoder) throws {
-//        var container = encoder.container(keyedBy: CodingKeys.self)
-//        try container.encode(jsonrpc, forKey: .jsonrpc)
-//        try container.encode(method, forKey: .method)
-//
-//        if let _ = params as? [String: Bool] {
-//            try container.encode(params as! [String: Bool], forKey: .params)
-//        }
-//        if let _ = params as? [String: String] {
-//            try container.encode(params as! [String: String], forKey: .params)
-//        }
-//        if let _ = params as? [String: [String: [String: String]]] {
-//            try container.encode(params as! [String: [String: [String: String]]], forKey: .params)
-//        }
-//
-//        try container.encode(id, forKey: .id)
-//    }
 }
 
 public struct JSONRPCresponse: Codable {
@@ -211,7 +194,6 @@ public struct JSONRPCresponse: Codable {
         }
         
         var result: Codable?
-        print("try decode")
         if let rawValue = try? container.decodeIfPresent(VerifierLookupResponse.self, forKey: .result){
             result = rawValue
         }else if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
@@ -242,8 +224,6 @@ public struct JSONRPCresponse: Codable {
         }else if let rawValue = try? container.decodeIfPresent(Data.self, forKey: .result) {
             result = rawValue
         } else {
-            print("empty raw value")
-            print(result)
 //            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid mixed value")
         }
         

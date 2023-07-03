@@ -66,22 +66,60 @@ final class SapphireTest: XCTestCase {
     }
     
     func testFetchPublicAddress() async throws {
-        let expectation = self.expectation(description: "Fetching public address")
+        let verifierDetails = (verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+
+        let nodeManager = NodeDetailManager(network: .SAPPHIRE_DEVNET)
+        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
+        let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+        XCTAssertEqual(publicAddress?.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
+        print("pass check")
+    }
+    
+    func testKeepPublicAddressSame() async throws {
         let verifierDetails = (verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
         
-        
-        
+        let verifierId = TORUS_TEST_EMAIL //faker random address
+        let nodeManager = NodeDetailManager(network: .SAPPHIRE_DEVNET)
+        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
+        let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: verifierId)
+        let publicAddress2 = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: verifierId)
 
-
-//        // Wait for the expectation to be fulfilled with a timeout
-//        await XCTWaiter().wait(for: [expectation], timeout: 3)
-
-        let nm = NodeDetailManager(network: .SAPPHIRE_DEVNET)
-        let endpoint = try await nm.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
-        print (endpoint.torusNodeSSSEndpoints)
-        let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-
-        XCTAssertEqual(publicAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
-        expectation.fulfill()
+        XCTAssertEqual(publicAddress, publicAddress2)
     }
+    
+    func testFetchPublicAddressAndUserType() async throws {
+        let verifierDetails = (verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+
+        let nodeManager = NodeDetailManager(network: .SAPPHIRE_DEVNET)
+        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
+        print (endpoint.torusNodeSSSEndpoints)
+        let result = try await torus?.getPublicAddressExtended(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+
+        XCTAssertEqual(result?.address.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
+    }
+
+//    it("should be able to key assign", async function () {
+//      const email = faker.internet.email();
+//      const verifierDetails = { verifier: TORUS_TEST_VERIFIER, verifierId: email };
+//      const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails(verifierDetails);
+//      const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
+//      const publicAddress = await torus.getPublicAddress(torusNodeEndpoints, verifierDetails);
+//      expect(publicAddress).to.not.equal("");
+//      expect(publicAddress).to.not.equal(null);
+//    });
+    
+    func testAbleToLogin() async throws {
+        let token = try generateIdToken(email: TORUS_TEST_EMAIL)
+        let nodeManager = NodeDetailManager(network: .SAPPHIRE_DEVNET)
+        let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
+        let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
+        try await torus?.retrieveShares(endpoints: endpoints.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
+    }
+//    it("should be able to login", async function () {
+//      const token = generateIdToken(TORUS_TEST_EMAIL, "ES256");
+//      const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails({ verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL });
+//      const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
+//      const retrieveSharesResponse = await torus.retrieveShares(torusNodeEndpoints, TORUS_TEST_VERIFIER, { verifier_id: TORUS_TEST_EMAIL }, token);
+//      expect(retrieveSharesResponse.privKey).to.be.equal("04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c");
+//    });
 }
