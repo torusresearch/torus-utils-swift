@@ -387,7 +387,7 @@ extension TorusUtils {
         var pubkeyArr = [KeyAssignment.PublicKey]()
         var completeShareRequestResponseArr = [ShareRequestResult]()
         // step 2.
-        let thresholdPublicKey: Result<KeyAssignment.PublicKey,Error> = try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
+        let thresholdPublicKey: KeyAssignment.PublicKey = try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
 
             for (i, rq) in promiseArrRequest.enumerated() {
                 group.addTask {
@@ -542,6 +542,43 @@ extension TorusUtils {
                         let nodePubY = completeShareRequestResponseArr[index].nodePubY
 
                         sessionTokenData.append(SessionToken(token: token, signature: signature!, node_pubx: nodePubX, node_puby: nodePubY))
+                    }
+                }
+                
+                let decryptedShares = sharePromises.enumerated().reduce(into: [(index: BigInt, value: BigInt)]()) { acc, current in
+                    let (index, curr) = current
+                    if let nodeIndex = nodeIndexes[index], let currValue = curr {
+                        let indexValue = BigInt(nodeIndex)
+                        let currBigInt = BigInt(currValue)
+                        acc.append((indexValue, currBigInt))
+                    }
+                }
+                
+                // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
+                let allCombis = kCombinations(s: decryptedShares.count, k: threshold)
+                
+                for j in 0..<allCombis.count {
+                    let currentCombi = allCombis[j]
+                    let currentCombiShares = decryptedShares.filter { currentCombi.contains($0.index) }
+                    let shares = currentCombiShares.map { $0.value }
+                    let indices = currentCombiShares.map { $0.index }
+                    guard let derivedPrivateKey = lagrangeInterpolation(shares: shares, indices: indices) else {
+                        continue
+                    }
+                    let derivedPrivateKeyHex = String(derivedPrivateKey, radix: 16, uppercase: false)
+                    guard let derivedPrivateKeyData = Data(hexString: derivedPrivateKeyHex) else {
+                        continue
+                    }
+                    let decryptedPubKey = getPublic(data: derivedPrivateKeyData).hexString
+                    let decryptedPubKeyX = String(decryptedPubKey.prefix(64))
+                    let decryptedPubKeyY = String(decryptedPubKey.suffix(64))
+                    let decryptedPubKeyXBigInt = BigUInt(decryptedPubKeyX, radix: 16)!
+                    let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
+                    let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey.X, radix: 16)!
+                    let thresholdPublicKeyYBigInt = BigUInt(thresholdPublicKey.Y, radix: 16)!
+                    if decryptedPubKeyXBigInt == thresholdPublicKeyXBigInt && decryptedPubKeyYBigInt == thresholdPublicKeyYBigInt {
+                        privateKey = derivedPrivateKey
+                        break
                     }
                 }
             }
