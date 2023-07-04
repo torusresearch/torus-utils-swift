@@ -2,7 +2,7 @@ import FetchNodeDetails
 import Foundation
 
 public protocol AbstractTorusUtils {
-    func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponse
+    func retrieveShares( endpoints: [String], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String:Any]) async throws -> RetrieveSharesResponse
 
-    func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressResult
+    func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String?) async throws -> String
 }

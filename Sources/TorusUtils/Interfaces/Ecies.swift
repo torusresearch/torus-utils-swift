@@ -7,37 +7,25 @@ protocol EciesProtocol {
     var mac: Data { get }
 }
 
-struct EciesHex: EciesProtocol {
-    private let ivString: String
-    private let ephemPublicKeyString: String
-    private let ciphertextString: String
-    private let macString: String
-    
-    var iv: Data {
-        return Data(hex: ivString)
-    }
-    
-    var ephemPublicKey: Data {
-        return Data(hex: ephemPublicKeyString)
-    }
-    
-    var ciphertext: Data {
-        return Data(hex: ciphertextString)
-    }
-    
-    var mac: Data {
-        return Data(hex: macString)
-    }
-    
-    var mode: String?
+struct EciesHex {
+    let iv: String
+    let ephemPublicKey: String
+    let ciphertext: String
+    let mac: String
+    let mode: String?
     
     init(iv: String, ephemPublicKey: String, ciphertext: String, mac: String, mode: String?) {
-        self.ivString = iv
-        self.ephemPublicKeyString = ephemPublicKey
-        self.ciphertextString = ciphertext
-        self.macString = mac
+        self.iv = iv
+        self.ephemPublicKey = ephemPublicKey
+        self.ciphertext = ciphertext
+        self.mac = mac
         self.mode = mode
     }
+    
+    func omitCiphertext() -> EciesHexOmitCiphertext {
+        return EciesHexOmitCiphertext(iv: self.iv, ephemPublicKey: self.ephemPublicKey, mac: self.mac, mode: self.mode)
+    }
+    
 }
 
 struct EciesHexOmitCiphertext {

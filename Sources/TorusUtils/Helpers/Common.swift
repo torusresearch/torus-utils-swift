@@ -4,8 +4,9 @@ import CryptoKit
 
 func normalizeKeysResult(keyArr: [VerifierLookupResponse.Key]) -> VerifierLookupResponse {
     var finalResult: VerifierLookupResponse = VerifierLookupResponse(keys: [], is_new_key: false, node_index: 0)
-    if let keys = result.keys, !keys.isEmpty {
-        finalResult.keys = keys.map { key in
+    
+    if (!keyArr.isEmpty) {
+        finalResult.keys = keyArr.map { key in
             return VerifierLookupResponse.Key(pub_key_X: key.pub_key_X, pub_key_Y: key.pub_key_Y, address: key.address)
         }
     }
@@ -86,3 +87,21 @@ extension Data {
         return map { String(format: "%02x", $0) }.joined()
     }
 }
+
+func base64ToBinaryString(base64String: String) -> String? {
+    // Convert the Base64 string to a Data object
+    guard let data = Data(base64Encoded: base64String) else {
+        return nil
+    }
+
+    // Convert the Data object to a binary string
+    let binaryString = data.reduce("") { (result, byte) -> String in
+        let binaryByte = String(byte, radix: 2)
+        let paddedBinaryByte = String(repeating: "0", count: 8 - binaryByte.count) + binaryByte
+        return result + paddedBinaryByte
+    }
+
+    return binaryString
+}
+
+
