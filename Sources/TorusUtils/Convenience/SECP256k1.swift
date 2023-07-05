@@ -376,4 +376,5 @@ extension SECP256K1 {
         }
         return difference == UInt8(0x00)
     }
+    
 }

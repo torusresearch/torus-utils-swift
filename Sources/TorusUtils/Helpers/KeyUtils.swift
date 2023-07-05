@@ -43,6 +43,50 @@ func generateAddressFromPrivKey(privateKey: String) -> String {
     }
 }
 
+struct BasePoint {
+    let x: Data
+    let y: Data
+    
+    func add(_ other: BasePoint) -> BasePoint? {
+        let x1 = self.x
+        let y1 = self.y
+        let x2 = other.x
+        let y2 = other.y
+        
+        let bigX1 = BigInt(x1)
+        let bigY1 = BigInt(y1)
+        let bigX2 = BigInt(x2)
+        let bigY2 = BigInt(y2)
+        
+        let sumX = (bigX1 + bigX2).serialize().toHexString().data(using: .utf8)!
+        let sumY = (bigY1 + bigY2).serialize().toHexString().data(using: .utf8)!
+        
+        return BasePoint(x: sumX, y: sumY)
+    }
+}
+
+
+
+func keyFromPublic(x: String, y: String) -> BasePoint? {
+    let publicKeyHex = "04" + x.padding(toLength: 64, withPad: "0", startingAt: 0) + y.padding(toLength: 64, withPad: "0", startingAt: 0)
+    
+    guard let publicKeyData = Data(hexString: publicKeyHex) else {
+        return nil
+    }
+    
+    do {
+        let publicKey = try P256.KeyAgreement.PublicKey(x963Representation: publicKeyData)
+        let publicKeyBytes = publicKey.rawRepresentation.dropFirst() // Remove the first byte (0x04)
+        
+        let xData = Data(publicKeyBytes[0..<32])
+        let yData = Data(publicKeyBytes[32..<64])
+        
+        return BasePoint(x: xData, y: yData)
+    } catch {
+        return nil
+    }
+}
+
 func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) -> String {
     let publicKeyHex = "04" + publicKeyX.addLeading0sForLength64()  + publicKeyY.addLeading0sForLength64()
     let publicKeyData = Data(hexString: publicKeyHex)!

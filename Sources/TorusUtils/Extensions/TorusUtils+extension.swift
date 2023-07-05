@@ -658,22 +658,21 @@ extension TorusUtils {
                 
                 // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
                 let allCombis = kCombinations(s: decryptedShares.count, k: threshold)
-                
+                var privateKey: BigInt? = nil
+
                 for j in 0..<allCombis.count {
                     let currentCombi = allCombis[j]
-                    let currentCombiShares = decryptedShares.filter { currentCombi.contains($0.index) }
+                    let currentCombiShares = decryptedShares.enumerated().filter { currentCombi.contains($0.offset) }.map { $0.element }
                     let shares = currentCombiShares.map { $0.value }
                     let indices = currentCombiShares.map { $0.index }
-                    guard let derivedPrivateKey = lagrangeInterpolation(shares: shares, indices: indices) else {
-                        continue
-                    }
+                    let derivedPrivateKey = lagrangeInterpolationWithNodeIndex(shares: shares, nodeIndex: indices) 
                     let derivedPrivateKeyHex = String(derivedPrivateKey, radix: 16, uppercase: false)
                     guard let derivedPrivateKeyData = Data(hexString: derivedPrivateKeyHex) else {
                         continue
                     }
-                    let decryptedPubKey = getPublic(data: derivedPrivateKeyData).hexString
-                    let decryptedPubKeyX = String(decryptedPubKey.prefix(64))
-                    let decryptedPubKeyY = String(decryptedPubKey.suffix(64))
+                    let decryptedPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
+                    let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
+                    let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
                     let decryptedPubKeyXBigInt = BigUInt(decryptedPubKeyX, radix: 16)!
                     let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
                     let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey.X, radix: 16)!
@@ -683,11 +682,43 @@ extension TorusUtils {
                         break
                     }
                 }
+                
+                if privateKey == nil {
+                    throw TorusUtilError.privateKeyDeriveFailed
+                }
+                
+                let oauthKey : BigInt = privateKey!
+                
+                let derivedPrivateKeyHex = String(oauthKey, radix: 16, uppercase: false)
+                guard let derivedPrivateKeyData = Data(hexString: derivedPrivateKeyHex) else {
+                    throw TorusUtilError.privateKeyDeriveFailed
+                }
+                
+                let decryptedPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
+                let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
+                let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
+                let metadataNonce = BigInt(thresholdNonceData?.nonce ?? "0", radix: 16) ?? BigInt(0)
+                let privateKeyWithNonce = (oauthKey + metadataNonce) % modulusValue
+
+                var modifiedPubKey: BasePoint?
+
+                if let extendedVerifierId = verifierParams.extended_verifier_id {
+                    // For TSS key, no need to add pub nonce
+                    modifiedPubKey = keyFromPublic(x: decryptedPubKeyX, y: decryptedPubKeyY)
+                } else {
+                    let pubNonceX = thresholdNonceData!.pubNonce!.x
+                    let pubNonceY = thresholdNonceData!.pubNonce!.y
+                    
+                    modifiedPubKey = keyFromPublic(x: decryptedPubKeyX, y: decryptedPubKeyY)!.add(keyFromPublic(x: pubNonceX, y: pubNonceY)!)
+                }
+                
+                let ethAddress = generateAddressFromPubKey(publicKeyX: <#T##String#>, publicKeyY: <#T##String#>)
+
             }
         }
-        // TODO: deal with session token and get session token data
         
         // step3. prepare the final return
+        
         
         // for tss key no need to add pub nonce
         

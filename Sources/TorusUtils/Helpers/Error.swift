@@ -18,6 +18,7 @@ public enum TorusUtilError: Error, Equatable {
     case decryptionFailed
     case thresholdError
     case promiseFulfilled
+    case privateKeyDeriveFailed
     case timeout
     case unableToDerive
     case interpolationFailed
@@ -48,6 +49,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Threshold error"
         case .promiseFulfilled:
             return "Promise fulfilled"
+        case .privateKeyDeriveFailed:
+            return "could not derive private key"
         case .timeout:
             return "Timeout"
         case .unableToDerive:

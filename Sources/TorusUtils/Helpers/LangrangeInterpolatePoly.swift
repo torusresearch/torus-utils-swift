@@ -1,6 +1,26 @@
 import Foundation
 import BigInt
 
+func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
+    var (t, newT) = (BigInt(0), BigInt(1))
+    var (r, newR) = (m, a)
+    
+    while newR != 0 {
+        let quotient = r / newR
+        (t, newT) = (newT, t - quotient * newT)
+        (r, newR) = (newR, r - quotient * newR)
+    }
+    
+    if r > 1 {
+        return nil // Modular inverse does not exist
+    }
+    if t < 0 {
+        t += m
+    }
+    
+    return t
+}
+
 func generatePrivateExcludingIndexes(shareIndexes: [BigInt]) -> BigInt {
     let key = BigInt(SECP256K1.generatePrivateKey()!)
     if shareIndexes.contains(where: { $0 == key }) {
@@ -80,6 +100,38 @@ func lagrange(unsortedPoints: [Point]) -> Polynomial {
 
 func lagrangeInterpolatePolynomial(points: [Point]) -> Polynomial {
     return lagrange(unsortedPoints: points)
+}
+
+func lagrangeInterpolationWithNodeIndex(shares: [BigInt], nodeIndex: [BigInt]) -> BigInt {
+
+    let modulus = BigInt(CURVE_N, radix: 16)!
+
+    if shares.count != nodeIndex.count {
+            fatalError("shares not equal to nodeIndex length in lagrangeInterpolation")
+        }
+        
+        var secret = BigInt(0)
+        for i in 0..<shares.count {
+            var upper = BigInt(1)
+            var lower = BigInt(1)
+            for j in 0..<shares.count {
+                if i != j {
+                    upper *= -nodeIndex[j]
+                    upper %= modulus
+                    var temp = nodeIndex[i] - nodeIndex[j]
+                    temp %= modulus
+                    lower *= temp
+                    lower %= modulus
+                }
+            }
+            var delta = upper * modInverse(lower, modulus)!
+            delta %= modulus
+            delta = delta * shares[i]
+            delta %= modulus
+            secret += delta
+        }
+        
+        return secret % modulus
 }
 
 func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicShares: [Share]? = nil) throws -> Polynomial {
