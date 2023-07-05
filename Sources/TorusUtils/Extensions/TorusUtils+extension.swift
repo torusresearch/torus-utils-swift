@@ -313,11 +313,11 @@ extension TorusUtils {
 
                         // Ensure that we don't add bad data to result arrays.
                         guard
-                            let response = decoded.result as? [String: String],
-                            let data = response["data"],
-                            let nodepubx = response["nodepubx"],
-                            let nodepuby = response["nodepuby"],
-                            let signature = response["signature"]
+                            let response = decoded.result as? [String: Any],
+                            let data = response["data"] as? String,
+                            let nodepubx = response["nodepubx"] as? String,
+                            let nodepuby = response["nodepuby"] as? String,
+                            let signature = response["signature"] as? String
                         else {
                             throw TorusUtilError.decodingFailed("\(decoded.result ?? "") is not a [String: String]")
                         }
