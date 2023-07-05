@@ -25,6 +25,7 @@ public enum TorusUtilError: Error, Equatable {
     case nodesUnavailable
     case invalidKeySize
     case runtime(_ msg: String)
+    case retrieveOrImportShareError
     case empty
 }
 
@@ -67,6 +68,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Invalid key size. Expected 32 bytes"
         case let .encodingFailed(msg):
             return "Could not encode data \(msg ?? "")"
+        case .retrieveOrImportShareError:
+            return "retrieve or import share failed"
         }
     }
 

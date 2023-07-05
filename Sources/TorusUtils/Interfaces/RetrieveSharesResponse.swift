@@ -4,7 +4,7 @@ import BigInt
 public struct RetrieveSharesResponse {
     public let ethAddress: String
     public let privKey: String
-    public let sessionTokenData: [SessionToken]
+    public let sessionTokenData: [SessionToken?]
     public let X: String
     public let Y: String
     public let metadataNonce: BigInt
@@ -13,7 +13,7 @@ public struct RetrieveSharesResponse {
     public let sessionAuthKey: String
     public let nodeIndexes: [Int]
     
-    public init(ethAddress: String, privKey: String, sessionTokenData: [SessionToken], X: String, Y: String, metadataNonce: BigInt, postboxPubKeyX: String, postboxPubKeyY: String, sessionAuthKey: String, nodeIndexes: [Int]) {
+    public init(ethAddress: String, privKey: String, sessionTokenData: [SessionToken?], X: String, Y: String, metadataNonce: BigInt, postboxPubKeyX: String, postboxPubKeyY: String, sessionAuthKey: String, nodeIndexes: [Int]) {
         self.ethAddress = ethAddress
         self.privKey = privKey
         self.sessionTokenData = sessionTokenData

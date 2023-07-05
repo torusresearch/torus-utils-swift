@@ -702,7 +702,7 @@ extension TorusUtils {
 
                 var modifiedPubKey: BasePoint?
 
-                if let extendedVerifierId = verifierParams.extended_verifier_id {
+                if verifierParams.extended_verifier_id != nil {
                     // For TSS key, no need to add pub nonce
                     modifiedPubKey = keyFromPublic(x: decryptedPubKeyX, y: decryptedPubKeyY)
                 } else {
@@ -712,21 +712,26 @@ extension TorusUtils {
                     modifiedPubKey = keyFromPublic(x: decryptedPubKeyX, y: decryptedPubKeyY)!.add(keyFromPublic(x: pubNonceX, y: pubNonceY)!)
                 }
                 
-                let ethAddress = generateAddressFromPubKey(publicKeyX: <#T##String#>, publicKeyY: <#T##String#>)
+                let ethAddress = generateAddressFromPubKey(publicKeyX: modifiedPubKey!.x.toHexString(), publicKeyY: modifiedPubKey!.y.toHexString())
+                
+                // final return FIXME
+                return RetrieveSharesResponse(
+                    ethAddress: ethAddress, // this address should be used only if user hasn't updated to 2/n
+                    privKey: String(privateKeyWithNonce, radix: 16).padding(toLength: 64, withPad: "0", startingAt: 0), // Caution: final x and y wont be derivable from this key once user upgrades to 2/n
+                    sessionTokenData: sessionTokenData,
+                    X: modifiedPubKey!.x.toHexString(), // this is final pub x of user before and after updating to 2/n
+                    Y: modifiedPubKey!.y.toHexString(), // this is final pub y of user before and after updating to 2/n
+                    metadataNonce: metadataNonce,
+                    postboxPubKeyX: decryptedPubKeyX,
+                    postboxPubKeyY: decryptedPubKeyY,
+                    sessionAuthKey: sessionAuthKey.map { String(format: "%02x", $0) }.joined().padding(toLength: 64, withPad: "0", startingAt: 0),
+                    nodeIndexes: nodeIndexes.compactMap { Int($0!)}
+                )
 
             }
+            
         }
-        
-        // step3. prepare the final return
-        
-        
-        // for tss key no need to add pub nonce
-        
-        // final return FIXME
-        return RetrieveSharesResponse(
-            ethAddress: "", privKey: "", sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(BigUInt("0")), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: []
-        )
-
+        throw TorusUtilError.retrieveOrImportShareError
     }
 
     // MARK: - commitment request

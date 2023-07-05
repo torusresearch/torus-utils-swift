@@ -93,8 +93,6 @@ func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) -> String
     
     do {
         let publicKey = try P256.KeyAgreement.PublicKey(x963Representation: publicKeyData)
-        print("compress")
-        print( publicKey.rawRepresentation.count )
         let publicKeyBytes = publicKey.rawRepresentation//.dropFirst().dropLast() // Remove the first byte (0x04)
         let ethAddressLower = "0x" + keccak256Data(publicKeyBytes).suffix(40)
         return ethAddressLower
