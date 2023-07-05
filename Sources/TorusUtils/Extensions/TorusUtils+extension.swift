@@ -506,7 +506,7 @@ extension TorusUtils {
         var pubkeyArr = [KeyAssignment.PublicKey]()
         var completeShareRequestResponseArr = [ShareRequestResult]()
         // step 2.
-        let thresholdPublicKey: KeyAssignment.PublicKey = try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
+        let thresholdPublicKey : KeyAssignment.PublicKey = try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
 
             for (i, rq) in promiseArrRequest.enumerated() {
                 group.addTask {
@@ -554,13 +554,18 @@ extension TorusUtils {
                                 }
                             }
                             //                            pubkeyArr.append(pubkey)
-                            let result = thresholdSame(arr: pubkeyArr, threshold: threshold)
-                            
-                            if result == nil {
+                            guard let result = thresholdSame(arr: pubkeyArr, threshold: threshold)
+                            else {
+                                
                                 os_log("invalid result from nodes, threshold number of public key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug)
-                            } else {
-                                return result
+                                throw NSError()
                             }
+                            return result
+//                            if let result1 == result {
+//                                return result1
+//                            } else {
+//                                os_log("invalid result from nodes, threshold number of public key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug)
+//                            }
                             
                             // if both thresholdNonceData and extended_verifier_id are not available
                             // then we need to throw otherwise the address would be incorrect.
