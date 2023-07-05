@@ -1,4 +1,4 @@
-enum JRPC_METHODS {
+enum JRPC_METHODS  {
     static let GET_OR_SET_KEY = "GetPubKeyOrKeyAssign"
     static let COMMITMENT_REQUEST = "CommitmentRequest"
     static let IMPORT_SHARE = "ImportShare"

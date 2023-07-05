@@ -16,6 +16,7 @@ import OSLog
 
 import FetchNodeDetails
 import CommonSources
+import AnyCodable
 
 extension TorusUtils {
     
@@ -60,6 +61,11 @@ extension TorusUtils {
         } catch {
             throw error
         }
+    }
+
+    
+    public func importPrivateKey ( endpoints: [String], nodeIndexes: [BigUInt], nodePubKeys: [INodePub], verifier: String, verifierParams: VerifierParams, idToken: String, newPrivateKey: String, extraParams: [String: Codable] = [:] ) async throws -> RetrieveSharesResponse {
+        return RetrieveSharesResponse(ethAddress: "", privKey: "", sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(0), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: [])
     }
     
     // MARK - retrieveShares
@@ -220,6 +226,9 @@ extension TorusUtils {
                 ] as [String: Any]
                 let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
                 let finalItem = keepingCurrent.merging(verifierParams.additionalParams) { current, _ in current }
+                
+                
+                
                 // TODO: Look into hetrogeneous array encoding
                 let dataForRequest = ["jsonrpc": "2.0",
                                       "id": 10,
@@ -228,7 +237,7 @@ extension TorusUtils {
                                                  "use_temp": true,
                                                  "one_key_flow": true,
                                                  "item": [finalItem]] as [String: Any]] as [String: Any]
-                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
+                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest, options: [])
                 rpcArray.append(rpcdata)
             } catch {
                 os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
@@ -255,7 +264,7 @@ extension TorusUtils {
     
     // MARK: - getShareOrKeyAssign
     
-    func getShareOrKeyAssign(endpoints: [String], nodeSigs: [CommitmentRequestResponse], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Any] = [:]) async throws -> [URLRequest] {
+    func getShareOrKeyAssign(endpoints: [String], nodeSigs: [CommitmentRequestResponse], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Codable] = [:]) async throws -> [URLRequest] {
         let session = createURLSession()
         let threshold = Int(endpoints.count / 2) + 1
         var rpcdata: Data = Data()
@@ -266,20 +275,27 @@ extension TorusUtils {
                          "verifieridentifier": verifier,
                          "verifier_id": verifierParams.verifier_id,
                          "extended_verifier_id": verifierParams.extended_verifier_id,
+                         "test" :true
                  
-        ] as [String: Any]
+        ] as [String: Codable]
+                
         let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
         let finalItem = keepingCurrent.merging(verifierParams.additionalParams) { current, _ in current }
+        
+        let params =  ["encrypted": "yes",
+                       "use_temp": true,
+                       "one_key_flow": true,
+                    "item": AnyCodable([finalItem])
+        ] as [String: AnyCodable]
+        
         let dataForRequest = ["jsonrpc": "2.0",
                               "id": 10,
-                              "method": JRPC_METHODS.GET_SHARE_OR_KEY_ASSIGN,
-                              "params": ["encrypted": "yes",
-                                         "use_temp": true,
-                                         "one_key_flow": true,
-                                         "item": [finalItem]] as [String: Any]] as [String: Any]
+                              "method": AnyCodable(JRPC_METHODS.GET_SHARE_OR_KEY_ASSIGN),
+                              "params": AnyCodable(params)
+                            ] as [String: AnyCodable]
         
         do {
-            rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
+            rpcdata = try JSONEncoder().encode(dataForRequest)
         } catch {
             os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
         }
@@ -473,6 +489,7 @@ extension TorusUtils {
             }
             isImportShareReq = true
         }
+        print("isimportshare", isImportShareReq)
 
         let nodeSigs = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, nodeSigs)
@@ -508,6 +525,7 @@ extension TorusUtils {
                         
                     case.success(let model):
                         let data = model.data
+                        print( try JSONSerialization.jsonObject(with: data))
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                         os_log("import share - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
                         
@@ -528,22 +546,20 @@ extension TorusUtils {
                             let pubkey = first.publicKey
                             let pubNonce = first.nonceData?.pubNonce?.x
                             let nonceData = first.nonceData
-
+                            
+                            pubkeyArr.append(pubkey)
                             if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil {
                                 if pubNonce != nil {
                                     thresholdNonceData = nonceData
                                 }
-                                pubkeyArr.append(pubkey)
-                            }
-                            
-                            else {
-                                throw TorusUtilError.decodingFailed("\(decoded.result ) is not a [String: String]")
                             }
                             //                            pubkeyArr.append(pubkey)
                             let result = thresholdSame(arr: pubkeyArr, threshold: threshold)
                             
                             if result == nil {
                                 os_log("invalid result from nodes, threshold number of public key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug)
+                            } else {
+                                return result
                             }
                             
                             // if both thresholdNonceData and extended_verifier_id are not available
@@ -567,6 +583,7 @@ extension TorusUtils {
         // this is matched against the user public key to ensure that shares are consistent
         // Note: no need of thresholdMetadataNonce for extended_verifier_id key
         if promiseArrRequest.count >= threshold {
+            
             if thresholdPublicKey != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil) {
                 
                 // Code block to execute if all conditions are true
@@ -615,8 +632,8 @@ extension TorusUtils {
                             sharePromises.append(try? decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey))
                         }
                     } else {
-                        nodeIndexes.append(nil)
-                        sharePromises.append(nil)
+//                        nodeIndexes.append(nil)
+//                        sharePromises.append(nil)
                     }
                     
                 }
@@ -750,6 +767,7 @@ extension TorusUtils {
                      "verifieridentifier": verifier,
                      "timestamp": timestamp]
         )
+        
         guard let rpcdata = try? encoder.encode(jsonRPCRequest)
         else {
             throw TorusUtilError.runtime("Unable to encode request. \(jsonRPCRequest)")
@@ -797,17 +815,13 @@ extension TorusUtils {
 
                         // Ensure that we don't add bad data to result arrays.
                         guard
-                            let response = decoded.result as? [String: String],
-                            let data = response["data"],
-                            let nodepubx = response["nodepubx"],
-                            let nodepuby = response["nodepuby"],
-                            let signature = response["signature"]
+                            let response = decoded.result as? CommitmentRequestResponse
                         else {
-                            throw TorusUtilError.decodingFailed("\(decoded.result) is not a [String: String]")
+                            throw TorusUtilError.decodingFailed("\(decoded.result) is not a CommitmentRequestResponse")
                         }
 
                         // Check if k+t responses are back
-                        let val = CommitmentRequestResponse(data: data, nodepubx: nodepubx, nodepuby: nodepuby, signature: signature)
+                        let val = CommitmentRequestResponse(data: response.data, nodepubx: response.nodepubx, nodepuby: response.nodepuby, signature: response.signature)
                         nodeSignatures.append(val)
                         if nodeSignatures.count >= threshold {
                             os_log("commitmentRequest - nodeSignatures: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, nodeSignatures)
