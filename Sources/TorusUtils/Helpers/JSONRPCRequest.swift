@@ -8,6 +8,7 @@
 import BigInt
 import Foundation
 
+import AnyCodable
 public struct GetPublicAddressOrKeyAssignParams : Encodable {
     public var verifier : String
     public var verifier_id : String
@@ -151,13 +152,12 @@ public struct JSONRPCrequest <T:Encodable>: Encodable {
         case params
         case id
     }
-
 }
 
-public struct JSONRPCresponse: Codable {
+public struct JSONRPCresponse: Decodable {
     public var id: Int
     public var jsonrpc = "2.0"
-    public var result: Codable?
+    public var result: Decodable?
     public var error: ErrorMessage?
     public var message: String?
 
@@ -169,14 +169,14 @@ public struct JSONRPCresponse: Codable {
         case errorMessage
     }
 
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: JSONRPCresponseKeys.self)
-        try? container.encode(result as? MixedValue, forKey: .result)
-//        try? container.encode(result as? [String: String], forKey: .result)
-        try container.encode(error, forKey: .error)
-    }
+//    public func encode(to encoder: Encoder) throws {
+//        var container = encoder.container(keyedBy: JSONRPCresponseKeys.self)
+//        try? container.encode(result as? MixedValue, forKey: .result)
+////        try? container.encode(result as? [String: String], forKey: .result)
+//        try container.encode(error, forKey: .error)
+//    }
 
-    public init(id: Int, jsonrpc: String, result: Codable?, error: ErrorMessage?) {
+    public init(id: Int, jsonrpc: String, result: Decodable?, error: ErrorMessage?) {
         self.id = id
         self.jsonrpc = jsonrpc
         self.result = result
@@ -193,8 +193,12 @@ public struct JSONRPCresponse: Codable {
             return
         }
         
-        var result: Codable?
+        var result: Decodable?
         if let rawValue = try? container.decodeIfPresent(VerifierLookupResponse.self, forKey: .result){
+            result = rawValue
+        }else if let rawValue = try? container.decodeIfPresent(ShareRequestResult.self, forKey: .result){
+            result = rawValue
+        }else if let rawValue = try? container.decodeIfPresent(CommitmentRequestResponse.self, forKey: .result){
             result = rawValue
         }else if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
             result = rawValue
@@ -218,6 +222,8 @@ public struct JSONRPCresponse: Codable {
             result = rawValue
         } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: [String: String?]]]].self, forKey: .result) {
             result = rawValue
+//        } else if let rawValue = try? container.decodeIfPresent([String: AnyCodable ].self, forKey: .result) {
+//            result = rawValue
             //        } else if let rawValue = try? container.decodeIfPresent([String: MixedValue].self, forKey: .result) {
             //            print("mixed raw value")
             //            result = rawValue

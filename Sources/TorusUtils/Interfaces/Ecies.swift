@@ -7,10 +7,10 @@ protocol EciesProtocol {
     var mac: Data { get }
 }
 
-struct EciesHex {
+struct EciesHex : Codable {
     let iv: String
     let ephemPublicKey: String
-    let ciphertext: String
+    let ciphertext: String?
     let mac: String
     let mode: String?
     

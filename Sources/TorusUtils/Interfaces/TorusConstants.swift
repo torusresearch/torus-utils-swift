@@ -1,5 +1,6 @@
 import Foundation
 import BigInt
+import CommonSources
 
 enum TORUS_SAPPHIRE_NETWORK_TYPE {
     case SAPPHIRE_DEVNET
@@ -12,8 +13,7 @@ struct TORUS_SAPPHIRE_NETWORK {
     static let SAPPHIRE_MAINNET = "sapphire_mainnet"
 }
 
-
-public class INodePub {
+public class INodePub{
     let X: String
     let Y: String
 
@@ -46,4 +46,6 @@ public class TorusPublicKey: INodePub {
     }
 }
 
-
+public func TorusNodePubModelToINodePub (node: TorusNodePubModel) -> INodePub {
+    return INodePub( X: node.getX(), Y: node.getY() )
+}

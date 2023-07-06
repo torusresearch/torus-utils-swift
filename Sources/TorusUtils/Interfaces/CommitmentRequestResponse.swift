@@ -1,10 +1,11 @@
 import Foundation
 
-public struct CommitmentRequestResponse: Decodable {
+public struct CommitmentRequestResponse: Codable {
     public var data: String
     public var nodepubx: String
     public var nodepuby: String
     public var signature: String
+//    public var nodeindex: Int
 
     public init(data: String, nodepubx: String, nodepuby: String, signature: String) {
         self.data = data
