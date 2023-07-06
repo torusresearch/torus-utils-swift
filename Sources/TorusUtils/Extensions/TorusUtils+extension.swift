@@ -12,6 +12,7 @@ import secp256k1
 #endif
 import BigInt
 import CryptoSwift
+import CryptoKit
 import OSLog
 
 import FetchNodeDetails
@@ -48,6 +49,7 @@ extension TorusUtils {
                 modifiedPubKey =  combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
             }
+            modifiedPubKey = String(modifiedPubKey.suffix(128))
             let (x,y) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
             
             return GetPublicAddressResult(
@@ -64,8 +66,103 @@ extension TorusUtils {
     }
 
     
-    public func importPrivateKey ( endpoints: [String], nodeIndexes: [BigUInt], nodePubKeys: [INodePub], verifier: String, verifierParams: VerifierParams, idToken: String, newPrivateKey: String, extraParams: [String: Codable] = [:] ) async throws -> RetrieveSharesResponse {
-        return RetrieveSharesResponse(ethAddress: "", privKey: "", sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(0), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: [])
+    func importPrivateKey(
+        endpoints: [String],
+        nodeIndexes: [BigUInt],
+        nodePubKeys: [INodePub],
+        verifier: String,
+        verifierParams: VerifierParams,
+        idToken: String,
+        newPrivateKey: String,
+        extraParams: [String: Any] = [:]
+
+    ) async throws -> RetrieveSharesResponse {
+        
+        if endpoints.count != nodeIndexes.count {
+            throw TorusUtilError.runtime("Length of endpoints array must be the same as length of nodeIndexes array")
+        }
+        
+        let threshold = endpoints.count / 2 + 1
+        let degree = threshold - 1
+        var nodeIndexesBigInt: [BigInt] = []
+        
+        guard let derivedPrivateKeyData = Data(hexString: newPrivateKey) else {
+            throw TorusUtilError.privateKeyDeriveFailed
+        }
+        let key = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)
+        let privKeyBigInt = BigInt(hex: newPrivateKey) ?? BigInt(0)
+
+        for nodeIndex in nodeIndexes {
+            nodeIndexesBigInt.append(BigInt(nodeIndex))
+        }
+    
+        let randomNonce = BigInt(SECP256K1.generatePrivateKey()!)
+        
+        let oauthKey = privKeyBigInt - randomNonce % modulusValue
+        guard let oauthKeyData = Data(hex: String(oauthKey, radix: 16)),
+              let oauthPubKey = SECP256K1.privateToPublic(privateKey: oauthKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
+        else {
+            throw TorusUtilError.runtime("invalid oauth key")
+        }
+        var pubKeyX = String(oauthPubKey.prefix(64))
+        var pubKeyY = String(oauthPubKey.suffix(64))
+
+        let poly = try generateRandomPolynomial(degree: degree, secret: oauthKey)
+        let shares = poly.generateShares(shareIndexes: nodeIndexesBigInt)
+
+        let nonceParams = try generateNonceMetadataParams(message: "getOrSetNonce", privateKey: oauthKey, nonce: randomNonce)
+        let jsonData = try JSONSerialization.data(withJSONObject: nonceParams.set_data)
+        let nonceData = jsonData.base64EncodedString()
+        var sharesData: [ImportedShare] = []
+        
+        var encShares: [Ecies] = []
+        var encErrors: [Error] = []
+        
+        for (i, nodeIndex) in nodeIndexesBigInt.enumerated() {
+            let share = shares[String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()]
+            let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
+
+            let shareData = share?.share
+
+            do {
+                // TODO: we need encrypt logic here
+                let encShareData = try encryptData(publicKey: nodePubKey, msg: shareData!)
+                encShares.append(encShareData)
+            } catch {
+                encErrors.append(error)
+            }
+            
+        }
+        
+        for (i, nodeIndex) in nodeIndexesBigInt.enumerated() {
+            let shareJson = shares[String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()]
+            let encParams = encShares[i]
+            let encParamsMetadata = encParamsBufToHex(encParams: encParams)
+            let shareData = ImportedShare(
+                pubKeyX: pubKeyX,
+                pubKeyY: pubKeyY,
+                encryptedShare: encParamsMetadata.ciphertext!,
+                encryptedShareMetadata: encParamsMetadata,
+                nodeIndex: Int(shareJson!.shareIndex),
+                keyType: "secp256k1",
+                nonceData: nonceData,
+                nonceSignature: nonceParams.signature
+            )
+            sharesData.append(shareData)
+        }
+        
+        
+        return try await retrieveOrImportShare(
+            allowHost: self.allowHost,
+            network: self.network,
+            clientId: self.clientId,
+            endpoints: endpoints,
+            verifier: verifier,
+            verifierParams: verifierParams,
+            idToken: idToken,
+            importedShares: sharesData,
+            extraParams: extraParams
+        )
     }
     
 
@@ -700,9 +797,8 @@ extension TorusUtils {
                 let privateKeyWithNonce = (oauthKey + metadataNonce) % modulusValue
 
                 var modifiedPubKey = "04" + decryptedPubKeyX.addLeading0sForLength64() + decryptedPubKeyY.addLeading0sForLength64()
-                // TODO: use combinePubkey and getPublicKeyPointFromAddress
 
-                    // For TSS key, no need to add pub nonce
+                // For TSS key, no need to add pub nonce
                 if verifierParams.extended_verifier_id == nil {
                     let pubNonceX = thresholdNonceData!.pubNonce!.x
                     let pubNonceY = thresholdNonceData!.pubNonce!.y
@@ -715,7 +811,7 @@ extension TorusUtils {
                 
                 let (x,y) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
                 
-                // final return FIXME
+
                 return RetrieveSharesResponse(
                     ethAddress: generateAddressFromPubKey(publicKeyX: x.addLeading0sForLength64(), publicKeyY: y.addLeading0sForLength64()), // this address should be used only if user hasn't updated to 2/n
                     privKey: String(privateKeyWithNonce, radix: 16).padding(toLength: 64, withPad: "0", startingAt: 0), // Caution: final x and y wont be derivable from this key once user upgrades to 2/n
@@ -892,6 +988,39 @@ extension TorusUtils {
         }
         return Data(hex: result)
     }
+    
+    func encryptData(publicKey: String, msg: BigInt) throws -> Ecies {
+        // Generate ephemeral key pair
+        let ephemeralPrivateKey = P256.KeyAgreement.PrivateKey()
+        let ephemeralPublicKey = ephemeralPrivateKey.publicKey.rawRepresentation
+
+        // Convert public key to `P256.KeyAgreement.PublicKey` type
+        guard let recipientPublicKey = try? P256.KeyAgreement.PublicKey(rawRepresentation: Data(hex: publicKey)) else {
+            throw TorusUtilError.runtime("invalid public key")
+        }
+
+        // Generate shared secret using ECDH
+        let sharedSecret = try ephemeralPrivateKey.sharedSecretFromKeyAgreement(with: recipientPublicKey)
+
+        // Derive encryption key, IV, and MAC key from shared secret
+        let encryptionKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: Data(), sharedInfo: Data(), outputByteCount: 16)
+        
+        // TODO: need to check if this iv and macKeyData is really needed
+        let iv = AES.GCM.Nonce()
+        let macKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: Data(), sharedInfo: Data(), outputByteCount: 32)
+        let macKeyData = Data(macKey.withUnsafeBytes { Data($0) })
+
+        // Encrypt the message
+        let messageData = msg.serialize()
+        let sealedBox = try AES.GCM.seal(messageData, using: encryptionKey, nonce: iv, authenticating: macKeyData)
+//        let sealedBox = try AES.GCM.seal(messageData, using: encryptionKey, nonce: iv)
+
+        // Create the Ecies struct
+        let ecies = Ecies(iv: Data(sealedBox.nonce), ephemPublicKey: ephemeralPublicKey, ciphertext: sealedBox.ciphertext, mac: sealedBox.tag)
+
+        return ecies
+    }
+
 
     // MARK: - decrypt shares
 
