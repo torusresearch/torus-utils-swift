@@ -20,6 +20,7 @@ public enum TorusUtilError: Error, Equatable {
     case promiseFulfilled
     case privateKeyDeriveFailed
     case timeout
+    case missingNodePubKeyError
     case unableToDerive
     case interpolationFailed
     case nodesUnavailable
@@ -54,6 +55,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "could not derive private key"
         case .timeout:
             return "Timeout"
+        case .missingNodePubKeyError:
+            return "Missing node pub key for node index"
         case .unableToDerive:
             return "could not derive private key"
         case .interpolationFailed:

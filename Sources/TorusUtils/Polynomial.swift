@@ -29,26 +29,14 @@ public struct Polynomial {
         return sum
     }
     
-    func generateShares(shareIndexes: [BNString]) -> ShareMap {
-        let newShareIndexes = shareIndexes.map { index -> BigInt in
-            if case .bn(let bigint) = index {
-                return bigint
-            } else if case .string(let str) = index {
-                return BigInt(str, radix: 16)!
-            }
-            // 0 will never be returned if index is valid
-            return BigInt(0)
-        }
-
+    func generateShares(shareIndexes: [BigInt]) -> ShareMap {
         var shares: ShareMap = [:]
-        for x in 0..<newShareIndexes.count {
-            let hexString = newShareIndexes[x].serialize().toHexString()
-            shares[hexString] = Share(shareIndex: BNString.bn(newShareIndexes[x]), share: BNString.bn(polyEval(x: newShareIndexes[x])))
+        for x in 0..<shareIndexes.count {
+            let hexString = shareIndexes[x].serialize().toHexString()
+            shares[hexString] = Share(shareIndex: BNString.bn(shareIndexes[x]), share: BNString.bn(polyEval(x: shareIndexes[x])))
         }
         return shares
     }
-    
-
 }
 
 public func getOrderOfCurve() -> BigInt {
