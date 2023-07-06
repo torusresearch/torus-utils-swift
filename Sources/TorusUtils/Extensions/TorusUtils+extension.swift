@@ -49,7 +49,6 @@ extension TorusUtils {
                 modifiedPubKey =  combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
             }
-            modifiedPubKey = String(modifiedPubKey.suffix(128))
             let (x,y) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
             
             return GetPublicAddressResult(
