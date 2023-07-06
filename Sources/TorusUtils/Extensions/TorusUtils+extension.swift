@@ -49,6 +49,7 @@ extension TorusUtils {
                 modifiedPubKey =  combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
             }
+
             let (x,y) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
             
             return GetPublicAddressResult(
@@ -85,44 +86,73 @@ extension TorusUtils {
         let degree = threshold - 1
         var nodeIndexesBigInt: [BigInt] = []
         
-        guard let derivedPrivateKeyData = Data(hexString: newPrivateKey) else {
-            throw TorusUtilError.privateKeyDeriveFailed
-        }
-        let key = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)
         let privKeyBigInt = BigInt(hex: newPrivateKey) ?? BigInt(0)
 
         for nodeIndex in nodeIndexes {
+
             nodeIndexesBigInt.append(BigInt(nodeIndex))
         }
     
         let randomNonce = BigInt(SECP256K1.generatePrivateKey()!)
         
-        let oauthKey = privKeyBigInt - randomNonce % modulusValue
-        guard let oauthKeyData = Data(hex: String(oauthKey, radix: 16)),
-              let oauthPubKey = SECP256K1.privateToPublic(privateKey: oauthKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
+        
+        let oauthKey = (privKeyBigInt - randomNonce) % modulusValue
+        let oauthKeyStr = String(oauthKey, radix: 16).addLeading0sForLength64()
+        guard let oauthKeyData = Data(hex: oauthKeyStr)
         else {
-            throw TorusUtilError.runtime("invalid oauth key")
+            throw TorusUtilError.runtime("invalid oauthkey data")
         }
-        var pubKeyX = String(oauthPubKey.prefix(64))
-        var pubKeyY = String(oauthPubKey.suffix(64))
+        
+        
+        guard let oauthPubKey = SECP256K1.privateToPublic(privateKey: oauthKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
+        else {
+            throw TorusUtilError.runtime("invalid oauthkey")
+
+        }
+        
+//        let (pubKeyX, pubKeyY) = try getPublicKeyPointFromAddress(address: oauthPubKey)
+
+        let pubKeyX = String(oauthPubKey.prefix(64))
+        let pubKeyY = String(oauthPubKey.suffix(64))
 
         let poly = try generateRandomPolynomial(degree: degree, secret: oauthKey)
         let shares = poly.generateShares(shareIndexes: nodeIndexesBigInt)
 
         let nonceParams = try generateNonceMetadataParams(message: "getOrSetNonce", privateKey: oauthKey, nonce: randomNonce)
-        let jsonData = try JSONSerialization.data(withJSONObject: nonceParams.set_data)
-        let nonceData = jsonData.base64EncodedString()
+
+        
+        var nonceData = ""
+        // Create a JSON encoder
+        let encoder = JSONEncoder()
+        
+        // Set the output formatting if needed
+        encoder.outputFormatting = .prettyPrinted
+        
+        // Convert the SetNonceData to JSON data
+        let jsonData = try encoder.encode(nonceParams.set_data)
+        
+        // Convert the JSON data to a string
+        let jsonString = String(data: jsonData, encoding: .utf8)!
+        // Base64 encode the JSON string
+        let base64EncodedString = Data(jsonString.utf8).base64EncodedString()
+        nonceData = base64EncodedString
+            
+
         var sharesData: [ImportedShare] = []
         
         var encShares: [Ecies] = []
         var encErrors: [Error] = []
         
-        for (i, nodeIndex) in nodeIndexesBigInt.enumerated() {
-            let share = shares[String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()]
+        for (i, idx) in nodeIndexesBigInt.enumerated() {
+            let shareIdx = String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()
+            let share = shares[shareIdx]
             let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
 
             let shareData = share?.share
 
+            if shareData == nil {
+                continue
+            }
             do {
                 // TODO: we need encrypt logic here
                 let encShareData = try encryptData(publicKey: nodePubKey, msg: shareData!)
@@ -133,7 +163,7 @@ extension TorusUtils {
             
         }
         
-        for (i, nodeIndex) in nodeIndexesBigInt.enumerated() {
+        for (i, _) in nodeIndexesBigInt.enumerated() {
             let shareJson = shares[String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()]
             let encParams = encShares[i]
             let encParamsMetadata = encParamsBufToHex(encParams: encParams)
@@ -1541,7 +1571,9 @@ extension TorusUtils {
 
     func generateNonceMetadataParams(message: String, privateKey: BigInt, nonce: BigInt?) throws -> NonceMetadataParams {
           do {
-              guard let privKeyData = Data(hex: String(privateKey, radix: 16)),
+
+
+              guard let privKeyData = Data(hex: String(privateKey, radix: 16).addLeading0sForLength64()),
                     let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
               else {
                   throw TorusUtilError.runtime("invalid priv key")
@@ -1550,7 +1582,7 @@ extension TorusUtils {
               let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
               var setData: NonceMetadataParams.SetNonceData = .init(data: message, timestamp: timeStamp)
               if (nonce != nil) {
-                  setData.data = String(nonce!, radix: 16).leftPadding(toLength: 64, withPad: "0")
+                  setData.data = String(nonce!, radix: 16).addLeading0sForLength64()
               }
               let encodedData = try JSONEncoder().encode(setData)
               guard let sigData = SECP256K1.signForRecovery(hash: encodedData.web3.keccak256, privateKey: privKeyData).serializedSignature else {
