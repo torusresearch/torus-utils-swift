@@ -146,4 +146,4 @@ public struct NonceMetadataParams: Codable {
 
 
 
-typealias StringifiedType = [String: Any]
+typealias StringifiedType = [String: Codable]

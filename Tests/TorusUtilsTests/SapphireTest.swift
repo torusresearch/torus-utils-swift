@@ -116,7 +116,7 @@ final class SapphireTest: XCTestCase {
         let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
         let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
         let response = try await torus?.retrieveShares(endpoints: endpoints.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
-//        print(response)
+        print(response)
         
         XCTAssertEqual(response?.privKey.lowercased(), "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c".lowercased())
     }
@@ -133,6 +133,14 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(response?.privKey.lowercased(), "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c".lowercased())
     }
 
+//    func teststring() {
+//        let metadata = EciesHex(iv: <#T##String#>, ephemPublicKey: <#T##String#>, ciphertext: <#T##String#>, mac: <#T##String#>, mode: <#T##String?#>)
+//        let str = "YjYxM2EzNTQzYTNjMDAzYjdjYjUzNzY3NTE2ZTk2ODdjNGJiMmUwMmNhNTUyYjllYjM4ZWRkODE0NGYyZGI0YjQyYjc4M2E4MzIxODlkNzc4YzFjMmNhNTFiNDVhNTU3"
+//        let data = Data(base64Encoded: str, options: [])
+//        
+//        
+//        
+//    }
     func testImportKeyForNewUser() async throws {
         let email = "faker@gmail.com"
         let token = try generateIdToken(email: email)

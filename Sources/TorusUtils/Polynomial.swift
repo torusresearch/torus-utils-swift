@@ -32,7 +32,7 @@ public struct Polynomial {
     func generateShares(shareIndexes: [BigInt]) -> ShareMap {
         var shares: ShareMap = [:]
         for x in 0..<shareIndexes.count {
-            let hexString = String(shareIndexes[x], radix: 16)
+            let hexString = shareIndexes[x].serialize().toHexString()
             shares[hexString] = Share(shareIndex: shareIndexes[x], share: polyEval(x: shareIndexes[x]))
         }
         return shares

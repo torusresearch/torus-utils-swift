@@ -43,7 +43,7 @@ public struct KeyAssignInput {
 
 
 public struct KeyAssignment : Decodable {
-    let index: KeyIndex
+    let index: String
     let publicKey: PublicKey
     let threshold: Int
     let nodeIndex: Int
@@ -68,7 +68,8 @@ public struct KeyAssignment : Decodable {
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.index = try container.decode(KeyIndex.self, forKey: .index)
+        self.index = try container.decode(String.self, forKey: .index)
+        
         self.publicKey = try container.decode(PublicKey.self, forKey: .public_key)
         self.threshold = try container.decode(Int.self, forKey: .threshold)
         self.nodeIndex = try container.decode(Int.self, forKey: .node_index)

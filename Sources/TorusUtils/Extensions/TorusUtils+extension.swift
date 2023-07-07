@@ -197,7 +197,6 @@ extension TorusUtils {
     }
     
 
-
     
     // MARK: - utils
 
@@ -250,27 +249,7 @@ extension TorusUtils {
         return nil
     }
 
-    // MARK: - ECDH - Elliptic curve diffie-hellman
 
-    func ecdh(pubKey: secp256k1_pubkey, privateKey: Data) -> secp256k1_pubkey? {
-        var localPubkey = pubKey // Pointer takes a variable
-        if privateKey.count != 32 { return nil }
-        let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
-            if let pkRawPointer = a.baseAddress, let ctx = TorusUtils.context, a.count > 0 {
-                let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
-                let res = withUnsafeMutablePointer(to: &localPubkey) {
-                    secp256k1_ec_pubkey_tweak_mul(ctx, $0, privateKeyPointer)
-                }
-                return res
-            } else {
-                return nil
-            }
-        }
-        guard let res = result, res != 0 else {
-            return nil
-        }
-        return localPubkey
-    }
 
     // MARK: - metadata API
     func getMetadata(dictionary: [String: String]) async throws -> BigUInt {
@@ -428,134 +407,134 @@ extension TorusUtils {
 
     // MARK: - retreiveDecryptAndReconstuct
 
-    func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
-        // Rebuild extraParams
-        let session = createURLSession()
-        let threshold = Int(endpoints.count / 2) + 1
-        var rpcdata: Data = Data()
-        do {
-            if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String: Any] {
-                let value = ["verifieridentifier": verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures.tostringDict(), "idtoken": tokenCommitment] as [String: Any]
-                let keepingCurrent = loadedStrings.merging(value) { current, _ in current }
-                // TODO: Look into hetrogeneous array encoding
-                let dataForRequest = ["jsonrpc": "2.0",
-                                      "id": 10,
-                                      "method": "ShareRequest",
-                                      "params": ["encrypted": "yes",
-                                                 "item": [keepingCurrent]] as [String: Any]] as [String: Any]
-                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
-            }
-        } catch {
-            os_log("retrieveDecryptAndReconstruct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
-        }
-
-        var shareResponses = [[String: String]?].init(repeating: nil, count: endpoints.count)
-        var resultArray = [Int: RetrieveDecryptAndReconstuctResponse]()
-        var errorStack = [Error]()
-        var requestArr = [URLRequest]()
-        for (_, el) in endpoints.enumerated() {
-            do {
-                var rq = try makeUrlRequest(url: el)
-                rq.httpBody = rpcdata
-                requestArr.append(rq)
-            } catch {
-                throw error
-            }
-        }
-        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
-            for (i, rq) in requestArr.enumerated() {
-                group.addTask {
-                    do {
-                        let val = try await session.data(for: rq)
-                        return .success(.init(data: val.0, urlResponse: val.1, index: i))
-                    } catch {
-                        return .failure(error)
-                    }
-                }
-            }
-
-            for try await val in group {
-                do {
-                    try Task.checkCancellation()
-                    switch val {
-                    case .success(let model):
-                        let _data = model.data
-                        let i = model.index
-                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
-                        if decoded.error != nil {
-                            throw TorusUtilError.decodingFailed(decoded.error?.data)
-                        }
-                        os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-
-                        guard
-                            let decodedResult = decoded.result as? [String: Any],
-                            let keyObj = decodedResult["keys"] as? [[String: Any]]
-                        else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
-
-                        // Due to multiple keyAssign
-                        if let first = keyObj.first {
-                            guard
-                                let metadata = first["Metadata"] as? [String: String],
-                                let share = first["Share"] as? String,
-                                let publicKey = first["PublicKey"] as? [String: String],
-                                let iv = metadata["iv"],
-                                let ephemPublicKey = metadata["ephemPublicKey"],
-                                let pubKeyX = publicKey["X"],
-                                let pubKeyY = publicKey["Y"]
-                            else {
-                                throw TorusUtilError.decodingFailed("\(first)")
-                            }
-                            shareResponses[i] = publicKey // For threshold
-                            let model = RetrieveDecryptAndReconstuctResponse(iv: iv, ephemPublicKey: ephemPublicKey, share: share, pubKeyX: pubKeyX, pubKeyY: pubKeyY)
-                            resultArray[i] = model
-                        }
-
-                        let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
-
-                        // Comparing dictionaries, so the order of keys doesn't matter
-
-                        let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: threshold) // Check if threshold is satisfied
-                        var data: [Int: String] = [:]
-                        if keyResult != nil {
-                            os_log("retreiveIndividualNodeShares - result: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, resultArray)
-                            data = try decryptIndividualShares(shares: resultArray, privateKey: privateKey)
-                        } else {
-                            throw TorusUtilError.empty
-                        }
-                        os_log("retrieveDecryptAndReconstuct - data after decryptIndividualShares: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data)
-                        let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
-                        if filteredData.count < threshold { throw TorusUtilError.thresholdError }
-                        let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
-                        session.invalidateAndCancel()
-                        return thresholdLagrangeInterpolationData
-                    case .failure(let error):
-                        throw error
-                    }
-                } catch {
-                    errorStack.append(error)
-                    let nsErr = error as NSError
-                    let userInfo = nsErr.userInfo as [String: Any]
-                    if error as? TorusUtilError == .timeout {
-                        group.cancelAll()
-                        session.invalidateAndCancel()
-                        throw error
-                    }
-                    if nsErr.code == -1003 {
-                        // In case node is offline
-                        os_log("retrieveDecryptAndReconstuct: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
-                    } else if let err = (error as? TorusUtilError) {
-                        if err == TorusUtilError.thresholdError {
-                            os_log("retrieveDecryptAndReconstuct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
-                        }
-                    } else {
-                        os_log("retrieveDecryptAndReconstuct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
-                    }
-                }
-            }
-            throw TorusUtilError.runtime("retrieveDecryptAndReconstuct func failed")
-        })
-
-    }
+//    func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
+//        // Rebuild extraParams
+//        let session = createURLSession()
+//        let threshold = Int(endpoints.count / 2) + 1
+//        var rpcdata: Data = Data()
+//        do {
+//            if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String: Any] {
+//                let value = ["verifieridentifier": verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures.tostringDict(), "idtoken": tokenCommitment] as [String: Any]
+//                let keepingCurrent = loadedStrings.merging(value) { current, _ in current }
+//                // TODO: Look into hetrogeneous array encoding
+//                let dataForRequest = ["jsonrpc": "2.0",
+//                                      "id": 10,
+//                                      "method": "ShareRequest",
+//                                      "params": ["encrypted": "yes",
+//                                                 "item": [keepingCurrent]] as [String: Any]] as [String: Any]
+//                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
+//            }
+//        } catch {
+//            os_log("retrieveDecryptAndReconstruct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+//        }
+//
+//        var shareResponses = [[String: String]?].init(repeating: nil, count: endpoints.count)
+//        var resultArray = [Int: RetrieveDecryptAndReconstuctResponse]()
+//        var errorStack = [Error]()
+//        var requestArr = [URLRequest]()
+//        for (_, el) in endpoints.enumerated() {
+//            do {
+//                var rq = try makeUrlRequest(url: el)
+//                rq.httpBody = rpcdata
+//                requestArr.append(rq)
+//            } catch {
+//                throw error
+//            }
+//        }
+//        return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+//            for (i, rq) in requestArr.enumerated() {
+//                group.addTask {
+//                    do {
+//                        let val = try await session.data(for: rq)
+//                        return .success(.init(data: val.0, urlResponse: val.1, index: i))
+//                    } catch {
+//                        return .failure(error)
+//                    }
+//                }
+//            }
+//
+//            for try await val in group {
+//                do {
+//                    try Task.checkCancellation()
+//                    switch val {
+//                    case .success(let model):
+//                        let _data = model.data
+//                        let i = model.index
+//                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
+//                        if decoded.error != nil {
+//                            throw TorusUtilError.decodingFailed(decoded.error?.data)
+//                        }
+//                        os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
+//
+//                        guard
+//                            let decodedResult = decoded.result as? [String: Any],
+//                            let keyObj = decodedResult["keys"] as? [[String: Any]]
+//                        else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
+//
+//                        // Due to multiple keyAssign
+//                        if let first = keyObj.first {
+//                            guard
+//                                let metadata = first["Metadata"] as? [String: String],
+//                                let share = first["Share"] as? String,
+//                                let publicKey = first["PublicKey"] as? [String: String],
+//                                let iv = metadata["iv"],
+//                                let ephemPublicKey = metadata["ephemPublicKey"],
+//                                let pubKeyX = publicKey["X"],
+//                                let pubKeyY = publicKey["Y"]
+//                            else {
+//                                throw TorusUtilError.decodingFailed("\(first)")
+//                            }
+//                            shareResponses[i] = publicKey // For threshold
+//                            let model = RetrieveDecryptAndReconstuctResponse(iv: iv, ephemPublicKey: ephemPublicKey, share: share, pubKeyX: pubKeyX, pubKeyY: pubKeyY)
+//                            resultArray[i] = model
+//                        }
+//
+//                        let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
+//
+//                        // Comparing dictionaries, so the order of keys doesn't matter
+//
+//                        let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: threshold) // Check if threshold is satisfied
+//                        var data: [Int: String] = [:]
+//                        if keyResult != nil {
+//                            os_log("retreiveIndividualNodeShares - result: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, resultArray)
+//                            data = try decryptIndividualShares(shares: resultArray, privateKey: privateKey)
+//                        } else {
+//                            throw TorusUtilError.empty
+//                        }
+//                        os_log("retrieveDecryptAndReconstuct - data after decryptIndividualShares: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data)
+//                        let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
+//                        if filteredData.count < threshold { throw TorusUtilError.thresholdError }
+//                        let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
+//                        session.invalidateAndCancel()
+//                        return thresholdLagrangeInterpolationData
+//                    case .failure(let error):
+//                        throw error
+//                    }
+//                } catch {
+//                    errorStack.append(error)
+//                    let nsErr = error as NSError
+//                    let userInfo = nsErr.userInfo as [String: Any]
+//                    if error as? TorusUtilError == .timeout {
+//                        group.cancelAll()
+//                        session.invalidateAndCancel()
+//                        throw error
+//                    }
+//                    if nsErr.code == -1003 {
+//                        // In case node is offline
+//                        os_log("retrieveDecryptAndReconstuct: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
+//                    } else if let err = (error as? TorusUtilError) {
+//                        if err == TorusUtilError.thresholdError {
+//                            os_log("retrieveDecryptAndReconstuct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+//                        }
+//                    } else {
+//                        os_log("retrieveDecryptAndReconstuct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+//                    }
+//                }
+//            }
+//            throw TorusUtilError.runtime("retrieveDecryptAndReconstuct func failed")
+//        })
+//
+//    }
     
     // MARK: - retrieveOrImportShare
     
@@ -573,8 +552,8 @@ extension TorusUtils {
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
         guard
-            let sessionAuthKey = generatePrivateKeyData(),
-            let publicKey = SECP256K1.privateToPublic(privateKey: sessionAuthKey)?.subdata(in: 1 ..< 65)
+            let sessionAuthKey = generatePrivateKeyData()?.toHexString(),
+            let publicKey = SECP256K1.privateToPublic(privateKey: Data(hex:sessionAuthKey))?.subdata(in: 1 ..< 65)
         else {
             throw TorusUtilError.runtime("Unable to generate SECP256K1 keypair.")
         }
@@ -597,7 +576,6 @@ extension TorusUtils {
             }
             isImportShareReq = true
         }
-        print("isimportshare", isImportShareReq)
 
         let nodeSigs = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, nodeSigs)
@@ -609,6 +587,7 @@ extension TorusUtils {
         } else {
             promiseArrRequest = try await getShareOrKeyAssign(endpoints: endpoints, nodeSigs: nodeSigs, verifier: verifier, verifierParams: verifierParams, idToken: idToken)
         }
+        
         
         var thresholdNonceData : GetOrSetNonceResult?
         var pubkeyArr = [KeyAssignment.PublicKey]()
@@ -626,26 +605,28 @@ extension TorusUtils {
                     }
                 }
             }
-
+            var success = 0
+            var failure = 0
             for try await val in group {
                 do {
                     switch val {
                         
                     case.success(let model):
+                        print (try JSONSerialization.jsonObject(with: model.data))
                         let data = model.data
-                        print( try JSONSerialization.jsonObject(with: data))
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
+                        print(decoded)
                         os_log("import share - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
                         
                         if decoded.error != nil {
-                            os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
+                            os_log("import share - decode error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
                             throw TorusUtilError.runtime(decoded.error?.message ?? "")
                         }
                         
                         // Ensure that we don't add bad data to result arrays.
                         guard
                             let decodedResult = decoded.result as? ShareRequestResult
-                        else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded), can't decode into shareRequestResult") }
+                        else { throw TorusUtilError.decodingFailed("ShareReqeust error decoding error : \(decoded), can't decode into shareRequestResult") }
                         
                         completeShareRequestResponseArr.append(decodedResult)
                         let keyObj = decodedResult.keys
@@ -686,11 +667,14 @@ extension TorusUtils {
                         throw error
                     }
                 } catch {
-                        os_log("importshare - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                    
+                        os_log("importshare - commitment request error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error))
                 }
             }
             throw TorusUtilError.commitmentRequestFailed
         })
+        
+        print(thresholdPublicKey)
         
         // optimistically run lagrange interpolation once threshold number of shares have been received
         // this is matched against the user public key to ensure that shares are consistent
@@ -700,11 +684,12 @@ extension TorusUtils {
             if thresholdPublicKey != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil) {
                 
                 // Code block to execute if all conditions are true
-                var sharePromises = [Data?]()
-                var sessionTokenSigPromises = [Data?]()
-                var sessionTokenPromises = [Data?]()
-                var nodeIndexes = [BigInt?]()
+                var sharePromises = [String]()
+                var sessionTokenSigPromises = [String?]()
+                var sessionTokenPromises = [String?]()
+                var nodeIndexes = [Int]()
                 var sessionTokenData = [SessionToken?]()
+                
                 
                 for currentShareResponse in completeShareRequestResponseArr {
                     let sessionTokens = currentShareResponse.sessionTokens
@@ -718,7 +703,7 @@ extension TorusUtils {
                         if (sessionTokenSigMetadata.first?.ephemPublicKey != nil) {
                             sessionTokenSigPromises.append(try? decryptNodeData(eciesData: sessionTokenSigMetadata[0], ciphertextHex: sessionTokenSigs[0], privKey: sessionAuthKey))
                         } else {
-                            sessionTokenSigPromises.append(Data(hexString: sessionTokenSigs[0])!)
+                            sessionTokenSigPromises.append(sessionTokenSigs[0])
                         }
                     } else {
                         sessionTokenSigPromises.append(nil)
@@ -728,7 +713,7 @@ extension TorusUtils {
                         if (sessionTokenMetadata.first?.ephemPublicKey != nil) {
                             sessionTokenPromises.append(try? decryptNodeData(eciesData: sessionTokenMetadata[0], ciphertextHex: sessionTokens[0], privKey: sessionAuthKey))
                         } else {
-                            sessionTokenSigPromises.append(Data(base64Encoded: sessionTokenSigs[0])!)
+                            sessionTokenSigPromises.append(sessionTokenSigs[0])
                         }
                     } else {
                         sessionTokenSigPromises.append(nil)
@@ -736,13 +721,14 @@ extension TorusUtils {
                     
                     if keys.count > 0 {
                         let latestKey = currentShareResponse.keys[0]
-                        nodeIndexes.append(BigInt(latestKey.nodeIndex))
+                        nodeIndexes.append(Int(latestKey.nodeIndex))
                         
                         if latestKey.shareMetadata != nil {
-                            let binaryString = base64ToBinaryString(base64String: latestKey.share) ?? "0"
-
+                            let data = Data(base64Encoded: latestKey.share, options: [] )!
+                            let binaryString = String(data: data, encoding: .ascii) ?? ""
                             let paddedBinaryString = binaryString.padding(toLength: 64, withPad: "0", startingAt: 0)
-                            sharePromises.append(try? decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey))
+
+                            sharePromises.append(try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey).padLeft(padChar: "0", count: 64))
                         }
                     } else {
 //                        nodeIndexes.append(nil)
@@ -768,68 +754,86 @@ extension TorusUtils {
                     if x == nil {
                         sessionTokenData.append(nil)
                     } else {
-                        let token = x!.base64EncodedString()
-                        let signature = sessionTokenSigPromises[index]?.toHexString()
+                        let token = x!
+                        let signature = sessionTokenSigPromises[index]//.toHexString()
                         let nodePubX = completeShareRequestResponseArr[index].nodePubX
                         let nodePubY = completeShareRequestResponseArr[index].nodePubY
 
                         sessionTokenData.append(SessionToken(token: token, signature: signature!, node_pubx: nodePubX, node_puby: nodePubY))
                     }
                 }
-                
-                let decryptedShares = sharePromises.enumerated().reduce(into: [(index: BigInt, value: BigInt)]()) { acc, current in
+                print(sharePromises)
+                let decryptedShares = sharePromises.enumerated().reduce(into: [ Int : String ]()) { acc, current in
                     let (index, curr) = current
-                    if let nodeIndex = nodeIndexes[index], let currValue = curr {
-                        let indexValue = BigInt(nodeIndex)
-                        let currBigInt = BigInt(currValue)
-                        acc.append((indexValue, currBigInt))
-                    }
+                    acc[nodeIndexes[index]] = curr
                 }
+                print("share")
+//                print (decryptedShares.map({ (index: BigInt, value: BigInt) in
+//                    return (index, value.serialize().toHexString())
+//                }))
                 
                 // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
                 let allCombis = kCombinations(s: decryptedShares.count, k: threshold)
-                var privateKey: BigInt? = nil
+                var privateKey: String? = nil
+                print("combi")
+                print( allCombis)
 
                 for j in 0..<allCombis.count {
                     let currentCombi = allCombis[j]
-                    let currentCombiShares = decryptedShares.enumerated().filter { currentCombi.contains($0.offset) }.map { $0.element }
-                    let shares = currentCombiShares.map { $0.value }
-                    let indices = currentCombiShares.map { $0.index }
-                    let derivedPrivateKey = lagrangeInterpolationWithNodeIndex(shares: shares, nodeIndex: indices) 
-                    let derivedPrivateKeyHex = String(derivedPrivateKey, radix: 16, uppercase: false)
+                    let totalShare = decryptedShares.count
+                    let currentCombiShares = decryptedShares.enumerated().reduce(into: [ Int : String ]()) { acc, current in
+                        let (index, curr) = current
+                        if (currentCombi.contains(index)) {
+                            acc[curr.key] = curr.value
+                        }
+                    }
+                    let derivedPrivateKey = try lagrangeInterpolation(shares: currentCombiShares, offset: 0)
+//                    print ( derivedPrivateKey.serialize().toHexString() )
+                    let derivedPrivateKeyHex = derivedPrivateKey
+                
+                    print (derivedPrivateKeyHex)
                     guard let derivedPrivateKeyData = Data(hexString: derivedPrivateKeyHex) else {
                         continue
                     }
-                    let decryptedPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
+                    let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKey) )?.toHexString()
+                    print(decryptedPubKey)
+//                    print(combinePublicKeys(keys: [decryptedPubKey!], compressed: true) )
+                    
                     let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
                     let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
                     let decryptedPubKeyXBigInt = BigUInt(decryptedPubKeyX, radix: 16)!
                     let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
                     let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey.X, radix: 16)!
                     let thresholdPublicKeyYBigInt = BigUInt(thresholdPublicKey.Y, radix: 16)!
+                    privateKey = derivedPrivateKey
                     if decryptedPubKeyXBigInt == thresholdPublicKeyXBigInt && decryptedPubKeyYBigInt == thresholdPublicKeyYBigInt {
                         privateKey = derivedPrivateKey
                         break
                     }
                 }
-                
-                if privateKey == nil {
+                print("derive private key")
+                print(privateKey)
+                guard let privateKey = privateKey else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
-                let oauthKey : BigInt = privateKey!
+                let oauthKey : BigInt = BigInt(privateKey , radix: 16)!
                 
-                let derivedPrivateKeyHex = String(oauthKey, radix: 16, uppercase: false)
-                guard let derivedPrivateKeyData = Data(hexString: derivedPrivateKeyHex) else {
+                guard let derivedPrivateKeyData = Data(hexString: privateKey) else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
+                print("derive private key2")
                 let decryptedPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
-                let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
+                print(decryptedPubKey)
+                let decryptedPubKeyX = String(decryptedPubKey!.suffix(128).prefix(64))
                 let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
+                
                 let metadataNonce = BigInt(thresholdNonceData?.nonce ?? "0", radix: 16) ?? BigInt(0)
                 let privateKeyWithNonce = (oauthKey + metadataNonce) % modulusValue
 
+                
+                
                 var modifiedPubKey = "04" + decryptedPubKeyX.addLeading0sForLength64() + decryptedPubKeyY.addLeading0sForLength64()
 
                 // For TSS key, no need to add pub nonce
@@ -837,8 +841,10 @@ extension TorusUtils {
                     let pubNonceX = thresholdNonceData!.pubNonce!.x
                     let pubNonceY = thresholdNonceData!.pubNonce!.y
                     let pubkey2 = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
-                    
-                    modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, pubkey2], compressed: false)
+                    print (modifiedPubKey)
+                    print(pubkey2)
+                    let combined = combinePublicKeys(keys: [modifiedPubKey, pubkey2], compressed: false)
+                    modifiedPubKey = combined
                 } else {
                     modifiedPubKey = String(modifiedPubKey.suffix(128))
                 }
@@ -848,15 +854,15 @@ extension TorusUtils {
 
                 return RetrieveSharesResponse(
                     ethAddress: generateAddressFromPubKey(publicKeyX: x.addLeading0sForLength64(), publicKeyY: y.addLeading0sForLength64()), // this address should be used only if user hasn't updated to 2/n
-                    privKey: String(privateKeyWithNonce, radix: 16).padding(toLength: 64, withPad: "0", startingAt: 0), // Caution: final x and y wont be derivable from this key once user upgrades to 2/n
+                    privKey: String(privateKeyWithNonce, radix: 16).leftPadding(toLength: 64, withPad: "0"), // Caution: final x and y wont be derivable from this key once user upgrades to 2/n
                     sessionTokenData: sessionTokenData,
                     X: x, // this is final pub x of user before and after updating to 2/n
                     Y: y, // this is final pub y of user before and after updating to 2/n
                     metadataNonce: metadataNonce,
                     postboxPubKeyX: decryptedPubKeyX,
                     postboxPubKeyY: decryptedPubKeyY,
-                    sessionAuthKey: sessionAuthKey.map { String(format: "%02x", $0) }.joined().padding(toLength: 64, withPad: "0", startingAt: 0),
-                    nodeIndexes: nodeIndexes.compactMap { Int($0!)}
+                    sessionAuthKey: sessionAuthKey, //.map { String(format: "%02x", $0) }.joined().padding(toLength: 64, withPad: "0", startingAt: 0),
+                    nodeIndexes: nodeIndexes
                 )
 
             }
@@ -940,7 +946,6 @@ extension TorusUtils {
                         if nodeSignatures.count >= threshold {
                             os_log("commitmentRequest - nodeSignatures: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, nodeSignatures)
                             session.invalidateAndCancel()
-                            print(nodeSignatures)
                             return nodeSignatures
                         }
                     case.failure(let error):
@@ -948,7 +953,6 @@ extension TorusUtils {
                     }
                 } catch {
                     failedLookUpCount += 1
-                    print(failedLookUpCount)
                         os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
                     if failedLookUpCount > endpoints.count - threshold {
                             os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, TorusUtilError.runtime("threshold node unavailable").localizedDescription)
@@ -968,57 +972,21 @@ extension TorusUtils {
         return BigUInt(message, radix: 16)!
     }
     
-    func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: Data) throws -> Data {
-        let metadata = encParamsHexToBuf(eciesData: eciesData.omitCiphertext())
+    func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String) throws -> String {
 
-        let eciesOpts = Ecies(
-            iv: metadata.iv,
-            ephemPublicKey: metadata.ephemPublicKey,
+        let eciesOpts = ECIES(
+            iv: eciesData.iv,
+            ephemPublicKey: eciesData.ephemPublicKey,
             ciphertext: ciphertextHex,
-            mac: metadata.mac
+            mac: eciesData.mac
         )
-        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts)
-        return decryptedSigBuffer.data(using: .utf8)!
-    }
-    
-    private func decrypt(privateKey: Data, opts: Ecies) throws -> String {
-        var result: String = ""
-        let ephermalPublicKey = opts.ephemPublicKey.strip04Prefix()
-        let ephermalPublicKeyBytes = ephermalPublicKey.hexa
-        var ephermOne = ephermalPublicKeyBytes.prefix(32)
-        var ephermTwo = ephermalPublicKeyBytes.suffix(32)
-        ephermOne.reverse(); ephermTwo.reverse()
-        ephermOne.append(contentsOf: ephermTwo)
-        let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
         
-        let privKeyStr = privateKey.toHexString()
-
-        guard
-            // Calculate g^a^b, i.e., Shared Key
-            let data = Data(hexString: privKeyStr),
-            let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: data)
-        else {
-            throw TorusUtilError.runtime("ECDH Error")
-        }
-        let sharedSecretData = sharedSecret.data
-        let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
-        let reversedSharedSecret = sharedSecretPrefix.reversed()
-        let iv = opts.iv.hexa
-        let newXValue = reversedSharedSecret.hexa
-        let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
-        let aesEncryptionKey = hash.prefix(64)
-        do {
-            // AES-CBCblock-256
-            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-            let decrypt = try aes.decrypt(opts.ciphertext.hexa)
-            let data = Data(decrypt)
-            result = String(data: data, encoding: .utf8) ?? ""
-        } catch let err {
-            throw err
-        }
-        return result
+        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts).toHexString()
+        print(decryptedSigBuffer)
+        return decryptedSigBuffer
     }
-    
+
+   
     func encryptData(privkeyHex: String, _ dataToEncrypt: String) throws -> String {
         guard let pubKey = SECP256K1.privateToPublic(privateKey: privkeyHex.hexa.data)?.web3.hexString.web3.noHexPrefix else {
             throw TorusUtilError.runtime("Invalid private key hex")
@@ -1072,63 +1040,102 @@ extension TorusUtils {
              throw err
          }
      }
-    
+     
+//    // MARK: decrypt opts
+//    // TODO: check toHexString() is right way or not
+//    public func decryptOpts(privateKey: Data, opts: Ecies, padding: Bool = false) throws -> Data {
+//        let k = opts.ephemPublicKey.toHexString()
+//        let ephermalPublicKey = k.strip04Prefix()
+//        let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+//        var ephermOne = ephermalPublicKeyBytes.prefix(32)
+//        var ephermTwo = ephermalPublicKeyBytes.suffix(32)
+//        // Reverse because of C endian array storage
+//        ephermOne.reverse(); ephermTwo.reverse()
+//        ephermOne.append(contentsOf: ephermTwo)
+//        let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
+//
+//        guard
+//            // Calculate g^a^b, i.e., Shared Key
+//            let data = Data(hexString: privateKey.toHexString()),
+//            let secret = ecdh(pubKey: ephemPubKey, privateKey: data)
+//        else {
+//            throw TorusUtilError.decryptionFailed
+//        }
+//
+//        let secretData = secret.data
+//        let secretPrefix = tupleToArray(secretData).prefix(32)
+//        let reversedSecret = secretPrefix.reversed()
+//
+//        let iv = opts.iv.toHexString().hexa
+//        let newXValue = reversedSecret.hexa
+//        let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
+//        let AesEncryptionKey = hash.prefix(64)
+//
+//        var result: String = ""
+//        do {
+//            // AES-CBCblock-256
+//            let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
+//            let decrypt = try aes.decrypt(opts.ciphertext.bytes)
+//            result = decrypt.hexa
+//        } catch let err {
+//            result = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
+//        }
+//        return Data(hex: result)
+//    }
 
-
-
-    // MARK: - decrypt shares
-
-    func decryptIndividualShares(shares: [Int: RetrieveDecryptAndReconstuctResponse], privateKey: String) throws -> [Int: String] {
-        var result = [Int: String]()
-
-        for (_, el) in shares.enumerated() {
-            let nodeIndex = el.key
-
-            let k = el.value.ephemPublicKey
-            let ephermalPublicKey = k.strip04Prefix()
-            let ephermalPublicKeyBytes = ephermalPublicKey.hexa
-            var ephermOne = ephermalPublicKeyBytes.prefix(32)
-            var ephermTwo = ephermalPublicKeyBytes.suffix(32)
-            // Reverse because of C endian array storage
-            ephermOne.reverse(); ephermTwo.reverse()
-            ephermOne.append(contentsOf: ephermTwo)
-            let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
-
-            guard
-                // Calculate g^a^b, i.e., Shared Key
-                let data = Data(hexString: privateKey),
-                let sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: data)
-            else {
-                throw TorusUtilError.decryptionFailed
-            }
-            let sharedSecretData = sharedSecret.data
-            let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
-            let reversedSharedSecret = sharedSecretPrefix.reversed()
-
-            guard
-                let share = el.value.share.fromBase64()?.hexa
-            else {
-                throw TorusUtilError.decryptionFailed
-            }
-            let iv = el.value.iv.hexa
-            let newXValue = reversedSharedSecret.hexa
-            let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
-            let AesEncryptionKey = hash.prefix(64)
-
-            do {
-                // AES-CBCblock-256
-                let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-                let decrypt = try aes.decrypt(share)
-                result[nodeIndex] = decrypt.hexa
-            } catch let err {
-                result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
-            }
-            if shares.count == result.count {
-                return result
-            }
-        }
-        throw TorusUtilError.runtime("decryptIndividualShares func failed")
-    }
+//    // MARK: - decrypt shares
+//
+//    func decryptIndividualShares(shares: [Int: RetrieveDecryptAndReconstuctResponse], privateKey: String) throws -> [Int: String] {
+//        var result = [Int: String]()
+//
+//        for (_, el) in shares.enumerated() {
+//            let nodeIndex = el.key
+//
+//            let k = el.value.ephemPublicKey
+//            let ephermalPublicKey = k.strip04Prefix()
+//            let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+//            var ephermOne = ephermalPublicKeyBytes.prefix(32)
+//            var ephermTwo = ephermalPublicKeyBytes.suffix(32)
+//            // Reverse because of C endian array storage
+//            ephermOne.reverse(); ephermTwo.reverse()
+//            ephermOne.append(contentsOf: ephermTwo)
+//            let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
+//
+//            guard
+//                // Calculate g^a^b, i.e., Shared Key
+//                let data = Data(hexString: privateKey),
+//                let sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: data)
+//            else {
+//                throw TorusUtilError.decryptionFailed
+//            }
+//            let sharedSecretData = sharedSecret.data
+//            let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
+//            let reversedSharedSecret = sharedSecretPrefix.reversed()
+//
+//            guard
+//                let share = el.value.share.fromBase64()?.hexa
+//            else {
+//                throw TorusUtilError.decryptionFailed
+//            }
+//            let iv = el.value.iv.hexa
+//            let newXValue = reversedSharedSecret.hexa
+//            let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
+//            let AesEncryptionKey = hash.prefix(64)
+//
+//            do {
+//                // AES-CBCblock-256
+//                let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
+//                let decrypt = try aes.decrypt(share)
+//                result[nodeIndex] = decrypt.hexa
+//            } catch let err {
+//                result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
+//            }
+//            if shares.count == result.count {
+//                return result
+//            }
+//        }
+//        throw TorusUtilError.runtime("decryptIndividualShares func failed")
+//    }
 
     // MARK: - Lagrange interpolation
 
@@ -1163,12 +1170,12 @@ extension TorusUtils {
         throw TorusUtilError.interpolationFailed
     }
 
-    func lagrangeInterpolation(shares: [Int: String]) throws -> String {
+    func lagrangeInterpolation(shares: [Int: String], offset: Int = 1) throws -> String {
         let secp256k1N = modulusValue
 
         // Convert shares to BigInt(Shares)
         var shareList = [BigInt: BigInt]()
-        _ = shares.map { shareList[BigInt($0.key + 1)] = BigInt($0.value, radix: 16) }
+        _ = shares.map { shareList[BigInt($0.key + offset)] = BigInt($0.value, radix: 16) }
         os_log("lagrangeInterpolation: %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, shares, shareList)
 
         var secret = BigUInt("0") // to support BigInt 4.0 dependency on cocoapods
@@ -1288,7 +1295,6 @@ extension TorusUtils {
                             } else {
                                 if let decodedResult = result  {
                                     keyArray.append(decodedResult)
-                                    print(decodedResult)
                                     if let k = decodedResult.keys,
                                        let keys = k.first {
                                         let model = KeyLookupResponse(pubKeyX: keys.pub_key_X, pubKeyY: keys.pub_key_Y, address: keys.address)
@@ -1636,7 +1642,6 @@ extension TorusUtils {
     func getPublicKeyPointFromAddress( address: String) throws ->  (String, String) {
         let publicKeyHashData = Data.fromHex(address)?.dropFirst()//.dropLast(4)
         guard publicKeyHashData?.count == 64 else {
-            print(publicKeyHashData?.count)
             throw "Invalid address,"
         }
         
@@ -1652,11 +1657,11 @@ extension TorusUtils {
     
     func combinePublicKeys(keys: [String], compressed: Bool) -> String {
         let data = keys.map({ Data.fromHex($0)! })
-        print(data.count)
+        print(data)
         let added = SECP256K1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
         return (added?.toHexString())!
     }
-
+    
     func tupleToArray(_ tuple: Any) -> [UInt8] {
         // var result = [UInt8]()
         let tupleMirror = Mirror(reflecting: tuple)
@@ -1664,8 +1669,43 @@ extension TorusUtils {
         return tupleElements
     }
 
-    func array32toTuple(_ arr: [UInt8]) -> (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) {
-        return (arr[0] as UInt8, arr[1] as UInt8, arr[2] as UInt8, arr[3] as UInt8, arr[4] as UInt8, arr[5] as UInt8, arr[6] as UInt8, arr[7] as UInt8, arr[8] as UInt8, arr[9] as UInt8, arr[10] as UInt8, arr[11] as UInt8, arr[12] as UInt8, arr[13] as UInt8, arr[14] as UInt8, arr[15] as UInt8, arr[16] as UInt8, arr[17] as UInt8, arr[18] as UInt8, arr[19] as UInt8, arr[20] as UInt8, arr[21] as UInt8, arr[22] as UInt8, arr[23] as UInt8, arr[24] as UInt8, arr[25] as UInt8, arr[26] as UInt8, arr[27] as UInt8, arr[28] as UInt8, arr[29] as UInt8, arr[30] as UInt8, arr[31] as UInt8, arr[32] as UInt8, arr[33] as UInt8, arr[34] as UInt8, arr[35] as UInt8, arr[36] as UInt8, arr[37] as UInt8, arr[38] as UInt8, arr[39] as UInt8, arr[40] as UInt8, arr[41] as UInt8, arr[42] as UInt8, arr[43] as UInt8, arr[44] as UInt8, arr[45] as UInt8, arr[46] as UInt8, arr[47] as UInt8, arr[48] as UInt8, arr[49] as UInt8, arr[50] as UInt8, arr[51] as UInt8, arr[52] as UInt8, arr[53] as UInt8, arr[54] as UInt8, arr[55] as UInt8, arr[56] as UInt8, arr[57] as UInt8, arr[58] as UInt8, arr[59] as UInt8, arr[60] as UInt8, arr[61] as UInt8, arr[62] as UInt8, arr[63] as UInt8)
+    public func decrypt(privateKey: String, opts: ECIES) throws -> Data {
+        let ephermalPublicKey = opts.ephemPublicKey.strip04Prefix()
+        let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+        var ephermOne = ephermalPublicKeyBytes.prefix(32)
+        var ephermTwo = ephermalPublicKeyBytes.suffix(32)
+        ephermOne.reverse(); ephermTwo.reverse()
+        ephermOne.append(contentsOf: ephermTwo)
+        let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
+        guard
+            // Calculate g^a^b, i.e., Shared Key
+            let data = Data(hexString: privateKey),
+            let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: data)
+        else {
+//            throw SessionManagerError.runtimeError("ECDH Error")
+            throw "ECDH Error"
+        }
+        let sharedSecretData = sharedSecret.data
+        let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
+        let reversedSharedSecret = sharedSecretPrefix.reversed()
+        let iv = opts.iv.hexa
+        let newXValue = reversedSharedSecret.hexa
+        let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
+        let aesEncryptionKey = hash.prefix(64)
+        do {
+            // AES-CBCblock-256
+            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
+            print(aes)
+            let decrypt = try aes.decrypt(opts.ciphertext.hexa)
+            print(decrypt)
+            let data = Data(decrypt)
+            return data
+
+
+        } catch let err {
+            print(err)
+            throw err
+        }
     }
     
 }

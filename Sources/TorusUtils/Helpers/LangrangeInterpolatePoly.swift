@@ -134,6 +134,9 @@ func lagrangeInterpolationWithNodeIndex(shares: [BigInt], nodeIndex: [BigInt]) -
         return secret % modulus
 }
 
+
+
+
 func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicShares: [Share]? = nil) throws -> Polynomial {
     var actualS = secret
     if secret == nil {
