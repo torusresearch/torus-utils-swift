@@ -345,7 +345,7 @@ extension TorusUtils {
                                       "method": AnyCodable(JRPC_METHODS.IMPORT_SHARE),
                                       "params": AnyCodable(params)
                 ] as [String: AnyCodable]
-                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
+                rpcdata = try JSONEncoder().encode(dataForRequest)
                 rpcArray.append(rpcdata)
             } catch {
                 os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
