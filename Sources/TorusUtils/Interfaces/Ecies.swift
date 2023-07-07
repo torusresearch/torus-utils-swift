@@ -1,12 +1,5 @@
 import Foundation
 
-protocol EciesProtocol {
-    var iv: Data { get }
-    var ephemPublicKey: Data { get }
-    var ciphertext: Data { get }
-    var mac: Data { get }
-}
-
 struct EciesHex : Codable {
     let iv: String
     let ephemPublicKey: String
@@ -35,13 +28,13 @@ struct EciesHexOmitCiphertext {
     var mode: String?
 }
 
-public struct Ecies: EciesProtocol {
-    var iv: Data
-    var ephemPublicKey: Data
-    var ciphertext: Data
-    var mac: Data
+public struct Ecies: Codable {
+    var iv: String
+    var ephemPublicKey: String
+    var ciphertext: String
+    var mac: String
     
-    init(iv: Data, ephemPublicKey: Data, ciphertext: Data, mac: Data) {
+    init(iv: String, ephemPublicKey: String, ciphertext: String, mac: String) {
         self.iv = iv
         self.ephemPublicKey = ephemPublicKey
         self.ciphertext = ciphertext
@@ -50,7 +43,7 @@ public struct Ecies: EciesProtocol {
 }
 
 struct EciesOmitCiphertext {
-    var iv: Data
-    var ephemPublicKey: Data
-    var mac: Data
+    var iv: String
+    var ephemPublicKey: String
+    var mac: String
 }

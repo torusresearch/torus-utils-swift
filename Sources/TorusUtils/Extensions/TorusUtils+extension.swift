@@ -143,19 +143,20 @@ extension TorusUtils {
         var encShares: [Ecies] = []
         var encErrors: [Error] = []
         
-        for (i, idx) in nodeIndexesBigInt.enumerated() {
+        for (i, _) in nodeIndexesBigInt.enumerated() {
             let shareIdx = String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()
             let share = shares[shareIdx]
             let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
 
             let shareData = share?.share
+            let shareString = String(shareData!, radix: 16)
 
             if shareData == nil {
                 continue
             }
             do {
                 // TODO: we need encrypt logic here
-                let encShareData = try encryptData(publicKey: nodePubKey, msg: shareData!)
+                let encShareData = try encrypt(publicKey: nodePubKey, msg: shareString)
                 encShares.append(encShareData)
             } catch {
                 encErrors.append(error)
@@ -172,7 +173,7 @@ extension TorusUtils {
                 pubKeyY: pubKeyY,
                 encryptedShare: encParamsMetadata.ciphertext!,
                 encryptedShareMetadata: encParamsMetadata,
-                nodeIndex: Int(shareJson!.shareIndex),
+                nodeIndex: BigUInt(shareJson!.shareIndex),
                 keyType: "secp256k1",
                 nonceData: nonceData,
                 nonceSignature: nonceParams.signature
@@ -965,90 +966,110 @@ extension TorusUtils {
     
     func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: Data) throws -> Data {
         let metadata = encParamsHexToBuf(eciesData: eciesData.omitCiphertext())
-        let ciphertext = Data(hexString: ciphertextHex)!
+
         let eciesOpts = Ecies(
             iv: metadata.iv,
             ephemPublicKey: metadata.ephemPublicKey,
-            ciphertext: ciphertext,
+            ciphertext: ciphertextHex,
             mac: metadata.mac
         )
-        let decryptedSigBuffer = try decryptOpts(privateKey: privKey, opts: eciesOpts)
-        return decryptedSigBuffer
+        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts)
+        return decryptedSigBuffer.data(using: .utf8)!
     }
     
-    // MARK: decrypt opts
-    // TODO: check toHexString() is right way or not
-    public func decryptOpts(privateKey: Data, opts: Ecies, padding: Bool = false) throws -> Data {
-        let k = opts.ephemPublicKey.toHexString()
-        let ephermalPublicKey = k.strip04Prefix()
+    private func decrypt(privateKey: Data, opts: Ecies) throws -> String {
+        var result: String = ""
+        let ephermalPublicKey = opts.ephemPublicKey.strip04Prefix()
         let ephermalPublicKeyBytes = ephermalPublicKey.hexa
         var ephermOne = ephermalPublicKeyBytes.prefix(32)
         var ephermTwo = ephermalPublicKeyBytes.suffix(32)
-        // Reverse because of C endian array storage
         ephermOne.reverse(); ephermTwo.reverse()
         ephermOne.append(contentsOf: ephermTwo)
         let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
+        
+        let privKeyStr = privateKey.toHexString()
 
         guard
             // Calculate g^a^b, i.e., Shared Key
-            let data = Data(hexString: privateKey.toHexString()),
-            let secret = ecdh(pubKey: ephemPubKey, privateKey: data)
+            let data = Data(hexString: privKeyStr),
+            let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: data)
         else {
-            throw TorusUtilError.decryptionFailed
+            throw TorusUtilError.runtime("ECDH Error")
         }
-        
-        let secretData = secret.data
-        let secretPrefix = tupleToArray(secretData).prefix(32)
-        let reversedSecret = secretPrefix.reversed()
-        
-        let iv = opts.iv.toHexString().hexa
-        let newXValue = reversedSecret.hexa
+        let sharedSecretData = sharedSecret.data
+        let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
+        let reversedSharedSecret = sharedSecretPrefix.reversed()
+        let iv = opts.iv.hexa
+        let newXValue = reversedSharedSecret.hexa
         let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
-        let AesEncryptionKey = hash.prefix(64)
-        
-        var result: String = ""
+        let aesEncryptionKey = hash.prefix(64)
         do {
             // AES-CBCblock-256
-            let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-            let decrypt = try aes.decrypt(opts.ciphertext.bytes)
-            result = decrypt.hexa
+            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
+            let decrypt = try aes.decrypt(opts.ciphertext.hexa)
+            let data = Data(decrypt)
+            result = String(data: data, encoding: .utf8) ?? ""
         } catch let err {
-            result = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
+            throw err
         }
-        return Data(hex: result)
+        return result
     }
     
-    func encryptData(publicKey: String, msg: BigInt) throws -> Ecies {
-        // Generate ephemeral key pair
-        let ephemeralPrivateKey = P256.KeyAgreement.PrivateKey()
-        let ephemeralPublicKey = ephemeralPrivateKey.publicKey.rawRepresentation
-
-        // Convert public key to `P256.KeyAgreement.PublicKey` type
-        guard let recipientPublicKey = try? P256.KeyAgreement.PublicKey(rawRepresentation: Data(hex: publicKey)) else {
-            throw TorusUtilError.runtime("invalid public key")
+    func encryptData(privkeyHex: String, _ dataToEncrypt: String) throws -> String {
+        guard let pubKey = SECP256K1.privateToPublic(privateKey: privkeyHex.hexa.data)?.web3.hexString.web3.noHexPrefix else {
+            throw TorusUtilError.runtime("Invalid private key hex")
         }
-
-        // Generate shared secret using ECDH
-        let sharedSecret = try ephemeralPrivateKey.sharedSecretFromKeyAgreement(with: recipientPublicKey)
-
-        // Derive encryption key, IV, and MAC key from shared secret
-        let encryptionKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: Data(), sharedInfo: Data(), outputByteCount: 16)
-        
-        // TODO: need to check if this iv and macKeyData is really needed
-        let iv = AES.GCM.Nonce()
-        let macKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: Data(), sharedInfo: Data(), outputByteCount: 32)
-        let macKeyData = Data(macKey.withUnsafeBytes { Data($0) })
-
-        // Encrypt the message
-        let messageData = msg.serialize()
-        let sealedBox = try AES.GCM.seal(messageData, using: encryptionKey, nonce: iv, authenticating: macKeyData)
-//        let sealedBox = try AES.GCM.seal(messageData, using: encryptionKey, nonce: iv)
-
-        // Create the Ecies struct
-        let ecies = Ecies(iv: Data(sealedBox.nonce), ephemPublicKey: ephemeralPublicKey, ciphertext: sealedBox.ciphertext, mac: sealedBox.tag)
-
-        return ecies
+        let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt, opts: nil)
+        let data = try JSONEncoder().encode(encParams)
+        guard let string = String(data: data, encoding: .utf8) else { throw TorusUtilError.runtime("Invalid String from enc Params") }
+        return string
     }
+    
+    private func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
+         guard let ephemPrivateKey = SECP256K1.generatePrivateKey(), let ephemPublicKey = SECP256K1.privateToPublic(privateKey: ephemPrivateKey)
+         else {
+             throw TorusUtilError.runtime("Private key generation failed")
+         }
+         let ephermalPublicKey = publicKey.strip04Prefix()
+         let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+         var ephermOne = ephermalPublicKeyBytes.prefix(32)
+         var ephermTwo = ephermalPublicKeyBytes.suffix(32)
+         ephermOne.reverse(); ephermTwo.reverse()
+         ephermOne.append(contentsOf: ephermTwo)
+         let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
+         guard
+             // Calculate g^a^b, i.e., Shared Key
+             //  let data = inprivateKey
+             let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: ephemPrivateKey)
+         else {
+             throw TorusUtilError.runtime("ECDH error")
+         }
+
+         let sharedSecretData = sharedSecret.data
+         let sharedSecretPrefix = Array(tupleToArray(sharedSecretData).prefix(32))
+         let reversedSharedSecret = sharedSecretPrefix.uint8Reverse()
+         let hash = SHA2(variant: .sha512).calculate(for: Array(reversedSharedSecret))
+         let iv: [UInt8] = (opts?.iv ?? SECP256K1.randomBytes(length: 16)?.toHexString())?.hexa ?? []
+         let encryptionKey = Array(hash.prefix(32))
+         let macKey = Array(hash.suffix(32))
+         do {
+             // AES-CBCblock-256
+             let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
+             let encrypt = try aes.encrypt(msg.bytes)
+             let data = Data(encrypt)
+             let ciphertext = data
+             var dataToMac: [UInt8] = iv
+             dataToMac.append(contentsOf: [UInt8](ephemPublicKey.data))
+             dataToMac.append(contentsOf: [UInt8](ciphertext.data))
+             let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
+             return .init(iv: iv.toHexString(), ephemPublicKey: ephemPublicKey.toHexString(),
+             ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
+         } catch let err {
+             throw err
+         }
+     }
+    
+
 
 
     // MARK: - decrypt shares
@@ -1641,5 +1662,16 @@ extension TorusUtils {
 
     func array32toTuple(_ arr: [UInt8]) -> (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8) {
         return (arr[0] as UInt8, arr[1] as UInt8, arr[2] as UInt8, arr[3] as UInt8, arr[4] as UInt8, arr[5] as UInt8, arr[6] as UInt8, arr[7] as UInt8, arr[8] as UInt8, arr[9] as UInt8, arr[10] as UInt8, arr[11] as UInt8, arr[12] as UInt8, arr[13] as UInt8, arr[14] as UInt8, arr[15] as UInt8, arr[16] as UInt8, arr[17] as UInt8, arr[18] as UInt8, arr[19] as UInt8, arr[20] as UInt8, arr[21] as UInt8, arr[22] as UInt8, arr[23] as UInt8, arr[24] as UInt8, arr[25] as UInt8, arr[26] as UInt8, arr[27] as UInt8, arr[28] as UInt8, arr[29] as UInt8, arr[30] as UInt8, arr[31] as UInt8, arr[32] as UInt8, arr[33] as UInt8, arr[34] as UInt8, arr[35] as UInt8, arr[36] as UInt8, arr[37] as UInt8, arr[38] as UInt8, arr[39] as UInt8, arr[40] as UInt8, arr[41] as UInt8, arr[42] as UInt8, arr[43] as UInt8, arr[44] as UInt8, arr[45] as UInt8, arr[46] as UInt8, arr[47] as UInt8, arr[48] as UInt8, arr[49] as UInt8, arr[50] as UInt8, arr[51] as UInt8, arr[52] as UInt8, arr[53] as UInt8, arr[54] as UInt8, arr[55] as UInt8, arr[56] as UInt8, arr[57] as UInt8, arr[58] as UInt8, arr[59] as UInt8, arr[60] as UInt8, arr[61] as UInt8, arr[62] as UInt8, arr[63] as UInt8)
+    }
+    
+}
+
+extension Array where Element == UInt8 {
+    func uint8Reverse() -> Array {
+        var revArr = [Element]()
+        for arrayIndex in stride(from: self.count - 1, through: 0, by: -1) {
+            revArr.append(self[arrayIndex])
+        }
+        return revArr
     }
 }

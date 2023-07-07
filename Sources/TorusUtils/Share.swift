@@ -5,14 +5,14 @@ class Share {
     var share: BigInt
     var shareIndex: BigInt
     
-    init(shareIndex: BNString, share: BNString) {
-        self.share = BigInt(share.toString()!, radix: 16)!
-        self.shareIndex = BigInt(shareIndex.toString()!, radix: 16)!
+    init(shareIndex: BigInt, share: BigInt) {
+        self.share = share
+        self.shareIndex = shareIndex
     }
     
     static func fromJSON(value: StringifiedType) -> Share? {
-        guard let shareIndex = value["shareIndex"] as? BNString,
-              let share = value["share"] as? BNString else {
+        guard let shareIndex = value["shareIndex"] as? BigInt,
+              let share = value["share"] as? BigInt else {
             return nil
         }
         

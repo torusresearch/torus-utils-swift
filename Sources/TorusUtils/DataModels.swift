@@ -144,18 +144,6 @@ public struct NonceMetadataParams: Codable {
      }
  }
 
-public enum BNString {
-    case string(String)
-    case bn(BigInt)
-    
-    func toString() -> String? {
-        switch self {
-        case .string(let str):
-            return str
-        case .bn(let bigint):
-            return String(bigint)
-        }
-    }
-}
+
 
 typealias StringifiedType = [String: Any]
