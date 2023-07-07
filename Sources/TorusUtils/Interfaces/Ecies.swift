@@ -1,6 +1,6 @@
 import Foundation
 
-struct EciesHex : Codable {
+public struct EciesHex : Codable {
     let iv: String
     let ephemPublicKey: String
     let ciphertext: String?

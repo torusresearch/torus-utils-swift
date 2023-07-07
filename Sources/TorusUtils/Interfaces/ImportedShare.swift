@@ -6,7 +6,7 @@ struct ImportedShare {
     let pubKeyY: String
     let encryptedShare: String
     let encryptedShareMetadata: EciesHex
-    let nodeIndex: BigUInt
+    let nodeIndex: Int
     let keyType: String
     let nonceData: String
     let nonceSignature: String

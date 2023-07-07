@@ -96,7 +96,7 @@ extension TorusUtils {
         let randomNonce = BigInt(SECP256K1.generatePrivateKey()!)
         
         
-        let oauthKey = (privKeyBigInt - randomNonce) % modulusValue
+        let oauthKey = abs(privKeyBigInt - randomNonce) % modulusValue
         let oauthKeyStr = String(oauthKey, radix: 16).addLeading0sForLength64()
         guard let oauthKeyData = Data(hex: oauthKeyStr)
         else {
@@ -144,7 +144,8 @@ extension TorusUtils {
         var encErrors: [Error] = []
         
         for (i, _) in nodeIndexesBigInt.enumerated() {
-            let shareIdx = String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()
+            let shareIdx = String(nodeIndexesBigInt[i], radix: 16)
+            print("idx",shareIdx)
             let share = shares[shareIdx]
             let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
 
@@ -165,7 +166,7 @@ extension TorusUtils {
         }
         
         for (i, _) in nodeIndexesBigInt.enumerated() {
-            let shareJson = shares[String(nodeIndexesBigInt[i], radix: 16).addLeading0sForLength64()]
+            let shareJson = shares[String(nodeIndexesBigInt[i], radix: 16)]
             let encParams = encShares[i]
             let encParamsMetadata = encParamsBufToHex(encParams: encParams)
             let shareData = ImportedShare(
@@ -173,7 +174,7 @@ extension TorusUtils {
                 pubKeyY: pubKeyY,
                 encryptedShare: encParamsMetadata.ciphertext!,
                 encryptedShareMetadata: encParamsMetadata,
-                nodeIndex: BigUInt(shareJson!.shareIndex),
+                nodeIndex: Int(shareJson!.shareIndex),
                 keyType: "secp256k1",
                 nonceData: nonceData,
                 nonceSignature: nonceParams.signature
@@ -327,21 +328,24 @@ extension TorusUtils {
                                  "verifier_id": verifierParams.verifier_id,
                                  "extended_verifier_id": verifierParams.extended_verifier_id,
                          
-                ] as [String: Any]
+                ] as [String: Codable]
                 let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
                 let finalItem = keepingCurrent.merging(verifierParams.additionalParams) { current, _ in current }
                 
+                let params = ["encrypted": "yes",
+                              "use_temp": true,
+                              "one_key_flow": true,
+                              "item": AnyCodable([finalItem])
+                ] as [String: AnyCodable]
                 
-                
+                print("params",params)
                 // TODO: Look into hetrogeneous array encoding
                 let dataForRequest = ["jsonrpc": "2.0",
                                       "id": 10,
-                                      "method": JRPC_METHODS.IMPORT_SHARE,
-                                      "params": ["encrypted": "yes",
-                                                 "use_temp": true,
-                                                 "one_key_flow": true,
-                                                 "item": [finalItem]] as [String: Any]] as [String: Any]
-                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest, options: [])
+                                      "method": AnyCodable(JRPC_METHODS.IMPORT_SHARE),
+                                      "params": AnyCodable(params)
+                ] as [String: AnyCodable]
+                rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
                 rpcArray.append(rpcdata)
             } catch {
                 os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
