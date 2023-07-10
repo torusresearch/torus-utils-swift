@@ -21,15 +21,7 @@ import AnyCodable
 
 extension TorusUtils {
     
-    // MARK: - getPublicAddress
-    
-    public func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> String {
-        let result = try await getPublicAddressExtended(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId)
-        return result.address
-    }
-    
-    
-    public func getPublicAddressExtended(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> GetPublicAddressResult {
+    public func getNewPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> GetPublicAddressResult {
         do {
             
             let result = try await getPubKeyOrKeyAssign(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId );

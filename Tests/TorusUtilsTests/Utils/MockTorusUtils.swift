@@ -19,7 +19,7 @@ class MockTorusUtils: AbstractTorusUtils {
         )
     }
     
-    func getPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> String {
+    func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel]?, verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> String {
 //        GetPublicAddressResult(address: "")
         return ""
     }
