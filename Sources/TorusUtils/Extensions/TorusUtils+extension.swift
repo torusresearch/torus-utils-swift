@@ -1282,7 +1282,7 @@ extension TorusUtils {
                 do {
                     switch val {
                     case .success(let model):
-
+                        // print( try JSONSerialization.jsonObject(with: model.data) )
                         let data = model.data
                         do {
                             
@@ -1310,7 +1310,6 @@ extension TorusUtils {
                                     }
                                 }
                             }
-                            
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
                             if (nonceResult != nil || extendedVerifierId != nil) {
                                 if let keyResult = keyResult {
@@ -1496,7 +1495,11 @@ extension TorusUtils {
             var request = try! makeUrlRequest(url: signerHost)
             request.addValue(torusNodePubs[nodeNum].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
             request.addValue(torusNodePubs[nodeNum].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
-            request.addValue(network.path, forHTTPHeaderField: "network")
+            switch network {
+                case .legacy(let network ) : request.addValue(network.path, forHTTPHeaderField: "network")
+                case .sapphire(let network ) : request.addValue(network.path, forHTTPHeaderField: "network")
+            }
+            
             request.httpBody = rpcdata
             do {
                 let responseFromSignerData: (Data, URLResponse) = try await urlSession.data(for: request)

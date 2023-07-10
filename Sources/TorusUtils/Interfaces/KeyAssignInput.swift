@@ -71,8 +71,8 @@ public struct KeyAssignment : Decodable {
         self.index = try container.decode(String.self, forKey: .index)
         
         self.publicKey = try container.decode(PublicKey.self, forKey: .public_key)
-        self.threshold = try container.decode(Int.self, forKey: .threshold)
-        self.nodeIndex = try container.decode(Int.self, forKey: .node_index)
+        self.threshold = Int(try container.decode(String.self, forKey: .threshold))!
+        self.nodeIndex = Int(try container.decode(Int.self, forKey: .node_index))
         self.share = try container.decode(String.self, forKey: .share)
         self.shareMetadata = try container.decode(EciesHex.self, forKey: .share_metadata)
         self.nonceData = try container.decodeIfPresent(GetOrSetNonceResult.self, forKey: .nonce_data)

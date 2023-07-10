@@ -52,7 +52,7 @@ struct VerifierLookupResponse : Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.keys = try container.decodeIfPresent([VerifierLookupResponse.Key].self, forKey: .keys)
         self.is_new_key = try container.decode(Bool.self, forKey: .is_new_key)
-        self.node_index = try container.decode(Int.self, forKey: .node_index)
+        self.node_index = Int(try container.decode(String.self, forKey: .node_index))!
     }
     
 }
