@@ -1375,6 +1375,7 @@ extension TorusUtils {
 
         var resultArray = [KeyLookupResponse]()
         var requestArray = [URLRequest]()
+        print(endpoints)
         for endpoint in endpoints {
             do {
                 var request = try makeUrlRequest(url: endpoint)
