@@ -1363,6 +1363,7 @@ extension TorusUtils {
         else {
             throw TorusUtilError.encodingFailed("\(jsonRPCRequest)")
         }
+        print(allowHost)
         var allowHostRequest = try makeUrlRequest(url: allowHost, httpMethod: .get)
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
