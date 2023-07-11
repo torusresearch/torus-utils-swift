@@ -225,6 +225,7 @@ open class TorusUtils: AbstractTorusUtils {
     //   Legacy
     public func getLegacyPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressResult {
         print("legacy")
+        print(endpoints)
         do {
             var data: KeyLookupResponse
             do {
