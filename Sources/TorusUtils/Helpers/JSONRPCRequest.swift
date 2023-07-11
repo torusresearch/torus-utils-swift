@@ -200,6 +200,8 @@ public struct JSONRPCresponse: Decodable {
             result = rawValue
         }else if let rawValue = try? container.decodeIfPresent(CommitmentRequestResponse.self, forKey: .result){
             result = rawValue
+        }else if let rawValue = try? container.decodeIfPresent(LegacyLookupResponse.self, forKey: .result){
+            result = rawValue
         }else if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
             result = rawValue
         } else if let rawValue = try? container.decodeIfPresent(Int.self, forKey: .result) {
@@ -222,15 +224,8 @@ public struct JSONRPCresponse: Decodable {
             result = rawValue
         } else if let rawValue = try? container.decodeIfPresent([String: [String: [String: [String: String?]]]].self, forKey: .result) {
             result = rawValue
-//        } else if let rawValue = try? container.decodeIfPresent([String: AnyCodable ].self, forKey: .result) {
-//            result = rawValue
-            //        } else if let rawValue = try? container.decodeIfPresent([String: MixedValue].self, forKey: .result) {
-            //            print("mixed raw value")
-            //            result = rawValue
-        }else if let rawValue = try? container.decodeIfPresent(Data.self, forKey: .result) {
-            result = rawValue
         } else {
-//            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid mixed value")
+            result = nil
         }
         
         self.init(id: id, jsonrpc: jsonrpc, result: result, error: nil)

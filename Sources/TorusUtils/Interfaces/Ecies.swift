@@ -45,7 +45,7 @@ public struct EciesHex : Codable {
     
 }
 
-struct EciesHexOmitCiphertext {
+public struct EciesHexOmitCiphertext :Decodable {
     var iv: String
     var ephemPublicKey: String
     var mac: String

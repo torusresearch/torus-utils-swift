@@ -604,10 +604,8 @@ extension TorusUtils {
                     switch val {
                         
                     case.success(let model):
-                        print (try JSONSerialization.jsonObject(with: model.data))
                         let data = model.data
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
-                        print(decoded)
                         os_log("import share - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
                         
                         if decoded.error != nil {
@@ -1075,60 +1073,60 @@ extension TorusUtils {
 //        return Data(hex: result)
 //    }
 
-//    // MARK: - decrypt shares
-//
-//    func decryptIndividualShares(shares: [Int: RetrieveDecryptAndReconstuctResponse], privateKey: String) throws -> [Int: String] {
-//        var result = [Int: String]()
-//
-//        for (_, el) in shares.enumerated() {
-//            let nodeIndex = el.key
-//
-//            let k = el.value.ephemPublicKey
-//            let ephermalPublicKey = k.strip04Prefix()
-//            let ephermalPublicKeyBytes = ephermalPublicKey.hexa
-//            var ephermOne = ephermalPublicKeyBytes.prefix(32)
-//            var ephermTwo = ephermalPublicKeyBytes.suffix(32)
-//            // Reverse because of C endian array storage
-//            ephermOne.reverse(); ephermTwo.reverse()
-//            ephermOne.append(contentsOf: ephermTwo)
-//            let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
-//
-//            guard
-//                // Calculate g^a^b, i.e., Shared Key
-//                let data = Data(hexString: privateKey),
-//                let sharedSecret = ecdh(pubKey: ephemPubKey, privateKey: data)
-//            else {
-//                throw TorusUtilError.decryptionFailed
-//            }
-//            let sharedSecretData = sharedSecret.data
-//            let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
-//            let reversedSharedSecret = sharedSecretPrefix.reversed()
-//
-//            guard
-//                let share = el.value.share.fromBase64()?.hexa
-//            else {
-//                throw TorusUtilError.decryptionFailed
-//            }
-//            let iv = el.value.iv.hexa
-//            let newXValue = reversedSharedSecret.hexa
-//            let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
-//            let AesEncryptionKey = hash.prefix(64)
-//
-//            do {
-//                // AES-CBCblock-256
-//                let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-//                let decrypt = try aes.decrypt(share)
-//                result[nodeIndex] = decrypt.hexa
-//            } catch let err {
-//                result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
-//            }
-//            if shares.count == result.count {
-//                return result
-//            }
-//        }
-//        throw TorusUtilError.runtime("decryptIndividualShares func failed")
-//    }
+    // MARK: - decrypt shares
 
+        func decryptIndividualShares(shares: [Int: RetrieveDecryptAndReconstuctResponseModel], privateKey: String) throws -> [Int: String] {
+            var result = [Int: String]()
+
+            for (_, el) in shares.enumerated() {
+                let nodeIndex = el.key
+
+                let k = el.value.ephemPublicKey
+                let ephermalPublicKey = k.strip04Prefix()
+                let ephermalPublicKeyBytes = ephermalPublicKey.hexa
+                var ephermOne = ephermalPublicKeyBytes.prefix(32)
+                var ephermTwo = ephermalPublicKeyBytes.suffix(32)
+                // Reverse because of C endian array storage
+                ephermOne.reverse(); ephermTwo.reverse()
+                ephermOne.append(contentsOf: ephermTwo)
+                let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
+
+                guard
+                    // Calculate g^a^b, i.e., Shared Key
+                    let data = Data(hexString: privateKey),
+                    let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: data)
+                else {
+                    throw TorusUtilError.decryptionFailed
+                }
+                let sharedSecretData = sharedSecret.data
+                let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
+                let reversedSharedSecret = sharedSecretPrefix.reversed()
+
+                guard
+                    let share = el.value.share.fromBase64()?.hexa
+                else {
+                    throw TorusUtilError.decryptionFailed
+                }
+                let iv = el.value.iv.hexa
+                let newXValue = reversedSharedSecret.hexa
+                let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
+                let AesEncryptionKey = hash.prefix(64)
+
+                do {
+                    // AES-CBCblock-256
+                    let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
+                    let decrypt = try aes.decrypt(share)
+                    result[nodeIndex] = decrypt.hexa
+                } catch let err {
+                    result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
+                }
+                if shares.count == result.count {
+                    return result
+                }
+            }
+            throw TorusUtilError.runtime("decryptIndividualShares func failed")
+        }
+    
     // MARK: - Lagrange interpolation
 
     func thresholdLagrangeInterpolation(data filteredData: [Int: String], endpoints: [String], lookupPubkeyX: String, lookupPubkeyY: String) throws -> (String, String, String) {
@@ -1652,7 +1650,6 @@ extension TorusUtils {
     
     func combinePublicKeys(keys: [String], compressed: Bool) -> String {
         let data = keys.map({ Data.fromHex($0)! })
-        print(data)
         let added = SECP256K1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
         return (added?.toHexString())!
     }

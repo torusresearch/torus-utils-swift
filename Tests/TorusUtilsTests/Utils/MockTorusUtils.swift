@@ -13,7 +13,7 @@ import CommonSources
 
 
 class MockTorusUtils: AbstractTorusUtils {
-    func retrieveShares(endpoints: [String], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Any]) async throws -> RetrieveSharesResponse {
+    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel]?, verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Codable]) async throws -> RetrieveSharesResponse {
         return RetrieveSharesResponse(
             ethAddress: "", privKey: "", sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(BigUInt("0")), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: []
         )

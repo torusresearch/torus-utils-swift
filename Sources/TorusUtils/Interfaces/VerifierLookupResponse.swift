@@ -56,3 +56,44 @@ struct VerifierLookupResponse : Codable {
     }
     
 }
+
+
+public struct LegacyLookupResponse :Decodable{
+    public struct KeyLookup :Decodable {
+        public var index : String
+        public var metadata : EciesHexOmitCiphertext
+        public var publicKey : Point
+        public var share : String
+        public var threshold : Int
+        public var verifier : [String: [String]]
+        
+        public enum CodingKeys: CodingKey {
+            case Index
+            case Metadata
+            case PublicKey
+            case Share
+            case Threshold
+            case Verifiers
+        }
+        
+        public init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            self.index = try container.decode(String.self, forKey: .Index)
+            self.metadata = try container.decode(EciesHexOmitCiphertext.self, forKey: .Metadata)
+            self.publicKey = try container.decode(Point.self, forKey: .PublicKey)
+            self.share = try container.decode(String.self, forKey: .Share)
+            self.threshold = try container.decode(Int.self, forKey: .Threshold)
+            self.verifier = try container.decode([String: [String]].self, forKey: .Verifiers)
+            
+        }
+//        public init(from decoder: Decoder) throws {
+//            let container = try decoder.container(keyedBy: CodingKeys.self)
+//            self.keys = try container.decode(.self, forKey: .keys)
+//        }
+    }
+    
+    public var keys : [KeyLookup]
+
+    
+
+}

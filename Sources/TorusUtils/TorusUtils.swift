@@ -10,6 +10,7 @@ import Foundation
 import OSLog
 
 import secp256k1
+import AnyCodable
 
 @available(macOSApplicationExtension 10.15, *)
 var utilsLogType = OSLogType.default
@@ -76,32 +77,37 @@ open class TorusUtils: AbstractTorusUtils {
 
     public func retrieveShares(
         endpoints: [String],
+        torusNodePubs : [TorusNodePubModel]? = nil,
         verifier: String,
         verifierParams: VerifierParams,
         idToken: String,
-        extraParams: [String:Any] = [:]
+        extraParams: [String:Codable] = [:]
     ) async throws -> RetrieveSharesResponse {
-        let result = try await retrieveOrImportShare(
-            allowHost: self.allowHost,
-            network: self.network,
-            clientId: self.clientId,
-            endpoints: endpoints,
-            verifier: verifier,
-            verifierParams: verifierParams,
-            idToken: idToken,
-            extraParams: extraParams
-        )
-        return result
-    }
-
-    
-
-    open func generatePrivateKeyData() -> Data? {
-        return Data.randomOfLength(32)
-    }
-
-    open func getTimestamp() -> TimeInterval {
-        return Date().timeIntervalSince1970
+        
+//        Support legacy node (api)
+        switch network {
+        case .legacy(_) :
+            guard let torusNodePubs = torusNodePubs else {
+                throw fatalError("Torus Node Pub not available")
+            }
+            
+            let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
+            let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: buffer)
+            return .init(ethAddress: result.publicAddress, privKey: result.privateKey, sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(0), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: [])
+        case .sapphire(_) :
+            
+            let result = try await retrieveOrImportShare(
+                allowHost: self.allowHost,
+                network: self.network,
+                clientId: self.clientId,
+                endpoints: endpoints,
+                verifier: verifier,
+                verifierParams: verifierParams,
+                idToken: idToken,
+                extraParams: extraParams
+            )
+            return result
+        }
     }
     
     // TODO: importPrivateKey
@@ -401,4 +407,242 @@ open class TorusUtils: AbstractTorusUtils {
             throw error
         }
     }
+    
+    public func legacyRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
+            return try await withThrowingTaskGroup(of: RetrieveSharesResponseModel.self, body: { [unowned self] group in
+                group.addTask { [unowned self] in
+                    try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
+                }
+                group.addTask { [unowned self] in
+                    // 60 second timeout for login
+                    try await _Concurrency.Task.sleep(nanoseconds: UInt64(timeout * 60_000_000_000))
+                    throw TorusUtilError.timeout
+                }
+
+                do {
+                    for try await val in group {
+                        try Task.checkCancellation()
+                        group.cancelAll()
+                        return val
+                    }
+                } catch {
+                    group.cancelAll()
+                    throw error
+                }
+                throw TorusUtilError.timeout
+            })
+        }
+
+        func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
+            guard
+                let privateKey = generatePrivateKeyData(),
+                let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1 ..< 65)
+            else {
+                throw TorusUtilError.runtime("Unable to generate SECP256K1 keypair.")
+            }
+            print("retrieve legacy")
+
+            // Split key in 2 parts, X and Y
+            // let publicKeyHex = publicKey.toHexString()
+            let pubKeyX = publicKey.prefix(publicKey.count / 2).toHexString().addLeading0sForLength64()
+            let pubKeyY = publicKey.suffix(publicKey.count / 2).toHexString().addLeading0sForLength64()
+
+            // Hash the token from OAuth login
+
+            let timestamp = String(Int(getTimestamp()))
+            let hashedToken = idToken.sha3(.keccak256)
+
+            var publicAddress: String = ""
+            var lookupPubkeyX: String = ""
+            var lookupPubkeyY: String = ""
+            var pk: String = ""
+            do {
+                let getPublicAddressData = try await getPublicAddressExtended(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId)
+                publicAddress = getPublicAddressData.address
+                guard
+                    let localPubkeyX = getPublicAddressData.x?.addLeading0sForLength64(),
+                    let localPubkeyY = getPublicAddressData.y?.addLeading0sForLength64()
+                else { throw TorusUtilError.runtime("Empty pubkey returned from getPublicAddress.") }
+                lookupPubkeyX = localPubkeyX
+                lookupPubkeyY = localPubkeyY
+                let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
+                os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
+                let (x, y, key) = try await retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
+                if enableOneKey {
+                    let result = try await getOrSetNonce(x: x, y: y, privateKey: key, getOnly: true)
+                    let nonce = BigUInt(result.nonce ?? "0", radix: 16) ?? 0
+                    if nonce != BigInt(0) {
+                        let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
+                        let newKey = tempNewKey.modulus(modulusValue)
+                        os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
+                        pk = BigUInt(newKey).serialize().suffix(64).toHexString()
+                    } else {
+                        pk = key
+                    }
+                } else {
+                    let nonce = try await getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y])
+                    if nonce != BigInt(0) {
+                        let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
+                        let newKey = tempNewKey.modulus(modulusValue)
+                        os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
+                        pk = BigUInt(newKey).serialize().suffix(64).toHexString()
+                    } else {
+                        pk = key
+                    }
+                }
+                return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk)
+            } catch {
+                os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                throw error
+            }
+        }
+    
+        open func generatePrivateKeyData() -> Data? {
+            return Data.randomOfLength(32)
+        }
+    
+        open func getTimestamp() -> TimeInterval {
+            return Date().timeIntervalSince1970
+        }
+    
+    // MARK: - retreiveDecryptAndReconstuct
+
+        func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
+            // Rebuild extraParams
+            let session = createURLSession()
+            let threshold = Int(endpoints.count / 2) + 1
+            var rpcdata: Data = Data()
+            do {
+                if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String: Any] {
+                    let value = ["verifieridentifier": verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures.tostringDict(), "idtoken": tokenCommitment] as [String: Any]
+                    let keepingCurrent = loadedStrings.merging(value) { current, _ in current }
+                    // TODO: Look into hetrogeneous array encoding
+                    let dataForRequest = ["jsonrpc": "2.0",
+                                          "id": 10,
+                                          "method": "ShareRequest",
+                                          "params": ["encrypted": "yes",
+                                                     "item": [keepingCurrent]] as [String: Any]] as [String: Any]
+                    rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
+                }
+            } catch {
+                os_log("retrieveDecryptAndReconstruct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+            }
+
+            var shareResponses : [PointHex] = []
+            var resultArray = [Int: RetrieveDecryptAndReconstuctResponseModel]()
+            var errorStack = [Error]()
+            var requestArr = [URLRequest]()
+            for (_, el) in endpoints.enumerated() {
+                do {
+                    var rq = try makeUrlRequest(url: el)
+                    rq.httpBody = rpcdata
+                    requestArr.append(rq)
+                } catch {
+                    throw error
+                }
+            }
+            return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+                for (i, rq) in requestArr.enumerated() {
+                    group.addTask {
+                        do {
+                            let val = try await session.data(for: rq)
+                            return .success(.init(data: val.0, urlResponse: val.1, index: i))
+                        } catch {
+                            return .failure(error)
+                        }
+                    }
+                }
+
+                for try await val in group {
+                    do {
+                        try Task.checkCancellation()
+                        switch val {
+                        case .success(let model):
+                            let _data = model.data
+                            let i = model.index
+                            print( try JSONSerialization.jsonObject(with: model.data))
+                            
+                            let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
+                            if decoded.error != nil {
+                                throw TorusUtilError.decodingFailed(decoded.error?.data)
+                            }
+                            os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
+
+                            guard
+                                let decodedResult = decoded.result as? LegacyLookupResponse
+                            else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
+                            print("check keys obj")
+                            // Due to multiple keyAssign
+                            
+                            let keyObj = decodedResult.keys
+                            if let first = keyObj.first {
+//                                guard
+//                                    let metadata = first["Metadata"] as? [String: String],
+//                                    let share = first["Share"] as? String,
+//                                    let publicKey = first["PublicKey"] as? [String: String],
+//                                    let iv = metadata["iv"],
+//                                    let ephemPublicKey = metadata["ephemPublicKey"],
+//                                    let pubKeyX = publicKey["X"],
+//                                    let pubKeyY = publicKey["Y"]
+//                                else {
+//                                    throw TorusUtilError.decodingFailed("\(first)")
+//                                }
+                                let pointHex = PointHex(from: first.publicKey)
+//                                shareResponses[i] = pointHex
+                                shareResponses.append(pointHex)
+                                let metadata = first.metadata
+                                let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
+                                resultArray[i] = model
+                            }
+                            print("check for lookupshares")
+                            let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
+
+                            // Comparing dictionaries, so the order of keys doesn't matter
+                            print(lookupShares)
+                            let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: threshold) // Check if threshold is satisfied
+                            var data: [Int: String] = [:]
+                            if keyResult != nil {
+                                os_log("retreiveIndividualNodeShares - result: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, resultArray)
+                                data = try decryptIndividualShares(shares: resultArray, privateKey: privateKey)
+                            } else {
+                                throw TorusUtilError.empty
+                            }
+                            os_log("retrieveDecryptAndReconstuct - data after decryptIndividualShares: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data)
+                            let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
+                            
+                            
+                            if filteredData.count < threshold { throw TorusUtilError.thresholdError }
+                            let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
+                            session.invalidateAndCancel()
+                            return thresholdLagrangeInterpolationData
+                        case .failure(let error):
+                            throw error
+                        }
+                    } catch {
+                        errorStack.append(error)
+                        let nsErr = error as NSError
+                        let userInfo = nsErr.userInfo as [String: Any]
+                        if error as? TorusUtilError == .timeout {
+                            group.cancelAll()
+                            session.invalidateAndCancel()
+                            throw error
+                        }
+                        if nsErr.code == -1003 {
+                            // In case node is offline
+                            os_log("retrieveDecryptAndReconstuct: DNS lookup failed, node %@ is probably offline.", log: getTorusLogger(log: TorusUtilsLogger.network, type: .error), type: .error, userInfo["NSErrorFailingURLKey"].debugDescription)
+                        } else if let err = (error as? TorusUtilError) {
+                            if err == TorusUtilError.thresholdError {
+                                os_log("retrieveDecryptAndReconstuct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                            }
+                        } else {
+                            os_log("retrieveDecryptAndReconstuct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                        }
+                    }
+                }
+                throw TorusUtilError.runtime("retrieveDecryptAndReconstuct func failed")
+            })
+
+        }
+
+
 }
