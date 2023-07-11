@@ -1350,6 +1350,7 @@ extension TorusUtils {
 
     public func keyLookup(endpoints: [String], verifier: String, verifierId: String) async throws -> KeyLookupResponse {
         // Enode data
+        print(endpoints)
         let encoder = JSONEncoder()
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
@@ -1357,6 +1358,7 @@ extension TorusUtils {
         let jsonRPCRequest = JSONRPCrequest(
             method: "VerifierLookupRequest",
             params: ["verifier": verifier, "verifier_id": verifierId])
+        print(jsonRPCRequest)
         guard let rpcdata = try? encoder.encode(jsonRPCRequest)
         else {
             throw TorusUtilError.encodingFailed("\(jsonRPCRequest)")
