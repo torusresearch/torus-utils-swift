@@ -664,8 +664,6 @@ extension TorusUtils {
             throw TorusUtilError.commitmentRequestFailed
         })
         
-        print(thresholdPublicKey)
-        
         // optimistically run lagrange interpolation once threshold number of shares have been received
         // this is matched against the user public key to ensure that shares are consistent
         // Note: no need of thresholdMetadataNonce for extended_verifier_id key
@@ -752,21 +750,14 @@ extension TorusUtils {
                         sessionTokenData.append(SessionToken(token: token, signature: signature!, node_pubx: nodePubX, node_puby: nodePubY))
                     }
                 }
-                print(sharePromises)
                 let decryptedShares = sharePromises.enumerated().reduce(into: [ Int : String ]()) { acc, current in
                     let (index, curr) = current
                     acc[nodeIndexes[index]] = curr
                 }
-                print("share")
-//                print (decryptedShares.map({ (index: BigInt, value: BigInt) in
-//                    return (index, value.serialize().toHexString())
-//                }))
                 
                 // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
                 let allCombis = kCombinations(s: decryptedShares.count, k: threshold)
                 var privateKey: String? = nil
-                print("combi")
-                print( allCombis)
 
                 for j in 0..<allCombis.count {
                     let currentCombi = allCombis[j]
@@ -778,16 +769,12 @@ extension TorusUtils {
                         }
                     }
                     let derivedPrivateKey = try lagrangeInterpolation(shares: currentCombiShares, offset: 0)
-//                    print ( derivedPrivateKey.serialize().toHexString() )
                     let derivedPrivateKeyHex = derivedPrivateKey
                 
-                    print (derivedPrivateKeyHex)
                     guard let derivedPrivateKeyData = Data(hexString: derivedPrivateKeyHex) else {
                         continue
                     }
                     let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKey) )?.toHexString()
-                    print(decryptedPubKey)
-//                    print(combinePublicKeys(keys: [decryptedPubKey!], compressed: true) )
                     
                     let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
                     let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
@@ -801,8 +788,6 @@ extension TorusUtils {
                         break
                     }
                 }
-                print("derive private key")
-                print(privateKey)
                 guard let privateKey = privateKey else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
@@ -813,9 +798,7 @@ extension TorusUtils {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
-                print("derive private key2")
                 let decryptedPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
-                print(decryptedPubKey)
                 let decryptedPubKeyX = String(decryptedPubKey!.suffix(128).prefix(64))
                 let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
                 
@@ -831,8 +814,6 @@ extension TorusUtils {
                     let pubNonceX = thresholdNonceData!.pubNonce!.x
                     let pubNonceY = thresholdNonceData!.pubNonce!.y
                     let pubkey2 = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
-                    print (modifiedPubKey)
-                    print(pubkey2)
                     let combined = combinePublicKeys(keys: [modifiedPubKey, pubkey2], compressed: false)
                     modifiedPubKey = combined
                 } else {
@@ -972,7 +953,6 @@ extension TorusUtils {
         )
         
         let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts).toHexString()
-        print(decryptedSigBuffer)
         return decryptedSigBuffer
     }
 
@@ -1687,15 +1667,12 @@ extension TorusUtils {
         do {
             // AES-CBCblock-256
             let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-            print(aes)
             let decrypt = try aes.decrypt(opts.ciphertext.hexa)
-            print(decrypt)
             let data = Data(decrypt)
             return data
 
 
         } catch let err {
-            print(err)
             throw err
         }
     }

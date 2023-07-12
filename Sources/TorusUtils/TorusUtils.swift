@@ -224,7 +224,6 @@ open class TorusUtils: AbstractTorusUtils {
     
     //   Legacy
     public func getLegacyPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressResult {
-        print("legacy")
         do {
             var data: KeyLookupResponse
             do {
@@ -241,7 +240,6 @@ open class TorusUtils: AbstractTorusUtils {
                     throw error
                 }
             }
-            print("dnoe keylookup")
             let pubKeyX = data.pubKeyX
             let pubKeyY = data.pubKeyY
             var modifiedPubKey: String = ""
@@ -440,7 +438,6 @@ open class TorusUtils: AbstractTorusUtils {
             else {
                 throw TorusUtilError.runtime("Unable to generate SECP256K1 keypair.")
             }
-            print("retrieve legacy")
 
             // Split key in 2 parts, X and Y
             // let publicKeyHex = publicKey.toHexString()
@@ -560,7 +557,6 @@ open class TorusUtils: AbstractTorusUtils {
                         case .success(let model):
                             let _data = model.data
                             let i = model.index
-                            print( try JSONSerialization.jsonObject(with: model.data))
                             
                             let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
                             if decoded.error != nil {
@@ -571,7 +567,6 @@ open class TorusUtils: AbstractTorusUtils {
                             guard
                                 let decodedResult = decoded.result as? LegacyLookupResponse
                             else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
-                            print("check keys obj")
                             // Due to multiple keyAssign
                             
                             let keyObj = decodedResult.keys
@@ -594,11 +589,9 @@ open class TorusUtils: AbstractTorusUtils {
                                 let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
                                 resultArray[i] = model
                             }
-                            print("check for lookupshares")
                             let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
 
                             // Comparing dictionaries, so the order of keys doesn't matter
-                            print(lookupShares)
                             let keyResult = thresholdSame(arr: lookupShares.map { $0 }, threshold: threshold) // Check if threshold is satisfied
                             var data: [Int: String] = [:]
                             if keyResult != nil {
