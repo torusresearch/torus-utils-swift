@@ -58,135 +58,135 @@ extension TorusUtils {
     }
 
     
-    func importPrivateKey(
-        endpoints: [String],
-        nodeIndexes: [BigUInt],
-        nodePubKeys: [INodePub],
-        verifier: String,
-        verifierParams: VerifierParams,
-        idToken: String,
-        newPrivateKey: String,
-        extraParams: [String: Any] = [:]
+//     func importPrivateKey(
+//         endpoints: [String],
+//         nodeIndexes: [BigUInt],
+//         nodePubKeys: [INodePub],
+//         verifier: String,
+//         verifierParams: VerifierParams,
+//         idToken: String,
+//         newPrivateKey: String,
+//         extraParams: [String: Any] = [:]
 
-    ) async throws -> RetrieveSharesResponse {
+//     ) async throws -> RetrieveSharesResponse {
         
-        if endpoints.count != nodeIndexes.count {
-            throw TorusUtilError.runtime("Length of endpoints array must be the same as length of nodeIndexes array")
-        }
+//         if endpoints.count != nodeIndexes.count {
+//             throw TorusUtilError.runtime("Length of endpoints array must be the same as length of nodeIndexes array")
+//         }
         
-        let threshold = endpoints.count / 2 + 1
-        let degree = threshold - 1
-        var nodeIndexesBigInt: [BigInt] = []
+//         let threshold = endpoints.count / 2 + 1
+//         let degree = threshold - 1
+//         var nodeIndexesBigInt: [BigInt] = []
         
-        let privKeyBigInt = BigInt(hex: newPrivateKey) ?? BigInt(0)
+//         let privKeyBigInt = BigInt(hex: newPrivateKey) ?? BigInt(0)
 
-        for nodeIndex in nodeIndexes {
+//         for nodeIndex in nodeIndexes {
 
-            nodeIndexesBigInt.append(BigInt(nodeIndex))
-        }
+//             nodeIndexesBigInt.append(BigInt(nodeIndex))
+//         }
     
-        let randomNonce = BigInt(SECP256K1.generatePrivateKey()!)
+//         let randomNonce = BigInt(SECP256K1.generatePrivateKey()!)
         
         
-        let oauthKey = abs(privKeyBigInt - randomNonce) % modulusValue
-        let oauthKeyStr = String(oauthKey, radix: 16).addLeading0sForLength64()
-        guard let oauthKeyData = Data(hex: oauthKeyStr)
-        else {
-            throw TorusUtilError.runtime("invalid oauthkey data")
-        }
+//         let oauthKey = abs(privKeyBigInt - randomNonce) % modulusValue
+//         let oauthKeyStr = String(oauthKey, radix: 16).addLeading0sForLength64()
+//         guard let oauthKeyData = Data(hex: oauthKeyStr)
+//         else {
+//             throw TorusUtilError.runtime("invalid oauthkey data")
+//         }
         
         
-        guard let oauthPubKey = SECP256K1.privateToPublic(privateKey: oauthKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
-        else {
-            throw TorusUtilError.runtime("invalid oauthkey")
+//         guard let oauthPubKey = SECP256K1.privateToPublic(privateKey: oauthKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
+//         else {
+//             throw TorusUtilError.runtime("invalid oauthkey")
 
-        }
+//         }
         
-//        let (pubKeyX, pubKeyY) = try getPublicKeyPointFromAddress(address: oauthPubKey)
+// //        let (pubKeyX, pubKeyY) = try getPublicKeyPointFromAddress(address: oauthPubKey)
 
-        let pubKeyX = String(oauthPubKey.prefix(64))
-        let pubKeyY = String(oauthPubKey.suffix(64))
+//         let pubKeyX = String(oauthPubKey.prefix(64))
+//         let pubKeyY = String(oauthPubKey.suffix(64))
 
-        let poly = try generateRandomPolynomial(degree: degree, secret: oauthKey)
-        let shares = poly.generateShares(shareIndexes: nodeIndexesBigInt)
+//         let poly = try generateRandomPolynomial(degree: degree, secret: oauthKey)
+//         let shares = poly.generateShares(shareIndexes: nodeIndexesBigInt)
 
-        let nonceParams = try generateNonceMetadataParams(message: "getOrSetNonce", privateKey: oauthKey, nonce: randomNonce)
+//         let nonceParams = try generateNonceMetadataParams(message: "getOrSetNonce", privateKey: oauthKey, nonce: randomNonce)
 
         
-        var nonceData = ""
-        // Create a JSON encoder
-        let encoder = JSONEncoder()
+//         var nonceData = ""
+//         // Create a JSON encoder
+//         let encoder = JSONEncoder()
         
-        // Set the output formatting if needed
-        encoder.outputFormatting = .prettyPrinted
+//         // Set the output formatting if needed
+//         encoder.outputFormatting = .prettyPrinted
         
-        // Convert the SetNonceData to JSON data
-        let jsonData = try encoder.encode(nonceParams.set_data)
+//         // Convert the SetNonceData to JSON data
+//         let jsonData = try encoder.encode(nonceParams.set_data)
         
-        // Convert the JSON data to a string
-        let jsonString = String(data: jsonData, encoding: .utf8)!
-        // Base64 encode the JSON string
-        let base64EncodedString = Data(jsonString.utf8).base64EncodedString()
-        nonceData = base64EncodedString
+//         // Convert the JSON data to a string
+//         let jsonString = String(data: jsonData, encoding: .utf8)!
+//         // Base64 encode the JSON string
+//         let base64EncodedString = Data(jsonString.utf8).base64EncodedString()
+//         nonceData = base64EncodedString
             
 
-        var sharesData: [ImportedShare] = []
+//         var sharesData: [ImportedShare] = []
         
-        var encShares: [Ecies] = []
-        var encErrors: [Error] = []
+//         var encShares: [Ecies] = []
+//         var encErrors: [Error] = []
         
-        for (i, _) in nodeIndexesBigInt.enumerated() {
-            let shareIdx = String(nodeIndexesBigInt[i], radix: 16)
-            print("idx",shareIdx)
-            let share = shares[shareIdx]
-            let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
+//         for (i, _) in nodeIndexesBigInt.enumerated() {
+//             let shareIdx = String(nodeIndexesBigInt[i], radix: 16)
+//             print("idx",shareIdx)
+//             let share = shares[shareIdx]
+//             let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
 
-            let shareData = share?.share
-            let shareString = String(shareData!, radix: 16)
+//             let shareData = share?.share
+//             let shareString = String(shareData!, radix: 16)
 
-            if shareData == nil {
-                continue
-            }
-            do {
-                // TODO: we need encrypt logic here
-                let encShareData = try encrypt(publicKey: nodePubKey, msg: shareString)
-                encShares.append(encShareData)
-            } catch {
-                encErrors.append(error)
-            }
+//             if shareData == nil {
+//                 continue
+//             }
+//             do {
+//                 // TODO: we need encrypt logic here
+//                 let encShareData = try encrypt(publicKey: nodePubKey, msg: shareString)
+//                 encShares.append(encShareData)
+//             } catch {
+//                 encErrors.append(error)
+//             }
             
-        }
+//         }
         
-        for (i, _) in nodeIndexesBigInt.enumerated() {
-            let shareJson = shares[String(nodeIndexesBigInt[i], radix: 16)]
-            let encParams = encShares[i]
-            let encParamsMetadata = encParamsBufToHex(encParams: encParams)
-            let shareData = ImportedShare(
-                pubKeyX: pubKeyX,
-                pubKeyY: pubKeyY,
-                encryptedShare: encParamsMetadata.ciphertext!,
-                encryptedShareMetadata: encParamsMetadata,
-                nodeIndex: Int(shareJson!.shareIndex),
-                keyType: "secp256k1",
-                nonceData: nonceData,
-                nonceSignature: nonceParams.signature
-            )
-            sharesData.append(shareData)
-        }
+//         for (i, _) in nodeIndexesBigInt.enumerated() {
+//             let shareJson = shares[String(nodeIndexesBigInt[i], radix: 16)]
+//             let encParams = encShares[i]
+//             let encParamsMetadata = encParamsBufToHex(encParams: encParams)
+//             let shareData = ImportedShare(
+//                 pubKeyX: pubKeyX,
+//                 pubKeyY: pubKeyY,
+//                 encryptedShare: encParamsMetadata.ciphertext!,
+//                 encryptedShareMetadata: encParamsMetadata,
+//                 nodeIndex: Int(shareJson!.shareIndex),
+//                 keyType: "secp256k1",
+//                 nonceData: nonceData,
+//                 nonceSignature: nonceParams.signature
+//             )
+//             sharesData.append(shareData)
+//         }
         
         
-        return try await retrieveOrImportShare(
-            allowHost: self.allowHost,
-            network: self.network,
-            clientId: self.clientId,
-            endpoints: endpoints,
-            verifier: verifier,
-            verifierParams: verifierParams,
-            idToken: idToken,
-            importedShares: sharesData,
-            extraParams: extraParams
-        )
-    }
+//         return try await retrieveOrImportShare(
+//             allowHost: self.allowHost,
+//             network: self.network,
+//             clientId: self.clientId,
+//             endpoints: endpoints,
+//             verifier: verifier,
+//             verifierParams: verifierParams,
+//             idToken: idToken,
+//             importedShares: sharesData,
+//             extraParams: extraParams
+//         )
+//     }
     
 
     

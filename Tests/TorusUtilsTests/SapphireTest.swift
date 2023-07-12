@@ -141,43 +141,43 @@ final class SapphireTest: XCTestCase {
 //        
 //        
 //    }
-    func testImportKeyForNewUser() async throws {
-        let email = "faker@gmail.com"
-        let token = try generateIdToken(email: email)
-        let privKeyBuffer = generatePrivateExcludingIndexes(shareIndexes: [])
-        let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
-        let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: email)
-        let sssEndpoints = endpoints.torusNodeSSSEndpoints
-        let verifierParams = VerifierParams(verifier_id: email)
+    // func testImportKeyForNewUser() async throws {
+    //     let email = "faker@gmail.com"
+    //     let token = try generateIdToken(email: email)
+    //     let privKeyBuffer = generatePrivateExcludingIndexes(shareIndexes: [])
+    //     let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
+    //     let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: email)
+    //     let sssEndpoints = endpoints.torusNodeSSSEndpoints
+    //     let verifierParams = VerifierParams(verifier_id: email)
         
-        let response = try await torus?.importPrivateKey(endpoints: sssEndpoints, nodeIndexes: endpoints.torusIndexes, nodePubKeys: endpoints.torusNodePub.map( TorusNodePubModelToINodePub) , verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token, newPrivateKey: privKeyBuffer.serialize().toHexString() )
+    //     let response = try await torus?.importPrivateKey(endpoints: sssEndpoints, nodeIndexes: endpoints.torusIndexes, nodePubKeys: endpoints.torusNodePub.map( TorusNodePubModelToINodePub) , verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token, newPrivateKey: privKeyBuffer.serialize().toHexString() )
         
-        XCTAssertEqual(response?.privKey.lowercased(), privKeyBuffer.serialize().toHexString().lowercased())
-    }
+    //     XCTAssertEqual(response?.privKey.lowercased(), privKeyBuffer.serialize().toHexString().lowercased())
+    // }
     
     
-    func testImporKeyForExistingUser() async throws {
-        let email = TORUS_IMPORT_EMAIL
-        let token = try generateIdToken(email: email)
-        let privKeyBuffer = generatePrivateExcludingIndexes(shareIndexes: [])
-        let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
-        let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: email)
-        let sssEndpoints = endpoints.torusNodeSSSEndpoints
-        let verifierParams = VerifierParams(verifier_id: email)
+    // func testImporKeyForExistingUser() async throws {
+    //     let email = TORUS_IMPORT_EMAIL
+    //     let token = try generateIdToken(email: email)
+    //     let privKeyBuffer = generatePrivateExcludingIndexes(shareIndexes: [])
+    //     let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
+    //     let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: email)
+    //     let sssEndpoints = endpoints.torusNodeSSSEndpoints
+    //     let verifierParams = VerifierParams(verifier_id: email)
         
-        let publicAddress = try await torus?.getPublicAddress(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: email)
+    //     let publicAddress = try await torus?.getPublicAddress(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: email)
         
-        let response = try await torus?.importPrivateKey(endpoints: sssEndpoints, nodeIndexes: endpoints.torusIndexes, nodePubKeys: endpoints.torusNodePub.map( TorusNodePubModelToINodePub) , verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token, newPrivateKey: privKeyBuffer.serialize().toHexString() )
-        
-        
-        XCTAssertEqual(response?.privKey.lowercased(), privKeyBuffer.serialize().toHexString().lowercased())
+    //     let response = try await torus?.importPrivateKey(endpoints: sssEndpoints, nodeIndexes: endpoints.torusIndexes, nodePubKeys: endpoints.torusNodePub.map( TorusNodePubModelToINodePub) , verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token, newPrivateKey: privKeyBuffer.serialize().toHexString() )
         
         
-        let publicAddressNew = try await torus?.getPublicAddressExtended(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: email)
-        XCTAssertEqual(publicAddressNew?.address.lowercased(), response?.ethAddress.lowercased())
-        XCTAssertNotEqual(publicAddressNew?.address.lowercased(), publicAddress?.lowercased())
+    //     XCTAssertEqual(response?.privKey.lowercased(), privKeyBuffer.serialize().toHexString().lowercased())
         
-    }
+        
+    //     let publicAddressNew = try await torus?.getPublicAddressExtended(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: email)
+    //     XCTAssertEqual(publicAddressNew?.address.lowercased(), response?.ethAddress.lowercased())
+    //     XCTAssertNotEqual(publicAddressNew?.address.lowercased(), publicAddress?.lowercased())
+        
+    // }
 
     func testPubAdderessOfTssVerifierId() async throws {
         let email = TORUS_EXTENDED_VERIFIER_EMAIL
