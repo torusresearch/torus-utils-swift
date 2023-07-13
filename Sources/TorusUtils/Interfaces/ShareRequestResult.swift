@@ -22,12 +22,33 @@ struct ShareRequestResult : Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.keys = try container.decode([KeyAssignment].self, forKey: .keys)
-        self.sessionTokens = try container.decode([String].self, forKey: .session_tokens)
-        self.sessionTokenMetadata = try container.decode([EciesHex].self, forKey: .session_token_metadata)
-        self.sessionTokenSigs = try container.decode([String].self, forKey: .session_token_sigs)
-        self.sessionTokenSigMetadata = try container.decode([EciesHex].self, forKey: .session_token_sig_metadata)
         self.nodePubX = try container.decode(String.self, forKey: .node_pubx )
         self.nodePubY = try container.decode(String.self, forKey: .node_puby)
+        
+        if let sessionTokens = try? container.decodeIfPresent([String].self, forKey: .session_tokens) {
+            self.sessionTokens = sessionTokens
+        } else {
+            self.sessionTokens = []
+        }
+        
+        if let sessionTokenMetadata = try? container.decodeIfPresent([EciesHex].self, forKey: .session_token_metadata) {
+            self.sessionTokenMetadata = sessionTokenMetadata
+        } else {
+            self.sessionTokenMetadata = []
+        }
+        
+        if let sessionTokenSigs = try? container.decodeIfPresent([String].self, forKey: .session_token_sigs) {
+            self.sessionTokenSigs = sessionTokenSigs
+        } else {
+            self.sessionTokenSigs = []
+        }
+        
+        if let sessionTokenSigMetadata = try? container.decodeIfPresent([EciesHex].self, forKey: .session_token_sig_metadata) {
+            self.sessionTokenSigMetadata = sessionTokenSigMetadata
+        } else {
+            self.sessionTokenSigMetadata = []
+        }
+        
     }
     
 //    public func encode(to encoder: Encoder) throws {

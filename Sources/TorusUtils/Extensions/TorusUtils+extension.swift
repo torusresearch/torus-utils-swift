@@ -78,7 +78,7 @@ extension TorusUtils {
         let degree = threshold - 1
         var nodeIndexesBigInt: [BigInt] = []
         
-        let privKeyBigInt = BigInt(hex: newPrivateKey) ?? BigInt(0)
+        let privKeyBigInt = BigInt(hex: newPrivateKey)!
 
         for nodeIndex in nodeIndexes {
 
@@ -89,23 +89,16 @@ extension TorusUtils {
         
         
         let oauthKey = abs(privKeyBigInt - randomNonce) % modulusValue
-        let oauthKeyStr = String(oauthKey, radix: 16).addLeading0sForLength64()
-        guard let oauthKeyData = Data(hex: oauthKeyStr)
-        else {
-            throw TorusUtilError.runtime("invalid oauthkey data")
-        }
+        print(oauthKey)
+        let oauthKeyData = oauthKey.serialize().data
+
         
-        
-        guard let oauthPubKey = SECP256K1.privateToPublic(privateKey: oauthKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
+        guard let oauthPubKey = SECP256K1.privateToPublic(privateKey: oauthKeyData) //?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
         else {
             throw TorusUtilError.runtime("invalid oauthkey")
-
         }
         
-//        let (pubKeyX, pubKeyY) = try getPublicKeyPointFromAddress(address: oauthPubKey)
-
-        let pubKeyX = String(oauthPubKey.prefix(64))
-        let pubKeyY = String(oauthPubKey.suffix(64))
+        let (pubKeyX, pubKeyY) = try getPublicKeyPointFromAddress(address: oauthPubKey.hexString)
 
         let poly = try generateRandomPolynomial(degree: degree, secret: oauthKey)
         let shares = poly.generateShares(shareIndexes: nodeIndexesBigInt)
@@ -141,15 +134,12 @@ extension TorusUtils {
             let share = shares[shareIdx]
             let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
 
-            let shareData = share?.share
-            let shareString = String(shareData!, radix: 16)
-
-            if shareData == nil {
-                continue
+            guard let shareData = share?.share else {
+                throw fatalError("Invalid share")
             }
             do {
                 // TODO: we need encrypt logic here
-                let encShareData = try encrypt(publicKey: nodePubKey, msg: shareString)
+                let encShareData = try encrypt(publicKey: nodePubKey, msg: shareData.serialize().bytes)
                 encShares.append(encShareData)
             } catch {
                 encErrors.append(error)
@@ -353,9 +343,7 @@ extension TorusUtils {
                          "nodesignatures": nodeSigs,
                          "verifieridentifier": verifier,
                          "verifier_id": verifierParams.verifier_id,
-                         "extended_verifier_id": verifierParams.extended_verifier_id,
-                         "test" :true
-                 
+                         "extended_verifier_id": verifierParams.extended_verifier_id,                 
         ] as [String: Codable]
                 
         let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
@@ -961,18 +949,18 @@ extension TorusUtils {
         guard let pubKey = SECP256K1.privateToPublic(privateKey: privkeyHex.hexa.data)?.web3.hexString.web3.noHexPrefix else {
             throw TorusUtilError.runtime("Invalid private key hex")
         }
-        let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt, opts: nil)
+        let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt.bytes, opts: nil)
         let data = try JSONEncoder().encode(encParams)
         guard let string = String(data: data, encoding: .utf8) else { throw TorusUtilError.runtime("Invalid String from enc Params") }
         return string
     }
     
-    private func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
+    private func encrypt(publicKey: String, msg: Array<UInt8>, opts: Ecies? = nil) throws -> Ecies {
          guard let ephemPrivateKey = SECP256K1.generatePrivateKey(), let ephemPublicKey = SECP256K1.privateToPublic(privateKey: ephemPrivateKey)
          else {
              throw TorusUtilError.runtime("Private key generation failed")
          }
-         let ephermalPublicKey = publicKey.strip04Prefix()
+        let ephermalPublicKey = publicKey.strip04Prefix()
          let ephermalPublicKeyBytes = ephermalPublicKey.hexa
          var ephermOne = ephermalPublicKeyBytes.prefix(32)
          var ephermTwo = ephermalPublicKeyBytes.suffix(32)
@@ -997,7 +985,7 @@ extension TorusUtils {
          do {
              // AES-CBCblock-256
              let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
-             let encrypt = try aes.encrypt(msg.bytes)
+             let encrypt = try aes.encrypt(msg)
              let data = Data(encrypt)
              let ciphertext = data
              var dataToMac: [UInt8] = iv
@@ -1613,7 +1601,7 @@ extension TorusUtils {
     }
 
     func getPublicKeyPointFromAddress( address: String) throws ->  (String, String) {
-        let publicKeyHashData = Data.fromHex(address)?.dropFirst()//.dropLast(4)
+        let publicKeyHashData = Data.fromHex(address.strip04Prefix()) //.dropFirst()//.dropLast(4)
         guard publicKeyHashData?.count == 64 else {
             throw "Invalid address,"
         }

@@ -225,7 +225,7 @@ final class SapphireTest: XCTestCase {
         let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
         let verifierParams = VerifierParams(verifier_id: verifierId, extended_verifier_id: tssVerifierId)
         
-        try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_EMAIL, verifierParams: verifierParams, idToken: token)
+        try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
     }
 //
 //     it("should allow test tss verifier id to fetch shares", async function () {
