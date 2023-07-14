@@ -71,7 +71,7 @@ final class SapphireTest: XCTestCase {
         let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
         let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
         let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-        XCTAssertEqual(publicAddress?.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
+        XCTAssertEqual(publicAddress?.finalKeyData?.evmAddress.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
         print("pass check")
     }
     
@@ -84,9 +84,9 @@ final class SapphireTest: XCTestCase {
         let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: verifierId)
         let publicAddress2 = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: verifierId)
 
-        XCTAssertEqual(publicAddress, publicAddress2)
-        XCTAssertNotEqual(publicAddress, nil)
-        XCTAssertNotEqual(publicAddress, "")
+        XCTAssertEqual(publicAddress?.finalKeyData?.evmAddress, publicAddress2?.finalKeyData?.evmAddress)
+        XCTAssertNotEqual(publicAddress?.finalKeyData?.evmAddress, nil)
+        XCTAssertNotEqual(publicAddress2?.finalKeyData?.evmAddress, "")
     }
     
     func testFetchPublicAddressAndUserType() async throws {
@@ -97,7 +97,7 @@ final class SapphireTest: XCTestCase {
         print (endpoint.torusNodeSSSEndpoints)
         let result = try await torus?.getPublicAddressExtended(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
 
-        XCTAssertEqual(result?.address.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
+        XCTAssertEqual(result?.finalKeyData?.evmAddress.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
     }
 
 //    it("should be able to key assign", async function () {
@@ -189,10 +189,10 @@ final class SapphireTest: XCTestCase {
         let sssEndpoints = nodes.torusNodeSSSEndpoints
         
         let pubAddress = try await torus?.getPublicAddress(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, extendedVerifierId: tssVerifierId)
-        XCTAssertEqual(pubAddress?.lowercased(), "0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30".lowercased())
+        XCTAssertEqual(pubAddress?.finalKeyData?.evmAddress.lowercased(), "0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30".lowercased())
         
         let pubAddress2 = try await torus?.getPublicAddress(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, extendedVerifierId: tssVerifierId)
-        XCTAssertEqual(pubAddress?.lowercased(), pubAddress2?.lowercased())
+        XCTAssertEqual(pubAddress?.finalKeyData?.evmAddress.lowercased(), pubAddress2?.finalKeyData?.evmAddress.lowercased())
         
     }
     
@@ -208,8 +208,8 @@ final class SapphireTest: XCTestCase {
         let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
         let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: verifierId)
 
-        XCTAssertNotEqual(publicAddress, nil)
-        XCTAssertNotEqual(publicAddress, "")
+        XCTAssertNotEqual(publicAddress?.finalKeyData?.evmAddress, nil)
+        XCTAssertNotEqual(publicAddress?.finalKeyData?.evmAddress, "")
     }
     
 //    func testAllowTssVerifierIdFetchShare () async throws {
@@ -245,7 +245,7 @@ final class SapphireTest: XCTestCase {
         let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: HashEnabledVerifier)
         let result = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
         
-        XCTAssertEqual(result?.lowercased(), "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03".lowercased())
+        XCTAssertEqual(result?.finalKeyData?.evmAddress.lowercased(), "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03".lowercased())
     }
 
     func testLoginWhenHashEnabled () async throws {

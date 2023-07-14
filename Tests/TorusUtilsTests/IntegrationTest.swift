@@ -163,7 +163,7 @@ class IntegrationTests: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
+            XCTAssertEqual(val.finalKeyData?.evmAddress, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
             exp1.fulfill()
         } catch let error {
             XCTFail(error.localizedDescription)

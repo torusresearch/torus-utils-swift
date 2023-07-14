@@ -21,7 +21,7 @@ import AnyCodable
 
 extension TorusUtils {
     
-    public func getNewPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> GetPublicAddressResult {
+    public func getNewPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> TorusPublicKey {
         do {
             
             let result = try await getPubKeyOrKeyAssign(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId );
@@ -29,29 +29,57 @@ extension TorusUtils {
             let nonceResult = result.nonceResult;
             let nodeIndexes = result.nodeIndexes;
             
-            let ( X,  Y ) = ( keyResult.pubKeyX, keyResult.pubKeyY);
+            let (X, Y) = ( keyResult.pubKeyX, keyResult.pubKeyY);
             
-            if ( nonceResult == nil ) { throw NSError(domain: "invalid nounce", code: 0) }
-                
-            var modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
+            if ( nonceResult == nil ) { throw TorusUtilError.runtime("invalid nonce")}
+            
+            var modifiedPubKey: String
+            var oAuthPubKeyString : String
             var pubNonce : PubNonce?
             
-            if (extendedVerifierId == nil ) {
+            if (extendedVerifierId != nil) {
+                modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
+                oAuthPubKeyString = modifiedPubKey
+            }
+//            else if LEGACY_NETWORKS_ROUTE_MAP[self.network] != nil {
+////                return formatLegacyPublicKeyData
+//            }
+            else {
+                modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
+                oAuthPubKeyString = modifiedPubKey
+                
                 let noncePub = "04" + (nonceResult?.pubNonce?.x ?? "0").addLeading0sForLength64() + (nonceResult?.pubNonce?.y ?? "0").addLeading0sForLength64();
                 modifiedPubKey =  combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
+
             }
 
-            let (x,y) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
+            let (oAuthX, oAuthY) = try getPublicKeyPointFromAddress(address: oAuthPubKeyString)
+            let (finalX, finalY) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
             
-            return GetPublicAddressResult(
-                address: generateAddressFromPubKey(publicKeyX: x.addLeading0sForLength64(), publicKeyY: y.addLeading0sForLength64()),
-                x: x, y: y,
-                metadataNonce: BigUInt(nonceResult?.nonce ?? "0" ),
-                pubNonce: pubNonce,
-                nodeIndexes: nodeIndexes,
-                upgraded: nonceResult?.upgraded
+            let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
+            let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
+            
+            return .init(
+                finalKeyData: .init(
+                    evmAddress: finalAddress,
+                    X: finalX,
+                    Y: finalY
+                ),
+                oAuthKeyData: .init(
+                    evmAddress: oAuthAddress,
+                    X: oAuthX,
+                    Y: oAuthY
+                ),
+                metadata: .init(
+                    pubNonce: pubNonce,
+                    nonce: BigUInt((nonceResult?.nonce)!, radix: 16),
+                    typeOfUser: UserType(rawValue: "v2")!,
+                    upgraded: nonceResult?.upgraded ?? false
+                ),
+                nodesData: .init(nodeIndexes: nodeIndexes)
             )
+            
         } catch {
             throw error
         }

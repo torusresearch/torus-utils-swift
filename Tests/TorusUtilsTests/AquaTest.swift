@@ -43,7 +43,7 @@ class AquaTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let val = try await tu.getPublicAddressExtended(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-            XCTAssertEqual(val.address, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
+            XCTAssertEqual(val.finalKeyData!.evmAddress, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -78,8 +78,8 @@ class AquaTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.getPublicAddressExtended(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-            XCTAssertNotNil(data.address)
-            XCTAssertNotEqual(data.address, "")
+            XCTAssertNotNil(data.finalKeyData)
+            XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
