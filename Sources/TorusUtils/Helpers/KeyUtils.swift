@@ -11,31 +11,13 @@ func stripHexPrefix(_ str: String) -> String {
     return str.hasPrefix("0x") ? String(str.dropFirst(2)) : str
 }
 
-func toChecksumAddress(_ hexAddress: String) -> String {
-    let address = stripHexPrefix(hexAddress).lowercased()
-    let data = Data(address.utf8)
-    let hash = keccak256Data(data)
-    var ret = "0x"
-    
-    for (i, char) in address.enumerated() {
-        let hashChar = hash[hash.index(hash.startIndex, offsetBy: i)]
-        if let hexValue = UInt8(String(hashChar), radix: 16), hexValue >= 8 {
-            ret.append(char.uppercased())
-        } else {
-            ret.append(char)
-        }
-    }
-    
-    return ret
-}
-
 func generateAddressFromPrivKey(privateKey: String) -> String {
     do {
         let privateKeyData = Data(hexString: privateKey)!
         let key = try P256.KeyAgreement.PrivateKey(rawRepresentation: privateKeyData)
         let publicKey = key.publicKey.rawRepresentation.dropFirst().dropLast() // Remove the first byte (0x04)
         let ethAddressLower = "0x" + keccak256Data(publicKey).suffix(38)
-        return ethAddressLower
+        return ethAddressLower.toChecksumAddress()
     } catch {
         // Handle the error if necessary
         print("Failed to generate address from private key: \(error)")
@@ -95,7 +77,7 @@ func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) -> String
         let publicKey = try P256.KeyAgreement.PublicKey(x963Representation: publicKeyData)
         let publicKeyBytes = publicKey.rawRepresentation//.dropFirst().dropLast() // Remove the first byte (0x04)
         let ethAddressLower = "0x" + keccak256Data(publicKeyBytes).suffix(40)
-        return ethAddressLower
+        return ethAddressLower.toChecksumAddress()
     } catch {
         // Handle the error if necessary
         print("Failed to derive public key: \(error)")

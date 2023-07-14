@@ -224,7 +224,6 @@ open class TorusUtils: AbstractTorusUtils {
     
     //   Legacy
     public func getLegacyPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> TorusPublicKey {
-        print("here")
         do {
             var data: KeyLookupResponse
             do {
@@ -296,9 +295,8 @@ open class TorusUtils: AbstractTorusUtils {
                     finalPubKey = String(finalPubKey.suffix(128))
                 }
             }
-            print("here?")
-            let (finalX, finalY) = try getPublicKeyPointFromAddress(address: finalPubKey)
-            print("here ??")
+            let finalX = String(finalPubKey.prefix(64))
+            let finalY = String(finalPubKey.suffix(64))
             let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
             let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
             
