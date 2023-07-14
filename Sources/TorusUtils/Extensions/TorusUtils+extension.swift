@@ -1281,6 +1281,7 @@ extension TorusUtils {
                                 }
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
+                            print("result array", resultArray)
                             if (nonceResult != nil || extendedVerifierId != nil) {
                                 if let keyResult = keyResult {
                                     os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)

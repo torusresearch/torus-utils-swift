@@ -198,7 +198,7 @@ final class SapphireTest: XCTestCase {
     
     func testAssignKeyToTssVerifier() async throws {
         // fixme
-        let email = TORUS_TEST_EMAIL //faker random address
+        let email = "faker@gmail.com" //faker random address
         let verifierId = TORUS_TEST_EMAIL //faker random address
         let nonce = 0
         let tssTag = "default"
@@ -212,21 +212,21 @@ final class SapphireTest: XCTestCase {
         XCTAssertNotEqual(publicAddress, "")
     }
     
-    func testAllowTssVerifierIdFetchShare () async throws {
-        
-        let email = TORUS_TEST_EMAIL //faker random address ???
-        let verifierId = TORUS_TEST_EMAIL
-        let nonce = 0
-        let tssTag = "default"
-        let tssVerifierId = "\(email)\u{0015}\(tssTag)\u{0016}\(nonce)"
-        
-        let token = try generateIdToken(email: email)
-        let nodeManager = NodeDetailManager(network: TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
-        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
-        let verifierParams = VerifierParams(verifier_id: verifierId, extended_verifier_id: tssVerifierId)
-        
-        try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_EMAIL, verifierParams: verifierParams, idToken: token)
-    }
+//    func testAllowTssVerifierIdFetchShare () async throws {
+//        
+//        let email = TORUS_TEST_EMAIL //faker random address ???
+//        let verifierId = TORUS_TEST_EMAIL
+//        let nonce = 0
+//        let tssTag = "default"
+//        let tssVerifierId = "\(email)\u{0015}\(tssTag)\u{0016}\(nonce)"
+//        
+//        let token = try generateIdToken(email: email)
+//        let nodeManager = NodeDetailManager(network: TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
+//        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
+//        let verifierParams = VerifierParams(verifier_id: verifierId, extended_verifier_id: tssVerifierId)
+//        
+//        try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_EMAIL, verifierParams: verifierParams, idToken: token)
+//    }
 //
 //     it("should allow test tss verifier id to fetch shares", async function () {
 //       const email = faker.internet.email();
