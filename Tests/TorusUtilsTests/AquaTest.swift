@@ -69,8 +69,18 @@ class AquaTest: XCTestCase {
         let verifierID: String = TORUS_TEST_EMAIL
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
-            XCTAssertEqual(data.address, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
+            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
+            XCTAssertEqual(val.finalKeyData!.evmAddress, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
+            XCTAssertEqual(val.finalKeyData!.X, "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d")
+            XCTAssertEqual(val.finalKeyData!.Y, "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c")
+            XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
+            XCTAssertEqual(val.oAuthKeyData!.X, "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d")
+            XCTAssertEqual(val.oAuthKeyData!.Y, "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c")
+            XCTAssertNil(val.metadata?.pubNonce)
+            XCTAssertEqual(val.metadata?.nonce, 0)
+            XCTAssertEqual(val.metadata?.upgraded, false)
+            XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
+            XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)

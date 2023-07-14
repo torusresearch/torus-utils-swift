@@ -72,13 +72,23 @@ class MainnetTests: XCTestCase {
 
     func test_getUserTypeAndAddress() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        let verifier1: String = "tkey-google"
-        let verifierID1: String = "somev2user@gmail.com"
+        let verifier1: String = "google"
+        let verifierID1: String = TORUS_TEST_EMAIL
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier1, verifierID: verifierID1)
 
-            XCTAssertEqual(val.address, "0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526")
+            XCTAssertEqual(val.finalKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
+            XCTAssertEqual(val.finalKeyData!.X, "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4")
+            XCTAssertEqual(val.finalKeyData!.Y, "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1")
+            XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
+            XCTAssertEqual(val.oAuthKeyData!.X, "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4")
+            XCTAssertEqual(val.oAuthKeyData!.Y, "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1")
+            XCTAssertNil(val.metadata?.pubNonce)
+            XCTAssertEqual(val.metadata?.nonce, 0)
+            XCTAssertEqual(val.metadata?.upgraded, false)
+            XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
+            XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -88,12 +98,23 @@ class MainnetTests: XCTestCase {
         let exp2 = XCTestExpectation(description: "Should be able to getPublicAddress")
 
         let verifier2: String = "tkey-google"
-        let verifierID2: String = "caspertorus@gmail.com"
+        let verifierID2: String = "somev2user@gmail.com"
         do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier2, veriferID: verifierID2)
             let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier2, verifierID: verifierID2)
 
-            XCTAssertEqual(val.address, "0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53")
+            XCTAssertEqual(val.finalKeyData!.evmAddress, "0xFf669A15bFFcf32D3C5B40bE9E5d409d60D43526")
+            XCTAssertEqual(val.finalKeyData!.X, "bbfd26b1e61572c4e991a21b64f12b313cb6fce6b443be92d4d5fd8f311e8f33")
+            XCTAssertEqual(val.finalKeyData!.Y, "df2c905356ec94faaa111a886be56ed6fa215b7facc1d1598486558355123c25")
+            XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xA9c6829e4899b6D630130ebf59D046CA868D7f83")
+            XCTAssertEqual(val.oAuthKeyData!.X, "5566cd940ea540ba1a3ba2ff0f5fd3d9a3a74350ac3baf47b811592ae6ea1c30")
+            XCTAssertEqual(val.oAuthKeyData!.Y, "07a302e87e8d9eb5d143f570c248657288c13c09ecbe1e3a8720449daf9315b0")
+            XCTAssertEqual(val.metadata?.pubNonce?.x, "96f4b7d3c8c8c69cabdea46ae1eedda346b03cad8ba1a454871b0ec6a69861f3")
+            XCTAssertEqual(val.metadata?.pubNonce?.y, "da3aed7f7e9d612052beb1d92ec68a8dcf60faf356985435b424af2423f66672")
+            XCTAssertEqual(val.metadata?.nonce, 0)
+            XCTAssertEqual(val.metadata?.upgraded, false)
+            XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
+            XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
             exp2.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)

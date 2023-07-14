@@ -243,12 +243,14 @@ open class TorusUtils: AbstractTorusUtils {
             let pubKeyX = data.pubKeyX
             let pubKeyY = data.pubKeyY
             let (oAuthX, oAuthY) = (pubKeyX, pubKeyY)
+            
             var finalPubKey: String = ""
             var nonce: BigUInt = 0
             var typeOfUser: TypeOfUser = .v1
             var pubNonce: PubNonce?
-            let result: TorusPublicKey
+            var result: TorusPublicKey
             var nonceResult : GetOrSetNonceResult?
+            
             if enableOneKey {
                 nonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !isNewKey)
                 pubNonce = nonceResult?.pubNonce
@@ -334,7 +336,7 @@ open class TorusUtils: AbstractTorusUtils {
     }
     
     
-    public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) async throws -> GetUserAndAddress {
+    public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) async throws -> TorusPublicKey {
         do {
             var data: KeyLookupResponse
             do {
@@ -353,33 +355,74 @@ open class TorusUtils: AbstractTorusUtils {
             }
             let pubKeyX = data.pubKeyX
             let pubKeyY = data.pubKeyY
-            var modifiedPubKey: String = ""
+        
+            print("pubkeyX", pubKeyX)
+            print("pubkeyY", pubKeyY)
+            let (oAuthX, oAuthY) = (pubKeyX.addLeading0sForLength64(), pubKeyY.addLeading0sForLength64())
+
+            var finalPubKey: String = ""
             var nonce: BigUInt = 0
             var typeOfUser: TypeOfUser = .v1
-            let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !isNewKey)
-            nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
-            typeOfUser = TypeOfUser(rawValue: localNonceResult.typeOfUser ?? ".v1") ?? .v1
+            var pubNonce: PubNonce?
+            var result: TorusPublicKey
+            
+            let nonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !isNewKey)
+            print("typeofuser", nonceResult.typeOfUser)
+            nonce = BigUInt(nonceResult.nonce ?? "0") ?? 0
+            typeOfUser = TypeOfUser(rawValue: nonceResult.typeOfUser ?? ".v1") ?? .v1
             if typeOfUser == .v1 {
-                modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                 let nonce2 = BigInt(nonce).modulus(modulusValue)
                 if nonce != BigInt(0) {
                     guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                         throw TorusUtilError.decryptionFailed
                     }
-                    modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
+                    finalPubKey = combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
                 } else {
-                    modifiedPubKey = String(modifiedPubKey.suffix(128))
+                    finalPubKey = String(finalPubKey.suffix(128))
                 }
             } else if typeOfUser == .v2 {
-                modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
-                let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
-                modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
-                modifiedPubKey = String(modifiedPubKey.suffix(128))
+                finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                let ecpubKeys = "04" + nonceResult.pubNonce!.x.addLeading0sForLength64() + nonceResult.pubNonce!.y.addLeading0sForLength64()
+                finalPubKey = combinePublicKeys(keys: [finalPubKey, ecpubKeys], compressed: false)
+                finalPubKey = String(finalPubKey.suffix(128))
 
             } else {
                 throw TorusUtilError.runtime("getOrSetNonce should always return typeOfUser.")
             }
-            let val: GetUserAndAddress = .init(typeOfUser: typeOfUser, address: publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce)
+            
+            var usertype = ""
+            switch typeOfUser{
+                case .v1:
+                    usertype = "v1"
+                case .v2:
+                    usertype = "v2"
+            }
+            print("after typeofuser", usertype)
+            let finalX = String(finalPubKey.prefix(64))
+            let finalY = String(finalPubKey.suffix(64))
+            let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
+            let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
+            
+            let val: TorusPublicKey = .init(
+                finalKeyData: .init(
+                    evmAddress: finalAddress,
+                    X: finalX,
+                    Y: finalY
+                ),
+                oAuthKeyData: .init(
+                    evmAddress: oAuthAddress,
+                    X: oAuthX,
+                    Y: oAuthY
+                ),
+                metadata: .init(
+                    pubNonce: pubNonce,
+                    nonce: nonce,
+                    typeOfUser: UserType(rawValue: usertype)!,
+                    upgraded: nonceResult.upgraded ?? false
+                ),
+                nodesData: .init(nodeIndexes: [])
+            )
             return val
         } catch let error {
            throw error
