@@ -8,6 +8,7 @@
 import XCTest
 import CommonSources
 import FetchNodeDetails
+import BigInt
 
 @testable import TorusUtils
 final class SapphireTest: XCTestCase {
@@ -70,8 +71,19 @@ final class SapphireTest: XCTestCase {
 
         let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
         let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: TORUS_TEST_EMAIL)
-        let publicAddress = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-        XCTAssertEqual(publicAddress?.finalKeyData?.evmAddress.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
+        let val = try await torus?.getPublicAddress(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+        XCTAssertEqual(val?.finalKeyData!.evmAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
+        XCTAssertEqual(val?.finalKeyData!.X, "f3eaf63bf1fd645d4159832ccaad7f42457e287ac929363ba636eb7e87978bff")
+        XCTAssertEqual(val?.finalKeyData!.Y, "f3b9d8dd91927a89ec45199ad697fe3fa01b8b836710143a0babb1a4eb35f1cd")
+        XCTAssertEqual(val?.oAuthKeyData!.evmAddress, "0xac997dE675Fb69FCb0F4115A23c0061A892A2772")
+        XCTAssertEqual(val?.oAuthKeyData!.X, "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528")
+        XCTAssertEqual(val?.oAuthKeyData!.Y, "f9128bc7403bab6d45415cad01dd0ba0924628cfb6bf51c17e77aa8ca43b3cfe")
+        XCTAssertEqual(val?.metadata?.pubNonce?.x, "78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c")
+        XCTAssertEqual(val?.metadata?.pubNonce?.y, "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7")
+        XCTAssertEqual(val?.metadata?.nonce, BigUInt("376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e", radix: 16))
+        XCTAssertEqual(val?.metadata?.upgraded, false)
+        XCTAssertEqual(val?.metadata?.typeOfUser, UserType(rawValue: "v2"))
+        XCTAssertNotEqual(val?.nodesData?.nodeIndexes.count, 0)
         print("pass check")
     }
     

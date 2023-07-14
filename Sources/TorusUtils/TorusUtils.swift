@@ -299,7 +299,15 @@ open class TorusUtils: AbstractTorusUtils {
             let finalY = String(finalPubKey.suffix(64))
             let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
             let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
-            
+
+            var usertype = ""
+            switch typeOfUser{
+                case .v1:
+                    usertype = "v1"
+                case .v2:
+                    usertype = "v2"
+            }
+
             result = TorusPublicKey(
                 finalKeyData: .init(
                     evmAddress: finalAddress,
@@ -314,8 +322,8 @@ open class TorusUtils: AbstractTorusUtils {
                 metadata: .init(
                     pubNonce: pubNonce,
                     nonce: nonce,
-                    typeOfUser: UserType(rawValue: "v2")!,
-                    upgraded: nonceResult?.upgraded
+                    typeOfUser: UserType(rawValue: usertype)!,
+                    upgraded: nonceResult?.upgraded ?? false
                 ),
                 nodesData: .init(nodeIndexes: [])
             )

@@ -60,7 +60,7 @@ class IntegrationTests: XCTestCase {
 //        do {
 //            let nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: TORUS_TEST_EMAIL)
 //            let data = try await tu.getPublicAddressExtended(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "google-lrc", verifierId: "hello@tor.us")
-//            XCTAssertEqual(data.address, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
+//            XCTAssertEqual(data.finalKeyData?.evmAddress, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
 //            exp1.fulfill()
 //        } catch let err {
 //            XCTFail(err.localizedDescription)

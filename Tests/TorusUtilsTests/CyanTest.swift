@@ -44,7 +44,17 @@ class PolygonTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let val = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-            XCTAssertEqual(val.finalKeyData?.evmAddress, "0xA3767911A84bE6907f26C572bc89426dDdDB2825")
+            XCTAssertEqual(val.finalKeyData!.evmAddress, "0xA3767911A84bE6907f26C572bc89426dDdDB2825")
+            XCTAssertEqual(val.finalKeyData!.X, "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a")
+            XCTAssertEqual(val.finalKeyData!.Y, "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1")
+            XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xA3767911A84bE6907f26C572bc89426dDdDB2825")
+            XCTAssertEqual(val.oAuthKeyData!.X, "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a")
+            XCTAssertEqual(val.oAuthKeyData!.Y, "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1")
+            XCTAssertNil(val.metadata?.pubNonce)
+            XCTAssertEqual(val.metadata?.nonce, 0)
+            XCTAssertEqual(val.metadata?.upgraded, false)
+            XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
+            XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
