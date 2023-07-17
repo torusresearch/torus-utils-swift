@@ -78,9 +78,9 @@ open class TorusUtils: AbstractTorusUtils {
             guard let torusNodePubs = torusNodePubs else {
                 throw fatalError("Torus Node Pub not available")
             }
-            return try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs , verifier: verifier, verifierId: verifierId, enableOneKey: true)
+            return  try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs , verifier: verifier, verifierId: verifierId, isExtended: true)
         case .sapphire(_) :
-            return try await getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId, enableOneKey: true)
+            return try await getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId)
         }
     }
 
@@ -235,7 +235,7 @@ open class TorusUtils: AbstractTorusUtils {
     
     
     //   Legacy
-    public func getLegacyPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, enableOneKey: Bool) async throws -> TorusPublicKey {
+    public func getLegacyPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> TorusPublicKey {
         do {
             var data: LegacyKeyLookupResponse
             do {
@@ -355,9 +355,9 @@ open class TorusUtils: AbstractTorusUtils {
     
     public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = true) async throws -> TorusPublicKey {
         if(!self.isLegacyNetwork()) {
-            return try await self.getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierID, enableOneKey: doesKeyAssign)
+            return try await self.getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
         } else {
-            return try await self.getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, enableOneKey: doesKeyAssign)
+            return try await self.getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, isExtended: true)
         }
     }
     
