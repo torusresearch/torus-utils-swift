@@ -253,8 +253,8 @@ open class TorusUtils: AbstractTorusUtils {
                     throw error
                 }
             }
-            let pubKeyX = data.pubKeyX
-            let pubKeyY = data.pubKeyY
+            let pubKeyX = data.pubKeyX.addLeading0sForLength64()
+            let pubKeyY = data.pubKeyY.addLeading0sForLength64()
             let (oAuthX, oAuthY) = (pubKeyX, pubKeyY)
             
             var finalPubKey: String = ""
@@ -316,6 +316,8 @@ open class TorusUtils: AbstractTorusUtils {
             }
             let finalX = String(finalPubKey.prefix(64))
             let finalY = String(finalPubKey.suffix(64))
+            print("finalx", finalX)
+            print("finaly", finalY)
             let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
             let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
 
@@ -474,6 +476,7 @@ open class TorusUtils: AbstractTorusUtils {
                 var finalPubKey: String = ""
 
                 if enableOneKey {
+                    print("here1")
                     let nonceResult = try await getOrSetNonce(x: oAuthKeyX, y: oAuthKeyY, privateKey: oAuthKey, getOnly: true)
                     metadataNonce = BigUInt(nonceResult.nonce ?? "0", radix: 16) ?? 0
                     typeOfUser = UserType(rawValue: nonceResult.typeOfUser!)!
@@ -493,9 +496,9 @@ open class TorusUtils: AbstractTorusUtils {
 //                        pk = oAuthKey
 //                    }
                 } else {
+                    print("here2")
                     // for imported keys in legacy networks
                     metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
-                    print("here?")
                     let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                     let privateKeyWithNonce = tempNewKey.modulus(modulusValue)
 //                    Data(hex: String(oauthKey, radix: 16)),
@@ -511,7 +514,7 @@ open class TorusUtils: AbstractTorusUtils {
 //                    }
                 }
                 
-                let oAuthKeyAddress = generateAddressFromPrivKey(privateKey: oAuthKey)
+                let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
                 print("here??")
                 let finalPubX = String(finalPubKey.prefix(64))
                 let finalPubY = String(finalPubKey.suffix(64))
@@ -525,8 +528,10 @@ open class TorusUtils: AbstractTorusUtils {
                     finalPrivKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                 }
                 
-                var isUpgraded = false
-                if typeOfUser == .v2 {
+                var isUpgraded : Bool? = false
+                if typeOfUser == .v1 {
+                    isUpgraded = nil
+                } else if typeOfUser == .v2 {
                     isUpgraded = metadataNonce == BigUInt(0)
                 }
                 
@@ -541,7 +546,7 @@ open class TorusUtils: AbstractTorusUtils {
                         evmAddress: oAuthKeyAddress,
                         X: oAuthKeyX,
                         Y: oAuthKeyY,
-                        privKey: oAuthKey.data(using: .utf8)!.toHexString().addLeading0sForLength64()
+                        privKey: oAuthKey
                     ),
                     sessionData: .init(
                         sessionTokenData: [],

@@ -862,7 +862,7 @@ extension TorusUtils {
                 
                 let (finalPubX , finalPubY) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
                 let (oAuthKeyX, oAuthKeyY) = try getPublicKeyPointFromAddress(address: oAuthPubKey!)
-                let oAuthKeyAddress = generateAddressFromPrivKey(privateKey: oAuthKey)
+                let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
                 
                 // deriving address from pub key coz pubkey is always available
                 // but finalPrivKey won't be available for  v2 user upgraded to 2/n
@@ -870,8 +870,8 @@ extension TorusUtils {
                 var finalPrivKey = ""
                 
                 if typeOfUser == .v1 || (typeOfUser == .v2 && metadataNonce > BigInt(0)) {
-                    let privateKeyWithNonce = (BigInt(oAuthKey, radix: 16) ?? BigInt(0)) + metadataNonce
-                    let finalPrivKey = privateKeyWithNonce.serialize().toHexString().addLeading0sForLength64()
+                    let privateKeyWithNonce = ((BigInt(oAuthKey, radix: 16) ?? BigInt(0)) + metadataNonce).modulus(modulusValue)
+                    finalPrivKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                 }
     
                     
@@ -887,15 +887,15 @@ extension TorusUtils {
                 return TorusKey(
                     finalKeyData: .init(
                         evmAddress: finalEvmAddress,
-                        X: finalPubX,
-                        Y: finalPubY,
+                        X: String(BigInt(finalPubX, radix: 16)!),
+                        Y: String(BigInt(finalPubY, radix: 16)!),
                         privKey: finalPrivKey
                     ),
                     oAuthKeyData: .init(
                         evmAddress: oAuthKeyAddress,
                         X: oAuthKeyX,
                         Y: oAuthKeyY,
-                        privKey: oAuthKey.data(using: .utf8)!.toHexString().addLeading0sForLength64()
+                        privKey: oAuthKey
                     ),
                     sessionData: .init(
                         sessionTokenData: [],
