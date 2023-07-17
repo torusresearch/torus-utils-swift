@@ -21,7 +21,7 @@ import AnyCodable
 
 extension TorusUtils {
     
-    public func getNewPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> TorusPublicKey {
+    public func getNewPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil, enableOneKey: Bool) async throws -> TorusPublicKey {
         do {
             
             let result = try await getPubKeyOrKeyAssign(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId );
@@ -1415,6 +1415,122 @@ extension TorusUtils {
             throw error
         }
     }
+    
+    func awaitLegacyKeyLookup(endpoints: [String], verifier: String, verifierId: String, timeout: Int = 0) async throws -> LegacyKeyLookupResponse {
+        let durationInNanoseconds = UInt64(timeout * 1_000_000_000)
+        try await Task.sleep(nanoseconds: durationInNanoseconds)
+        do {
+            return try await legacyKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
+        } catch {
+            throw error
+        }
+    }
+    
+    public func legacyKeyLookup(endpoints: [String], verifier: String, verifierId: String) async throws -> LegacyKeyLookupResponse {
+            // Enode data
+            let encoder = JSONEncoder()
+            let session = createURLSession()
+            let threshold = (endpoints.count / 2) + 1
+            var failedLookupCount = 0
+            let jsonRPCRequest = JSONRPCrequest(
+                method: "VerifierLookupRequest",
+                params: ["verifier": verifier, "verifier_id": verifierId])
+            guard let rpcdata = try? encoder.encode(jsonRPCRequest)
+            else {
+                throw TorusUtilError.encodingFailed("\(jsonRPCRequest)")
+            }
+            var allowHostRequest = try makeUrlRequest(url: allowHost, httpMethod: .get)
+            allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
+            allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
+            do {
+                _ = try await session.data(for: allowHostRequest)
+            } catch {
+                os_log("KeyLookup: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                throw error
+            }
+
+            // Create Array of URLRequest Promises
+
+            var resultArray = [LegacyKeyLookupResponse]()
+            var requestArray = [URLRequest]()
+            for endpoint in endpoints {
+                do {
+                    var request = try makeUrlRequest(url: endpoint)
+                    request.httpBody = rpcdata
+                    requestArray.append(request)
+                } catch {
+                    throw error
+                }
+            }
+
+            return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
+                for (i, rq) in requestArray.enumerated() {
+                    group.addTask {
+                        do {
+                            let val = try await session.data(for: rq)
+                            return .success(.init(data: val.0, urlResponse: val.1, index: i))
+                        } catch {
+                            return .failure(error)
+                        }
+                    }
+                }
+
+                for try await val in group {
+                    do {
+                        switch val {
+                        case .success(let model):
+                            let data = model.data
+                            do {
+                                let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                                os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)")
+
+                                let result = decoded.result
+                                let error = decoded.error
+                                if let _ = error {
+                                    let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
+                                    throw error
+                                } else {
+                                    guard
+                                        let decodedResult = result as? [String: [[String: String]]],
+                                        let k = decodedResult["keys"],
+                                        let keys = k.first,
+                                        let pubKeyX = keys["pub_key_X"],
+                                        let pubKeyY = keys["pub_key_Y"],
+                                        let keyIndex = keys["key_index"],
+                                        let address = keys["address"]
+                                    else {
+                                        throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
+                                    }
+                                    let model = LegacyKeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
+                                    resultArray.append(model)
+                                }
+                                let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
+
+                                if let keyResult = keyResult {
+                                    os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult.description)
+                                    session.invalidateAndCancel()
+                                    return keyResult
+                                }
+                            } catch let err {
+                                throw err
+                            }
+                        case let .failure(error):
+                            throw error
+                        }
+                    } catch {
+                        failedLookupCount += 1
+                        os_log("keyLookup: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                        if failedLookupCount > (endpoints.count -  threshold) {
+                            os_log("keyLookup: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, TorusUtilError.runtime("threshold nodes unavailable").localizedDescription)
+                            session.invalidateAndCancel()
+                            throw error
+                        }
+                    }
+                }
+                throw TorusUtilError.runtime("keyLookup func failed")
+            })
+        }
+
 
     public func keyLookup(endpoints: [String], verifier: String, verifierId: String) async throws -> KeyLookupResponse {
         // Enode data

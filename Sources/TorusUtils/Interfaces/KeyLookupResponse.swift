@@ -1,6 +1,24 @@
 import Foundation
 
-// TODO: this struct is deprecated; delete this later
+public struct LegacyKeyLookupResponse: CustomStringConvertible, Hashable {
+
+    public let pubKeyX: String
+    public let pubKeyY: String
+    public let keyIndex: String
+    public let address: String
+    public var description: String {
+        return "public key X is \(pubKeyX) public key Y is \(pubKeyY) address is \(address)"
+    }
+
+    public init(pubKeyX: String, pubKeyY: String, keyIndex: String, address: String) {
+        self.pubKeyX = pubKeyX
+        self.pubKeyY = pubKeyY
+        self.keyIndex = keyIndex
+        self.address = address
+    }
+
+}
+
 public struct KeyLookupResponse: CustomStringConvertible, Hashable {
 
     public let pubKeyX: String

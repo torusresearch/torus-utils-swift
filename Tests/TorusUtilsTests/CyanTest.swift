@@ -97,7 +97,7 @@ class CyanTest: XCTestCase {
             XCTAssertEqual(val.finalKeyData!.Y, "b525c463f438c7a3c4b018c8c5d16c9ef33b9ac6f319140a22b48b17bdf532dd")
             XCTAssertEqual(val.metadata?.nonce, 0)
             XCTAssertEqual(val.metadata?.upgraded, false)
-            XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
+            XCTAssertEqual(val.metadata?.typeOfUser, .v2)
             XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
             exp2.fulfill()
 
@@ -114,7 +114,7 @@ class CyanTest: XCTestCase {
             XCTAssertEqual(val.finalKeyData!.Y, "fe46a0ef5efe33d16f6cfa678a597be930fbec5432cbb7f3580189c18bd7e157")
             XCTAssertEqual(val.metadata?.nonce, 0)
             XCTAssertEqual(val.metadata?.upgraded, false)
-            XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
+            XCTAssertEqual(val.metadata?.typeOfUser, .v2)
             XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
             exp3.fulfill()
         } catch let err {
