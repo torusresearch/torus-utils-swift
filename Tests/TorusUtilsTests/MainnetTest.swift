@@ -152,7 +152,7 @@ class MainnetTests: XCTestCase {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let data = try await tu.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
            
-            XCTAssertEqual(data.privKey, "0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44")
+            XCTAssertEqual(data.finalKeyData?.privKey, "0129494416ab5d5f674692b39fa49680e07d3aac01b9683ee7650e40805d4c44")
             exp1.fulfill()
         } catch let error {
             XCTFail(error.localizedDescription)
@@ -174,7 +174,7 @@ class MainnetTests: XCTestCase {
             
             let val = try await tu.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             
-            XCTAssertEqual(val.ethAddress, "0x621a4d458cFd345dAE831D9E756F10cC40A50381")
+            XCTAssertEqual(val.oAuthKeyData?.evmAddress, "0x621a4d458cFd345dAE831D9E756F10cC40A50381")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)

@@ -130,7 +130,7 @@ final class SapphireTest: XCTestCase {
         let response = try await torus?.retrieveShares(endpoints: endpoints.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
         print(response)
         
-        XCTAssertEqual(response?.privKey.lowercased(), "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c".lowercased())
+        XCTAssertEqual(response?.finalKeyData?.privKey!.lowercased(), "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c".lowercased())
     }
     
     func testNodeDownAbleToLogin () async throws {
@@ -142,7 +142,7 @@ final class SapphireTest: XCTestCase {
         sssEndpoints[1] = "https://example.com"
         let response = try await torus?.retrieveShares(endpoints: endpoints.torusNodeSSSEndpoints, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
         print(response)
-        XCTAssertEqual(response?.privKey.lowercased(), "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c".lowercased())
+        XCTAssertEqual(response?.finalKeyData?.privKey!.lowercased(), "04eb166ddcf59275a210c7289dca4a026f87a33fd2d6ed22f56efae7eab4052c".lowercased())
     }
 
 //    func teststring() {
@@ -269,7 +269,7 @@ final class SapphireTest: XCTestCase {
         let endpoint = try await nodeManager.getNodeDetails(verifier: HashEnabledVerifier, verifierID: HashEnabledVerifier)
         
         let result = try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: HashEnabledVerifier, verifierParams: verifierParams, idToken: token )
-        XCTAssertEqual(result?.privKey.lowercased(), "066270dfa345d3d0415c8223e045f366b238b50870de7e9658e3c6608a7e2d32".lowercased())
+        XCTAssertEqual(result?.finalKeyData?.privKey!.lowercased(), "066270dfa345d3d0415c8223e045f366b238b50870de7e9658e3c6608a7e2d32".lowercased())
     }
     
 //    func testAggregrateLogin() async throws {

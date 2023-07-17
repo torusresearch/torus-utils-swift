@@ -118,7 +118,7 @@ class AquaTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares( endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-            XCTAssertEqual(data.privKey, "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d")
+            XCTAssertEqual(data.finalKeyData?.privKey, "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -138,7 +138,7 @@ class AquaTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
-            XCTAssertEqual(data.ethAddress, "0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D")
+            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -163,7 +163,7 @@ extension AquaTest {
             // should fail if un-commented threshold 4/5
             // endpoints[1] = "https://ndjnfjbfrj/random"
             let data = try await tu.retrieveShares(endpoints: endpoints, torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-            XCTAssertEqual(data.privKey, "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d")
+            XCTAssertEqual(data.finalKeyData?.privKey, "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)

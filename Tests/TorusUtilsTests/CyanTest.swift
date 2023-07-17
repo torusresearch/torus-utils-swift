@@ -153,7 +153,7 @@ class PolygonTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-            XCTAssertEqual(data.privKey, "1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8")
+            XCTAssertEqual(data.finalKeyData?.privKey, "1e0c955d73e73558f46521da55cc66de7b8fcb56c5b24e851616849b6a1278c8")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -173,7 +173,7 @@ class PolygonTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
-            XCTAssertEqual(data.ethAddress, "0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04")
+            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)

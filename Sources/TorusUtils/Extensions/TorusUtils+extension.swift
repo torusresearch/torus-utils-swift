@@ -559,7 +559,9 @@ extension TorusUtils {
     // MARK: - retrieveOrImportShare
     
     func retrieveOrImportShare(
+        legacyMetadataHost: String,
         allowHost: String,
+        enableOneKey: Bool,
         network: TorusNetwork,
         clientId: String,
         endpoints: [String],
@@ -568,7 +570,7 @@ extension TorusUtils {
         idToken: String,
         importedShares: [ImportedShare]? = nil,
         extraParams: [String: Any] = [:]
-    ) async throws -> RetrieveSharesResponse {
+    ) async throws -> TorusKey {
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
         guard
@@ -785,7 +787,7 @@ extension TorusUtils {
                 
                 // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
                 let allCombis = kCombinations(s: decryptedShares.count, k: threshold)
-                var privateKey: String? = nil
+                var returnedKey: String? = nil
 
                 for j in 0..<allCombis.count {
                     let currentCombi = allCombis[j]
@@ -810,59 +812,116 @@ extension TorusUtils {
                     let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
                     let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey.X, radix: 16)!
                     let thresholdPublicKeyYBigInt = BigUInt(thresholdPublicKey.Y, radix: 16)!
-                    privateKey = derivedPrivateKey
+                    returnedKey = derivedPrivateKey
                     if decryptedPubKeyXBigInt == thresholdPublicKeyXBigInt && decryptedPubKeyYBigInt == thresholdPublicKeyYBigInt {
-                        privateKey = derivedPrivateKey
+                        returnedKey = derivedPrivateKey
                         break
                     }
                 }
-                guard let privateKey = privateKey else {
+                guard let oAuthKey = returnedKey else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
-                let oauthKey : BigInt = BigInt(privateKey , radix: 16)!
+                let oAuthKeyBigInt = BigInt(oAuthKey , radix: 16)!
                 
-                guard let derivedPrivateKeyData = Data(hexString: privateKey) else {
+                guard let derivedPrivateKeyData = Data(hexString: oAuthKey) else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
-                let decryptedPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
-                let decryptedPubKeyX = String(decryptedPubKey!.suffix(128).prefix(64))
-                let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
+                let oAuthPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
+                let oauthPubKeyX = String(oAuthPubKey!.suffix(128).prefix(64))
+                let oauthPubKeyY = String(oAuthPubKey!.suffix(64))
                 
                 let metadataNonce = BigInt(thresholdNonceData?.nonce ?? "0", radix: 16) ?? BigInt(0)
-                let privateKeyWithNonce = (oauthKey + metadataNonce) % modulusValue
+                let privateKeyWithNonce = (oAuthKeyBigInt + metadataNonce) % modulusValue
 
+                var pubKeyNonceResult: PubNonce?
+                var typeOfUser: UserType = .v1
                 
+                var modifiedPubKey = "04" + oauthPubKeyX.addLeading0sForLength64() + oauthPubKeyY.addLeading0sForLength64()
                 
-                var modifiedPubKey = "04" + decryptedPubKeyX.addLeading0sForLength64() + decryptedPubKeyY.addLeading0sForLength64()
-
-                // For TSS key, no need to add pub nonce
-                if verifierParams.extended_verifier_id == nil {
+                if verifierParams.extended_verifier_id != nil {
+                    typeOfUser = .v2
+                    // For TSS key, no need to add pub nonce
+                    modifiedPubKey = String(modifiedPubKey.suffix(128))
+                    //                } else if (LEGACY_NETWORKS_ROUTE_MAP[self.network] != nil) {
+                    //
+                    //                }
+                }
+                else {
+                    typeOfUser = .v2
                     let pubNonceX = thresholdNonceData!.pubNonce!.x
                     let pubNonceY = thresholdNonceData!.pubNonce!.y
                     let pubkey2 = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
                     let combined = combinePublicKeys(keys: [modifiedPubKey, pubkey2], compressed: false)
                     modifiedPubKey = combined
-                } else {
-                    modifiedPubKey = String(modifiedPubKey.suffix(128))
+                    pubKeyNonceResult = .init(x: pubNonceX, y: pubNonceY)
+                }
+
+
+                
+                let (finalPubX , finalPubY) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
+                let (oAuthKeyX, oAuthKeyY) = try getPublicKeyPointFromAddress(address: oAuthPubKey!)
+                let oAuthKeyAddress = generateAddressFromPrivKey(privateKey: oAuthKey)
+                
+                // deriving address from pub key coz pubkey is always available
+                // but finalPrivKey won't be available for  v2 user upgraded to 2/n
+                let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
+                var finalPrivKey = ""
+                
+                if typeOfUser == .v1 || (typeOfUser == .v2 && metadataNonce > BigInt(0)) {
+                    let privateKeyWithNonce = (BigInt(oAuthKey, radix: 16) ?? BigInt(0)) + metadataNonce
+                    let finalPrivKey = privateKeyWithNonce.serialize().toHexString().addLeading0sForLength64()
+                }
+    
+                    
+                var isUpgraded: Bool?
+                
+                switch typeOfUser {
+                case .v1:
+                    isUpgraded = nil
+                case .v2:
+                    isUpgraded = metadataNonce == BigInt(0)
                 }
                 
-                let (x,y) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
-                
-
-                return RetrieveSharesResponse(
-                    ethAddress: generateAddressFromPubKey(publicKeyX: x.addLeading0sForLength64(), publicKeyY: y.addLeading0sForLength64()), // this address should be used only if user hasn't updated to 2/n
-                    privKey: String(privateKeyWithNonce, radix: 16).leftPadding(toLength: 64, withPad: "0"), // Caution: final x and y wont be derivable from this key once user upgrades to 2/n
-                    sessionTokenData: sessionTokenData,
-                    X: x, // this is final pub x of user before and after updating to 2/n
-                    Y: y, // this is final pub y of user before and after updating to 2/n
-                    metadataNonce: metadataNonce,
-                    postboxPubKeyX: decryptedPubKeyX,
-                    postboxPubKeyY: decryptedPubKeyY,
-                    sessionAuthKey: sessionAuthKey, //.map { String(format: "%02x", $0) }.joined().padding(toLength: 64, withPad: "0", startingAt: 0),
-                    nodeIndexes: nodeIndexes
+                return TorusKey(
+                    finalKeyData: .init(
+                        evmAddress: finalEvmAddress,
+                        X: finalPubX,
+                        Y: finalPubY,
+                        privKey: finalPrivKey
+                    ),
+                    oAuthKeyData: .init(
+                        evmAddress: oAuthKeyAddress,
+                        X: oAuthKeyX,
+                        Y: oAuthKeyY,
+                        privKey: oAuthKey.data(using: .utf8)!.toHexString().addLeading0sForLength64()
+                    ),
+                    sessionData: .init(
+                        sessionTokenData: [],
+                        sessionAuthKey: ""
+                    ),
+                    metadata: .init(
+                        pubNonce: pubKeyNonceResult,
+                        nonce: BigUInt(metadataNonce),
+                        typeOfUser: typeOfUser,
+                        upgraded: isUpgraded
+                    ),
+                    nodesData: .init(nodeIndexes: [])
                 )
+
+//                return RetrieveSharesResponse(
+//                    ethAddress: generateAddressFromPubKey(publicKeyX: finalPubX.addLeading0sForLength64(), publicKeyY: finalPubY.addLeading0sForLength64()), // this address should be used only if user hasn't updated to 2/n
+//                    privKey: String(privateKeyWithNonce, radix: 16).leftPadding(toLength: 64, withPad: "0"), // Caution: final x and y wont be derivable from this key once user upgrades to 2/n
+//                    sessionTokenData: sessionTokenData,
+//                    X: finalPubX, // this is final pub x of user before and after updating to 2/n
+//                    Y: finalPubY, // this is final pub y of user before and after updating to 2/n
+//                    metadataNonce: metadataNonce,
+//                    postboxPubKeyX: oauthPubKeyX,
+//                    postboxPubKeyY: oauthPubKeyY,
+//                    sessionAuthKey: sessionAuthKey, //.map { String(format: "%02x", $0) }.joined().padding(toLength: 64, withPad: "0", startingAt: 0),
+//                    nodeIndexes: nodeIndexes
+//                )
 
             }
             

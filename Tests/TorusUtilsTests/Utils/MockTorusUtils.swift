@@ -13,10 +13,9 @@ import CommonSources
 
 
 class MockTorusUtils: AbstractTorusUtils {
-    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel]?, verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Codable]) async throws -> RetrieveSharesResponse {
-        return RetrieveSharesResponse(
-            ethAddress: "", privKey: "", sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(BigUInt("0")), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: []
-        )
+
+    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel]?, verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String:Codable]) async throws -> TorusKey {
+        return TorusKey(finalKeyData: nil, oAuthKeyData: nil, sessionData: nil, metadata: nil, nodesData: nil)
     }
     
     func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel]?, verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> TorusPublicKey {
