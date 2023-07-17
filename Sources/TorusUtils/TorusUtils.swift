@@ -567,6 +567,7 @@ open class TorusUtils: AbstractTorusUtils {
                 } else {
                     // for imported keys in legacy networks
                     metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
+                    print("here?")
                     let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                     let privateKeyWithNonce = tempNewKey.modulus(modulusValue)
 //                    Data(hex: String(oauthKey, radix: 16)),
@@ -583,14 +584,17 @@ open class TorusUtils: AbstractTorusUtils {
                 }
                 
                 let oAuthKeyAddress = generateAddressFromPrivKey(privateKey: oAuthKey)
-                let (finalPubX, finalPubY) = try getPublicKeyPointFromAddress(address: finalPubKey)
+                print("here??")
+                let finalPubX = String(finalPubKey.prefix(64))
+                let finalPubY = String(finalPubKey.suffix(64))
+                print("here????")
                 let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
                 
                 var finalPrivKey = ""
                 if typeOfUser == .v1 || (typeOfUser == .v2 && metadataNonce > BigInt(0)) {
                     let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                     let privateKeyWithNonce = tempNewKey.modulus(modulusValue)
-                    let finalPrivKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
+                    finalPrivKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                 }
                 
                 var isUpgraded = false

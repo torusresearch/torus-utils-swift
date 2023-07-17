@@ -1703,6 +1703,7 @@ extension TorusUtils {
     func getPublicKeyPointFromAddress( address: String) throws ->  (String, String) {
         let publicKeyHashData = Data.fromHex(address)?.dropFirst()//.dropLast(4)
         guard publicKeyHashData?.count == 64 else {
+            print(publicKeyHashData?.count)
             throw "Invalid address,"
         }
         

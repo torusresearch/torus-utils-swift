@@ -84,7 +84,7 @@ public struct GetOrSetNonceResult: Codable {
     }
 }
 
-public struct PubNonce: Codable {
+public struct PubNonce: Codable, Equatable {
     public var x: String
     public var y: String
 
