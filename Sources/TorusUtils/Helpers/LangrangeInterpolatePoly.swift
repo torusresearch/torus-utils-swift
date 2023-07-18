@@ -40,9 +40,9 @@ func denominator(i: Int, innerPoints: [Point]) -> BigInt {
         if i != j {
             var tmp = xi
             tmp = tmp - innerPoints[j].x
-            tmp %= getOrderOfCurve()
+            tmp = tmp.modulus(getOrderOfCurve())
             result = result * tmp
-            result %= getOrderOfCurve()
+            result = result.modulus(getOrderOfCurve())
         }
     }
     return result
@@ -117,17 +117,18 @@ func lagrangeInterpolationWithNodeIndex(shares: [BigInt], nodeIndex: [BigInt]) -
             for j in 0..<shares.count {
                 if i != j {
                     upper *= -nodeIndex[j]
-                    upper %= modulus
+                    upper = upper.modulus(modulus)
                     var temp = nodeIndex[i] - nodeIndex[j]
-                    temp %= modulus
+                    temp = temp.modulus(modulus)
                     lower *= temp
-                    lower %= modulus
+                    lower = lower.modulus(modulus)
+                    
                 }
             }
             var delta = upper * modInverse(lower, modulus)!
-            delta %= modulus
+            delta = delta.modulus(modulus)
             delta = delta * shares[i]
-            delta %= modulus
+            delta %= delta.modulus(modulus)
             secret += delta
         }
         

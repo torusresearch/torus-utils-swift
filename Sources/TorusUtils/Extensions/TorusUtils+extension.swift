@@ -85,10 +85,10 @@ extension TorusUtils {
             nodeIndexesBigInt.append(BigInt(nodeIndex))
         }
     
-        let randomNonce = BigInt(SECP256K1.generatePrivateKey()!)
+        let randomNonce = abs(BigInt(SECP256K1.generatePrivateKey()!))
         
         
-        let oauthKey = abs(privKeyBigInt - randomNonce) % modulusValue
+        let oauthKey = abs(privKeyBigInt - randomNonce).modulus(modulusValue)
         print(oauthKey)
         let oauthKeyData = oauthKey.serialize().data
 
@@ -110,9 +110,6 @@ extension TorusUtils {
         // Create a JSON encoder
         let encoder = JSONEncoder()
         
-        // Set the output formatting if needed
-        encoder.outputFormatting = .prettyPrinted
-        
         // Convert the SetNonceData to JSON data
         let jsonData = try encoder.encode(nonceParams.set_data)
         
@@ -129,8 +126,7 @@ extension TorusUtils {
         var encErrors: [Error] = []
         
         for (i, _) in nodeIndexesBigInt.enumerated() {
-            let shareIdx = String(nodeIndexesBigInt[i], radix: 16)
-            print("idx",shareIdx)
+            let shareIdx = nodeIndexesBigInt[i].serialize().toHexString()
             let share = shares[shareIdx]
             let nodePubKey = "04" + nodePubKeys[i].X.addLeading0sForLength64() + nodePubKeys[i].Y.addLeading0sForLength64()
 
@@ -148,7 +144,7 @@ extension TorusUtils {
         }
         
         for (i, _) in nodeIndexesBigInt.enumerated() {
-            let shareJson = shares[String(nodeIndexesBigInt[i], radix: 16)]
+            let shareJson = shares[nodeIndexesBigInt[i].serialize().toHexString()]
             let encParams = encShares[i]
             let encParamsMetadata = encParamsBufToHex(encParams: encParams)
             let shareData = ImportedShare(
@@ -307,6 +303,12 @@ extension TorusUtils {
                                       "params": AnyCodable(params)
                 ] as [String: AnyCodable]
                 rpcdata = try JSONEncoder().encode(dataForRequest)
+                if let json = try? JSONSerialization.jsonObject(with: rpcdata, options: .mutableContainers),
+                   let jsonData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted) {
+                    print("jsondata", String(decoding: jsonData, as: UTF8.self))
+                } else {
+                    print("json data malformed")
+                }
                 rpcArray.append(rpcdata)
             } catch {
                 os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
@@ -592,7 +594,9 @@ extension TorusUtils {
                     switch val {
                         
                     case.success(let model):
+                        print("model", model)
                         let data = model.data
+                        print("data",data)
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                         os_log("import share - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
                         
