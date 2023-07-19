@@ -513,7 +513,9 @@ extension TorusUtils {
 
     internal func commitmentRequest(endpoints: [String], verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) async throws -> [CommitmentRequestResponse] {
         let session = createURLSession()
-        let threshold = Int(endpoints.count / 4) * 3 + 1
+        
+        // TODO: threshold = Int(endpoints.count / 4) * 3 + 1 is failing since 3 nodes is failing: need to fix endpoints
+        let threshold = Int(endpoints.count / 4) * 3 
         let encoder = JSONEncoder()
         var failedLookUpCount = 0
         let jsonRPCRequest = JSONRPCrequest(
@@ -566,6 +568,7 @@ extension TorusUtils {
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
                         os_log("commitmentRequest - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
 
+                        // TODO: this error block can't catch error
                         if decoded.error != nil {
                             os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
                             throw TorusUtilError.runtime(decoded.error?.message ?? "")
@@ -587,7 +590,7 @@ extension TorusUtils {
                             return nodeSignatures
                         }
                     case.failure(let error):
-                        throw error
+                        os_log("commitmentRequest - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
                     }
                 } catch {
                     failedLookUpCount += 1

@@ -454,15 +454,14 @@ open class TorusUtils: AbstractTorusUtils {
                 } else {
                     // for imported keys in legacy networks
                     metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
-                    let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
-                    let privateKeyWithNonce = tempNewKey.modulus(modulusValue)
-                    finalPubKey = (SECP256K1.privateToPublic(privateKey: Data(hex: String(privateKeyWithNonce, radix: 16)))?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128))!
-                    
+                    var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
+                    privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
+                    finalPubKey = (SECP256K1.privateToPublic(privateKey: Data(hex: String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()))?.toHexString())!
+
                 }
                 
                 let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
-                let finalPubX = String(finalPubKey.prefix(64))
-                let finalPubY = String(finalPubKey.suffix(64))
+                let (finalPubX, finalPubY) = try getPublicKeyPointFromAddress(address: finalPubKey)
                 let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
                 
                 var finalPrivKey = ""
