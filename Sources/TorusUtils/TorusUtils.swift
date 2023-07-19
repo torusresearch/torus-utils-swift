@@ -59,8 +59,12 @@ open class TorusUtils: AbstractTorusUtils {
     }
     
     func isLegacyNetwork() -> Bool {
-        if case .legacy(let legacyNetwork) = network, let legacyRoute = LEGACY_NETWORKS_ROUTE_MAP[legacyNetwork], !legacyRoute.migrationCompleted {
-            return true
+        if case .legacy(let legacyNetwork) = network {
+            let legacyRoute = legacyNetwork.migration_map
+            if !legacyRoute.migrationCompleted {
+                return true
+            }
+            return false
         }
         return false
     }
@@ -240,7 +244,6 @@ open class TorusUtils: AbstractTorusUtils {
             var data: LegacyKeyLookupResponse
             do {
                 data = try await legacyKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-                print("data",data)
             } catch {
                 if let keyLookupError = error as? KeyLookupError, keyLookupError == .verifierAndVerifierIdNotAssigned {
                     do {
@@ -271,7 +274,6 @@ open class TorusUtils: AbstractTorusUtils {
 
                 typeOfUser = .init(rawValue: nonceResult?.typeOfUser ?? ".v1") ?? .v1
                 if typeOfUser == .v1 {
-                    print("type v1")
                     finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let nonce2 = BigInt(nonce).modulus(modulusValue)
                     if nonce != BigInt(0) {
@@ -283,8 +285,6 @@ open class TorusUtils: AbstractTorusUtils {
                         finalPubKey = String(finalPubKey.suffix(128))
                     }
                 } else if typeOfUser == .v2 {
-                    print("type v2")
-
                     if nonceResult?.upgraded ?? false {
                         finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     } else {
@@ -316,8 +316,7 @@ open class TorusUtils: AbstractTorusUtils {
             }
             let finalX = String(finalPubKey.prefix(64))
             let finalY = String(finalPubKey.suffix(64))
-            print("finalx", finalX)
-            print("finaly", finalY)
+
             let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
             let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
 
@@ -375,8 +374,7 @@ open class TorusUtils: AbstractTorusUtils {
                 let pubKeyX = data.pubKeyX
                 let pubKeyY = data.pubKeyY
 
-                print("pubkeyX", pubKeyX)
-                print("pubkeyY", pubKeyY)
+
                 let (oAuthX, oAuthY) = (pubKeyX.addLeading0sForLength64(), pubKeyY.addLeading0sForLength64())
 
                 var finalPubKey: String = ""
@@ -391,7 +389,6 @@ open class TorusUtils: AbstractTorusUtils {
                 if typeOfUser == .v1 {
                     finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let nonce2 = BigInt(nonce).modulus(modulusValue)
-                    print(nonce)
                     if nonce != BigInt(0) {
                         guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                             throw TorusUtilError.decryptionFailed
@@ -520,7 +517,6 @@ open class TorusUtils: AbstractTorusUtils {
         }
 
         func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> TorusKey {
-            print("here")
             guard
                 let privateKey = generatePrivateKeyData(),
                 let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1 ..< 65)
@@ -597,10 +593,8 @@ open class TorusUtils: AbstractTorusUtils {
                 }
                 
                 let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
-                print("here??")
                 let finalPubX = String(finalPubKey.prefix(64))
                 let finalPubY = String(finalPubKey.suffix(64))
-                print("here????")
                 let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
                 
                 var finalPrivKey = ""

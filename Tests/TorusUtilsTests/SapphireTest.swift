@@ -129,7 +129,6 @@ final class SapphireTest: XCTestCase {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
 
             let data = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
-            print("response", data)
             
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
             XCTAssertEqual(data.finalKeyData?.X, "f3eaf63bf1fd645d4159832ccaad7f42457e287ac929363ba636eb7e87978bff")
@@ -171,7 +170,6 @@ final class SapphireTest: XCTestCase {
             torusNodeEndpoints[1] = "https://example.com"
 
             let data = try await torus.retrieveShares(endpoints: torusNodeEndpoints, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
-            print("response", data)
             
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
             XCTAssertEqual(data.finalKeyData?.X, "f3eaf63bf1fd645d4159832ccaad7f42457e287ac929363ba636eb7e87978bff")

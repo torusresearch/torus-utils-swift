@@ -337,7 +337,6 @@ extension TorusUtils {
                               "item": AnyCodable([finalItem])
                 ] as [String: AnyCodable]
                 
-                print("params",params)
                 // TODO: Look into hetrogeneous array encoding
                 let dataForRequest = ["jsonrpc": "2.0",
                                       "id": 10,
@@ -1368,7 +1367,6 @@ extension TorusUtils {
                                 }
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
-                            print("result array", resultArray)
                             if (nonceResult != nil || extendedVerifierId != nil) {
                                 if let keyResult = keyResult {
                                     os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
