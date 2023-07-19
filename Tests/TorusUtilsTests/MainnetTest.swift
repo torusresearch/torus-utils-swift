@@ -51,7 +51,7 @@ class MainnetTests: XCTestCase {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: "google", veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.getPublicAddressExtended(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub , verifier: "google", verifierId: TORUS_TEST_EMAIL )
+            let val = try await tu.getPublicAddress(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub , verifier: "google", verifierId: TORUS_TEST_EMAIL )
             XCTAssertEqual(val.finalKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
             XCTAssertEqual(val.finalKeyData!.X, "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4")
             XCTAssertEqual(val.finalKeyData!.Y, "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1")
@@ -76,7 +76,7 @@ class MainnetTests: XCTestCase {
         let verifierID1: String = TORUS_TEST_EMAIL
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier1, verifierID: verifierID1)
+            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier1, verifierId: verifierID1)
 
             XCTAssertEqual(val.finalKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
             XCTAssertEqual(val.finalKeyData!.X, "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4")
@@ -101,7 +101,7 @@ class MainnetTests: XCTestCase {
         let verifierID2: String = "somev2user@gmail.com"
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier2, veriferID: verifierID2)
-            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier2, verifierID: verifierID2)
+            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier2, verifierId: verifierID2)
 
             XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xA9c6829e4899b6D630130ebf59D046CA868D7f83")
             XCTAssertEqual(val.oAuthKeyData!.X, "5566cd940ea540ba1a3ba2ff0f5fd3d9a3a74350ac3baf47b811592ae6ea1c30")
@@ -127,7 +127,7 @@ class MainnetTests: XCTestCase {
         let verifierID3: String = "caspertorus@gmail.com"
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier3, veriferID: verifierID3)
-            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier3, verifierID: verifierID3)
+            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier3, verifierId: verifierID3)
 
             XCTAssertEqual(val.finalKeyData!.evmAddress, "0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53")
             XCTAssertEqual(val.finalKeyData!.X, "c01282dd68d2341031a1cff06f70d821cad45140f425f1c25055a8aa64959df8")
