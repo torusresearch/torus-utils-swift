@@ -226,9 +226,11 @@ open class TorusUtils: AbstractTorusUtils {
                     throw error
                 }
             }
-            let pubKeyX = data.pubKeyX.addLeading0sForLength64()
-            let pubKeyY = data.pubKeyY.addLeading0sForLength64()
-            let (oAuthX, oAuthY) = (pubKeyX, pubKeyY)
+            let pubKeyX = data.pubKeyX
+            let pubKeyY = data.pubKeyY
+
+
+            let (oAuthX, oAuthY) = (pubKeyX.addLeading0sForLength64(), pubKeyY.addLeading0sForLength64())
             
             var finalPubKey: String = ""
             var nonce: BigUInt = 0
