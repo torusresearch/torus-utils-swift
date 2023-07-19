@@ -620,8 +620,8 @@ open class TorusUtils: AbstractTorusUtils {
                 return TorusKey(
                     finalKeyData: .init(
                         evmAddress: finalEvmAddress,
-                        X: String(BigInt(finalPubX, radix: 16)!),
-                        Y: String(BigInt(finalPubY, radix: 16)!),
+                        X: finalPubX,
+                        Y: finalPubY,
                         privKey: finalPrivKey
                     ),
                     oAuthKeyData: .init(
