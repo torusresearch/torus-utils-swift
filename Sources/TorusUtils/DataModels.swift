@@ -65,7 +65,7 @@ public struct GetOrSetNonceResult: Codable {
     public var ifps: String?
     public var upgraded: Bool?
 
-    public init(typeOfUser: String, nonce: String? = nil, pubNonce: PubNonce? = nil, ifps: String? = nil, upgraded: Bool? = nil) {
+    public init(typeOfUser: String, nonce: String? = nil, pubNonce: PubNonce? = nil, ifps: String? = nil, upgraded: Bool? = false) {
         self.typeOfUser = typeOfUser
         self.nonce = nonce
         self.pubNonce = pubNonce
@@ -84,7 +84,7 @@ public struct GetOrSetNonceResult: Codable {
     }
 }
 
-public struct PubNonce: Codable {
+public struct PubNonce: Codable, Equatable {
     public var x: String
     public var y: String
 

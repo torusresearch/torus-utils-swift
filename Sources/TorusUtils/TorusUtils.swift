@@ -32,6 +32,7 @@ open class TorusUtils: AbstractTorusUtils {
     var clientId: String
     var signerHost: String
     var enableOneKey: Bool
+    var legacyMetadataHost: String
 
     public init(loglevel: OSLogType = .default,
                 urlSession: URLSession = URLSession(configuration: .default),
@@ -41,7 +42,8 @@ open class TorusUtils: AbstractTorusUtils {
                 network: TorusNetwork = TorusNetwork.legacy(.MAINNET),
                 metadataHost: String = "https://metadata.tor.us",
                 clientId: String = "",
-                legacyNonce: Bool = false
+                legacyNonce: Bool = false,
+                legacyMetadataHost: String = "https://metadata.tor.us"
     ) {
         self.urlSession = urlSession
         utilsLogType = loglevel
@@ -53,16 +55,24 @@ open class TorusUtils: AbstractTorusUtils {
         self.serverTimeOffset = serverTimeOffset
         self.legacyNonce = legacyNonce
         self.clientId = clientId
+        self.legacyMetadataHost = legacyMetadataHost
+    }
+    
+    func isLegacyNetwork() -> Bool {
+        if case .legacy(let legacyNetwork) = network, let legacyRoute = LEGACY_NETWORKS_ROUTE_MAP[legacyNetwork], !legacyRoute.migrationCompleted {
+            return true
+        }
+        return false
     }
 
     // MARK: - getPublicAddress
     
-    public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel]? = nil, verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> String {
+    public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel]? = nil, verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> TorusPublicKey {
         let result = try await getPublicAddressExtended(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId)
-        return result.address
+        return result
     }
     
-    public func getPublicAddressExtended(endpoints: [String], torusNodePubs: [TorusNodePubModel]? = nil, verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> GetPublicAddressResult {
+    public func getPublicAddressExtended(endpoints: [String], torusNodePubs: [TorusNodePubModel]? = nil, verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> TorusPublicKey {
         switch network {
         case .legacy(_) :
             guard let torusNodePubs = torusNodePubs else {
@@ -82,7 +92,7 @@ open class TorusUtils: AbstractTorusUtils {
         verifierParams: VerifierParams,
         idToken: String,
         extraParams: [String:Codable] = [:]
-    ) async throws -> RetrieveSharesResponse {
+    ) async throws -> TorusKey {
         
 //        Support legacy node (api)
         switch network {
@@ -93,11 +103,13 @@ open class TorusUtils: AbstractTorusUtils {
             
             let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
             let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: buffer)
-            return .init(ethAddress: result.publicAddress, privKey: result.privateKey, sessionTokenData: [], X: "", Y: "", metadataNonce: BigInt(0), postboxPubKeyX: "", postboxPubKeyY: "", sessionAuthKey: "", nodeIndexes: [])
+            return result
         case .sapphire(_) :
             
             let result = try await retrieveOrImportShare(
+                legacyMetadataHost: self.legacyMetadataHost,
                 allowHost: self.allowHost,
+                enableOneKey: self.enableOneKey,
                 network: self.network,
                 clientId: self.clientId,
                 endpoints: endpoints,
@@ -223,16 +235,17 @@ open class TorusUtils: AbstractTorusUtils {
     
     
     //   Legacy
-    public func getLegacyPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressResult {
+    public func getLegacyPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> TorusPublicKey {
         do {
-            var data: KeyLookupResponse
+            var data: LegacyKeyLookupResponse
             do {
-                data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
+                data = try await legacyKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
+                print("data",data)
             } catch {
                 if let keyLookupError = error as? KeyLookupError, keyLookupError == .verifierAndVerifierIdNotAssigned {
                     do {
                         _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network)
-                        data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId, timeout: 1)
+                        data = try await awaitLegacyKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId, timeout: 1)
                     } catch {
                         throw TorusUtilError.configurationError
                     }
@@ -240,124 +253,199 @@ open class TorusUtils: AbstractTorusUtils {
                     throw error
                 }
             }
-            let pubKeyX = data.pubKeyX
-            let pubKeyY = data.pubKeyY
-            var modifiedPubKey: String = ""
+            let pubKeyX = data.pubKeyX.addLeading0sForLength64()
+            let pubKeyY = data.pubKeyY.addLeading0sForLength64()
+            let (oAuthX, oAuthY) = (pubKeyX, pubKeyY)
+            
+            var finalPubKey: String = ""
             var nonce: BigUInt = 0
             var typeOfUser: TypeOfUser = .v1
             var pubNonce: PubNonce?
-            let result: GetPublicAddressResult
+            var result: TorusPublicKey
+            var nonceResult : GetOrSetNonceResult?
+            
             if enableOneKey {
-                let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !isNewKey)
-                pubNonce = localNonceResult.pubNonce
-                nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
-                typeOfUser = .init(rawValue: localNonceResult.typeOfUser ?? ".v1") ?? .v1
+                nonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !isNewKey)
+                pubNonce = nonceResult?.pubNonce
+                nonce = BigUInt(nonceResult?.nonce ?? "0") ?? 0
+
+                typeOfUser = .init(rawValue: nonceResult?.typeOfUser ?? ".v1") ?? .v1
                 if typeOfUser == .v1 {
-                    modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                    print("type v1")
+                    finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let nonce2 = BigInt(nonce).modulus(modulusValue)
                     if nonce != BigInt(0) {
                         guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                             throw TorusUtilError.decryptionFailed
                         }
-                        modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
+                        finalPubKey = combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
                     } else {
-                        modifiedPubKey = String(modifiedPubKey.suffix(128))
+                        finalPubKey = String(finalPubKey.suffix(128))
                     }
                 } else if typeOfUser == .v2 {
-                    if localNonceResult.upgraded ?? false {
-                        modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                    print("type v2")
+
+                    if nonceResult?.upgraded ?? false {
+                        finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     } else {
-                        guard localNonceResult.pubNonce != nil else { throw TorusUtilError.decodingFailed("No pub nonce found") }
-                        modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
-                        let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
-                        modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
+                        guard nonceResult?.pubNonce != nil else { throw TorusUtilError.decodingFailed("No pub nonce found") }
+                        finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                        let ecpubKeys = "04" + (nonceResult?.pubNonce!.x.addLeading0sForLength64())! + (nonceResult?.pubNonce!.y.addLeading0sForLength64())!
+                        finalPubKey = combinePublicKeys(keys: [finalPubKey, ecpubKeys], compressed: false)
                     }
-                    modifiedPubKey = String(modifiedPubKey.suffix(128))
+                    finalPubKey = String(finalPubKey.suffix(128))
                 } else {
                     throw TorusUtilError.runtime("getOrSetNonce should always return typeOfUser.")
                 }
-                result = .init(address: publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: pubKeyX, y: pubKeyY, metadataNonce: nonce, pubNonce: pubNonce)
             } else {
                 typeOfUser = .v1
                 let localNonce = try await getMetadata(dictionary: ["pub_key_X": pubKeyX, "pub_key_Y": pubKeyY])
                 nonce = localNonce
                 let localPubkeyX = data.pubKeyX
                 let localPubkeyY = data.pubKeyY
-                modifiedPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
+                finalPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
                 if localNonce != BigInt(0) {
                     let nonce2 = BigInt(localNonce).modulus(modulusValue)
                     guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                         throw TorusUtilError.decryptionFailed
                     }
-                    modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
+                    finalPubKey = combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
                 } else {
-                    modifiedPubKey = String(modifiedPubKey.suffix(128))
+                    finalPubKey = String(finalPubKey.suffix(128))
                 }
-                result = GetPublicAddressResult(address: publicKeyToAddress(key: modifiedPubKey), typeOfUser: typeOfUser, x: localPubkeyX, y: localPubkeyY, metadataNonce: nonce)
             }
-            if !isExtended {
-                let val = GetPublicAddressResult(address: result.address)
-                return val
-            } else {
-                return result
+            let finalX = String(finalPubKey.prefix(64))
+            let finalY = String(finalPubKey.suffix(64))
+            print("finalx", finalX)
+            print("finaly", finalY)
+            let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
+            let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
+
+            var usertype = ""
+            switch typeOfUser{
+                case .v1:
+                    usertype = "v1"
+                case .v2:
+                    usertype = "v2"
             }
+
+            result = TorusPublicKey(
+                finalKeyData: .init(
+                    evmAddress: finalAddress,
+                    X: finalX,
+                    Y: finalY
+                ),
+                oAuthKeyData: .init(
+                    evmAddress: oAuthAddress,
+                    X: oAuthX,
+                    Y: oAuthY
+                ),
+                metadata: .init(
+                    pubNonce: pubNonce,
+                    nonce: nonce,
+                    typeOfUser: UserType(rawValue: usertype)!,
+                    upgraded: nonceResult?.upgraded ?? false
+                ),
+                nodesData: .init(nodeIndexes: [])
+            )
+            return result
         } catch {
             throw error
         }
     }
     
     
-    public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) async throws -> GetUserAndAddress {
-        do {
-            var data: KeyLookupResponse
+    public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) async throws -> TorusPublicKey {
             do {
-                data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
-            } catch {
-                if let keyLookupError = error as? KeyLookupError, keyLookupError == .verifierAndVerifierIdNotAssigned {
-                        do {
-                            _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, signerHost: signerHost, network: network)
-                            data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID, timeout: 1)
-                        } catch {
-                            throw TorusUtilError.configurationError
-                        }
-                } else {
-                    throw error
-                }
-            }
-            let pubKeyX = data.pubKeyX
-            let pubKeyY = data.pubKeyY
-            var modifiedPubKey: String = ""
-            var nonce: BigUInt = 0
-            var typeOfUser: TypeOfUser = .v1
-            let localNonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !isNewKey)
-            nonce = BigUInt(localNonceResult.nonce ?? "0") ?? 0
-            typeOfUser = TypeOfUser(rawValue: localNonceResult.typeOfUser ?? ".v1") ?? .v1
-            if typeOfUser == .v1 {
-                modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
-                let nonce2 = BigInt(nonce).modulus(modulusValue)
-                if nonce != BigInt(0) {
-                    guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
-                        throw TorusUtilError.decryptionFailed
+                var data: KeyLookupResponse
+                do {
+                    data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
+                } catch {
+                    if let keyLookupError = error as? KeyLookupError, keyLookupError == .verifierAndVerifierIdNotAssigned {
+                            do {
+                                _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, signerHost: signerHost, network: network)
+                                data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID, timeout: 1)
+                            } catch {
+                                throw TorusUtilError.configurationError
+                            }
+                    } else {
+                        throw error
                     }
-                    modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, noncePublicKey.toHexString()], compressed: false)
-                } else {
-                    modifiedPubKey = String(modifiedPubKey.suffix(128))
                 }
-            } else if typeOfUser == .v2 {
-                modifiedPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
-                let ecpubKeys = "04" + localNonceResult.pubNonce!.x.addLeading0sForLength64() + localNonceResult.pubNonce!.y.addLeading0sForLength64()
-                modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, ecpubKeys], compressed: false)
-                modifiedPubKey = String(modifiedPubKey.suffix(128))
+                let pubKeyX = data.pubKeyX
+                let pubKeyY = data.pubKeyY
 
-            } else {
-                throw TorusUtilError.runtime("getOrSetNonce should always return typeOfUser.")
+                print("pubkeyX", pubKeyX)
+                print("pubkeyY", pubKeyY)
+                let (oAuthX, oAuthY) = (pubKeyX.addLeading0sForLength64(), pubKeyY.addLeading0sForLength64())
+
+                var finalPubKey: String = ""
+                var nonce: BigUInt = 0
+                var typeOfUser: TypeOfUser = .v1
+                var pubNonce: PubNonce?
+                var result: TorusPublicKey
+
+                let nonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, getOnly: !isNewKey)
+                nonce = BigUInt(nonceResult.nonce ?? "0") ?? 0
+                typeOfUser = TypeOfUser(rawValue: nonceResult.typeOfUser ?? ".v1") ?? .v1
+                if typeOfUser == .v1 {
+                    finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                    let nonce2 = BigInt(nonce).modulus(modulusValue)
+                    print(nonce)
+                    if nonce != BigInt(0) {
+                        guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
+                            throw TorusUtilError.decryptionFailed
+                        }
+                        finalPubKey = combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
+                    } else {
+                        finalPubKey = String(finalPubKey.suffix(128))
+                    }
+                } else if typeOfUser == .v2 {
+                    finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                    let ecpubKeys = "04" + nonceResult.pubNonce!.x.addLeading0sForLength64() + nonceResult.pubNonce!.y.addLeading0sForLength64()
+                    finalPubKey = combinePublicKeys(keys: [finalPubKey, ecpubKeys], compressed: false)
+                    finalPubKey = String(finalPubKey.suffix(128))
+
+                } else {
+                    throw TorusUtilError.runtime("getOrSetNonce should always return typeOfUser.")
+                }
+
+                var usertype = ""
+                switch typeOfUser{
+                    case .v1:
+                        usertype = "v1"
+                    case .v2:
+                        usertype = "v2"
+                }
+                let finalX = String(finalPubKey.prefix(64))
+                let finalY = String(finalPubKey.suffix(64))
+                let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
+                let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
+
+                let val: TorusPublicKey = .init(
+                    finalKeyData: .init(
+                        evmAddress: finalAddress,
+                        X: finalX,
+                        Y: finalY
+                    ),
+                    oAuthKeyData: .init(
+                        evmAddress: oAuthAddress,
+                        X: oAuthX,
+                        Y: oAuthY
+                    ),
+                    metadata: .init(
+                        pubNonce: pubNonce,
+                        nonce: nonce,
+                        typeOfUser: UserType(rawValue: usertype)!,
+                        upgraded: nonceResult.upgraded ?? false
+                    ),
+                    nodesData: .init(nodeIndexes: [])
+                )
+                return val
+            } catch let error {
+               throw error
             }
-            let val: GetUserAndAddress = .init(typeOfUser: typeOfUser, address: publicKeyToAddress(key: modifiedPubKey), x: pubKeyX, y: pubKeyY, pubNonce: localNonceResult.pubNonce, nonceResult: localNonceResult.nonce)
-            return val
-        } catch let error {
-           throw error
         }
-    }
     
     public func getOrSetNonce(x: String, y: String, privateKey: String? = nil, getOnly: Bool = false) async throws -> GetOrSetNonceResult {
             var data: Data
@@ -406,8 +494,8 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
     
-    public func legacyRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
-            return try await withThrowingTaskGroup(of: RetrieveSharesResponseModel.self, body: { [unowned self] group in
+    public func legacyRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> TorusKey {
+            return try await withThrowingTaskGroup(of: TorusKey.self, body: { [unowned self] group in
                 group.addTask { [unowned self] in
                     try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
                 }
@@ -431,7 +519,8 @@ open class TorusUtils: AbstractTorusUtils {
             })
         }
 
-        func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
+        func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> TorusKey {
+            print("here")
             guard
                 let privateKey = generatePrivateKeyData(),
                 let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1 ..< 65)
@@ -455,39 +544,104 @@ open class TorusUtils: AbstractTorusUtils {
             var pk: String = ""
             do {
                 let getPublicAddressData = try await getPublicAddressExtended(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId)
-                publicAddress = getPublicAddressData.address
-                guard
-                    let localPubkeyX = getPublicAddressData.x?.addLeading0sForLength64(),
-                    let localPubkeyY = getPublicAddressData.y?.addLeading0sForLength64()
-                else { throw TorusUtilError.runtime("Empty pubkey returned from getPublicAddress.") }
+                publicAddress = getPublicAddressData.finalKeyData!.evmAddress
+                let localPubkeyX = getPublicAddressData.finalKeyData!.X.addLeading0sForLength64()
+                let localPubkeyY = getPublicAddressData.finalKeyData!.Y.addLeading0sForLength64()
                 lookupPubkeyX = localPubkeyX
                 lookupPubkeyY = localPubkeyY
                 let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
                 os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
-                let (x, y, key) = try await retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
+                
+                let (oAuthKeyX, oAuthKeyY, oAuthKey) = try await retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
+                
+                var metadataNonce: BigUInt
+                var typeOfUser: UserType = .v1
+                var pubKeyNonceResult: PubNonce?
+                var finalPubKey: String = ""
+
                 if enableOneKey {
-                    let result = try await getOrSetNonce(x: x, y: y, privateKey: key, getOnly: true)
-                    let nonce = BigUInt(result.nonce ?? "0", radix: 16) ?? 0
-                    if nonce != BigInt(0) {
-                        let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
-                        let newKey = tempNewKey.modulus(modulusValue)
-                        os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
-                        pk = BigUInt(newKey).serialize().suffix(64).toHexString()
-                    } else {
-                        pk = key
+                    let nonceResult = try await getOrSetNonce(x: oAuthKeyX, y: oAuthKeyY, privateKey: oAuthKey, getOnly: true)
+                    metadataNonce = BigUInt(nonceResult.nonce ?? "0", radix: 16) ?? 0
+                    typeOfUser = UserType(rawValue: nonceResult.typeOfUser!)!
+                    if (typeOfUser == .v2) {
+                        finalPubKey = "04" + oAuthKeyX.addLeading0sForLength64() + oAuthKeyY.addLeading0sForLength64()
+                        let newkey = "04" + (nonceResult.pubNonce?.x.addLeading0sForLength64())! + (nonceResult.pubNonce?.y.addLeading0sForLength64())!
+                        finalPubKey = combinePublicKeys(keys: [finalPubKey, newkey], compressed: false)
+                        pubKeyNonceResult = .init(x: nonceResult.pubNonce!.x, y: nonceResult.pubNonce!.y)
                     }
+                    
+//                    if metadataNonce != BigInt(0) {
+//                        let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
+//                        let newKey = tempNewKey.modulus(modulusValue)
+//                        os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
+//                        pk = BigUInt(newKey).serialize().suffix(64).toHexString()
+//                    } else {
+//                        pk = oAuthKey
+//                    }
                 } else {
-                    let nonce = try await getMetadata(dictionary: ["pub_key_X": x, "pub_key_Y": y])
-                    if nonce != BigInt(0) {
-                        let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
-                        let newKey = tempNewKey.modulus(modulusValue)
-                        os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
-                        pk = BigUInt(newKey).serialize().suffix(64).toHexString()
-                    } else {
-                        pk = key
-                    }
+                    // for imported keys in legacy networks
+                    metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
+                    let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
+                    let privateKeyWithNonce = tempNewKey.modulus(modulusValue)
+//                    Data(hex: String(oauthKey, radix: 16)),
+                    finalPubKey = (SECP256K1.privateToPublic(privateKey: Data(hex: String(privateKeyWithNonce, radix: 16)))?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128))!
+                    
+//                    if metadataNonce != BigInt(0) {
+//                        let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
+//                        let newKey = tempNewKey.modulus(modulusValue)
+//                        os_log("%@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, newKey.description)
+//                        pk = BigUInt(newKey).serialize().suffix(64).toHexString()
+//                    } else {
+//                        pk = oAuthKey
+//                    }
                 }
-                return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk)
+                
+                let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
+                print("here??")
+                let finalPubX = String(finalPubKey.prefix(64))
+                let finalPubY = String(finalPubKey.suffix(64))
+                print("here????")
+                let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
+                
+                var finalPrivKey = ""
+                if typeOfUser == .v1 || (typeOfUser == .v2 && metadataNonce > BigInt(0)) {
+                    let tempNewKey = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
+                    let privateKeyWithNonce = tempNewKey.modulus(modulusValue)
+                    finalPrivKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
+                }
+                
+                var isUpgraded : Bool? = false
+                if typeOfUser == .v1 {
+                    isUpgraded = nil
+                } else if typeOfUser == .v2 {
+                    isUpgraded = metadataNonce == BigUInt(0)
+                }
+                
+                return TorusKey(
+                    finalKeyData: .init(
+                        evmAddress: finalEvmAddress,
+                        X: finalPubX,
+                        Y: finalPubY,
+                        privKey: finalPrivKey
+                    ),
+                    oAuthKeyData: .init(
+                        evmAddress: oAuthKeyAddress,
+                        X: oAuthKeyX,
+                        Y: oAuthKeyY,
+                        privKey: oAuthKey
+                    ),
+                    sessionData: .init(
+                        sessionTokenData: [],
+                        sessionAuthKey: ""
+                    ),
+                    metadata: .init(
+                        pubNonce: pubKeyNonceResult,
+                        nonce: BigUInt(metadataNonce),
+                        typeOfUser: typeOfUser,
+                        upgraded: isUpgraded
+                    ),
+                    nodesData: .init(nodeIndexes: [])
+                )
             } catch {
                 os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
                 throw error

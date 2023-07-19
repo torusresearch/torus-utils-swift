@@ -23,29 +23,6 @@ public class INodePub{
     }
 }
 
-public class TorusPublicKey: INodePub {
-    
-    struct TorusPubNonce {
-        let x: String
-        let y: String
-    }
-    
-    let address: String
-    let metadataNonce: BigInt
-    let pubNonce: TorusPubNonce?
-    let upgraded: Bool?
-    let nodeIndexes: [Int]
-
-    init(X: String, Y: String, address: String, metadataNonce: BigInt, pubNonce: TorusPubNonce?, upgraded: Bool?, nodeIndexes: [Int]) {
-        self.address = address
-        self.metadataNonce = metadataNonce
-        self.pubNonce = pubNonce
-        self.upgraded = upgraded
-        self.nodeIndexes = nodeIndexes
-        super.init(X: X, Y: Y)
-    }
-}
-
 public func TorusNodePubModelToINodePub (node: TorusNodePubModel) -> INodePub {
     return INodePub( X: node.getX(), Y: node.getY() )
 }
