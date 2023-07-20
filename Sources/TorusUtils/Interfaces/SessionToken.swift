@@ -1,8 +1,8 @@
 import Foundation
 
 public struct SessionToken {
-    let token: String
-    let signature: String
-    let node_pubx: String
-    let node_puby: String
+    public let token: String
+    public let signature: String
+    public let node_pubx: String
+    public let node_puby: String
 }
