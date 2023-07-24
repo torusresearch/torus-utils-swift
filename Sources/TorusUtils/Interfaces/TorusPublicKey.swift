@@ -37,10 +37,10 @@ public struct TorusPublicKey {
         self.nodesData = nodesData
     }
 
-    let finalKeyData: FinalKeyData?
-    let oAuthKeyData: OAuthKeyData?
-    let metadata: Metadata?
-    let nodesData: NodesData? 
+    public let finalKeyData: FinalKeyData?
+    public let oAuthKeyData: OAuthKeyData?
+    public let metadata: Metadata?
+    public let nodesData: NodesData? 
 }
 
 public typealias V2NonceResultType = GetOrSetNonceResult
