@@ -122,7 +122,7 @@ open class TorusUtils: AbstractTorusUtils {
             guard let torusNodePubs = torusNodePubs else {
                 throw fatalError("Torus Node Pub not available")
             }
-            return  try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs , verifier: verifier, verifierId: verifierId, enableOneKey: true)
+            return try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, enableOneKey: true)
         case .sapphire(_) :
             return try await getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId, enableOneKey: true)
         }
@@ -321,56 +321,6 @@ open class TorusUtils: AbstractTorusUtils {
             )
             return result
         } catch {
-            throw error
-        }
-    }
-    
-    
-
-    
-    private func getOrSetNonce(x: String, y: String, privateKey: String? = nil, getOnly: Bool = false) async throws -> GetOrSetNonceResult {
-            var data: Data
-            let msg = getOnly ? "getNonce" : "getOrSetNonce"
-            do {
-                if privateKey != nil {
-                    let val = try generateParams(message: msg, privateKey: privateKey!)
-                    data = try JSONEncoder().encode(val)
-                } else {
-                    let dict: [String: Any] = ["pub_key_X": x, "pub_key_Y": y, "set_data": ["data": msg]]
-                    data = try JSONSerialization.data(withJSONObject: dict)
-                }
-                var request = try! makeUrlRequest(url: "\(metadataHost)/get_or_set_nonce")
-                request.httpBody = data
-                let val = try await urlSession.data(for: request)
-                let decoded = try JSONDecoder().decode(GetOrSetNonceResult.self, from: val.0)
-                return decoded
-            } catch let error {
-                throw error
-            }
-        }
-    
-    private func generateParams(message: String, privateKey: String) throws -> MetadataParams {
-        do {
-            guard let privKeyData = Data(hex: privateKey),
-                  let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
-            else {
-                throw TorusUtilError.runtime("invalid priv key")
-            }
-
-            let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
-            let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
-            let encodedData = try JSONEncoder().encode(setData)
-            guard let sigData = SECP256K1.signForRecovery(hash: encodedData.web3.keccak256, privateKey: privKeyData).serializedSignature else {
-                throw TorusUtilError.runtime("sign for recovery hash failed")
-            }
-            var pubKeyX = String(publicKey.prefix(64))
-            var pubKeyY = String(publicKey.suffix(64))
-            if !legacyNonce {
-             pubKeyX.stripPaddingLeft(padChar: "0")
-             pubKeyY.stripPaddingLeft(padChar: "0")
-            }
-            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: sigData.base64EncodedString())
-        } catch let error {
             throw error
         }
     }
