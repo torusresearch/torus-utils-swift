@@ -8,26 +8,26 @@ public enum UserType: String {
 
 public struct TorusPublicKey {
     public struct FinalKeyData {
-        let evmAddress: String
-        let X: String
-        let Y: String
+        public let evmAddress: String
+        public let X: String
+        public let Y: String
     }
 
     public struct OAuthKeyData {
-        let evmAddress: String
-        let X: String
-        let Y: String
+        public let evmAddress: String
+        public let X: String
+        public let Y: String
     }
 
     public struct Metadata {
-        let pubNonce: PubNonce?
-        let nonce: BigUInt?
-        let typeOfUser: UserType
-        let upgraded: Bool?
+        public let pubNonce: PubNonce?
+        public let nonce: BigUInt?
+        public let typeOfUser: UserType
+        public let upgraded: Bool?
     }
 
     public struct NodesData {
-        let nodeIndexes: [Int]
+        public let nodeIndexes: [Int]
     }
     
     public init (finalKeyData: FinalKeyData?, oAuthKeyData: OAuthKeyData?, metadata: Metadata?, nodesData: NodesData?) {
