@@ -44,9 +44,9 @@ public struct TorusKey {
         self.nodesData = nodesData
     }
 
-    let finalKeyData: FinalKeyData?
-    let oAuthKeyData: OAuthKeyData?
-    let sessionData: SessionData?
-    let metadata: Metadata?
-    let nodesData: NodesData?
+    public let finalKeyData: FinalKeyData?
+    public let oAuthKeyData: OAuthKeyData?
+    public let sessionData: SessionData?
+    public let metadata: Metadata?
+    public let nodesData: NodesData?
 }
