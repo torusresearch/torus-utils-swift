@@ -3,33 +3,33 @@ import BigInt
 
 public struct TorusKey {
     public struct FinalKeyData {
-        let evmAddress: String
-        let X: String
-        let Y: String
-        let privKey: String?
+        public let evmAddress: String
+        public let X: String
+        public let Y: String
+        public let privKey: String?
     }
 
     public struct OAuthKeyData {
-        let evmAddress: String
-        let X: String
-        let Y: String
-        let privKey: String
+        public let evmAddress: String
+        public let X: String
+        public let Y: String
+        public let privKey: String
     }
 
     public struct SessionData {
-        let sessionTokenData: [SessionToken]
-        let sessionAuthKey: String
+        public let sessionTokenData: [SessionToken]
+        public let sessionAuthKey: String
     }
 
     public struct Metadata {
-        let pubNonce: PubNonce?
-        let nonce: BigUInt?
-        let typeOfUser: UserType
-        let upgraded: Bool?
+        public let pubNonce: PubNonce?
+        public let nonce: BigUInt?
+        public let typeOfUser: UserType
+        public let upgraded: Bool?
     }
 
     public struct NodesData {
-        let nodeIndexes: [Int]
+        public let nodeIndexes: [Int]
     }
     
     public init(finalKeyData: FinalKeyData?,
@@ -44,9 +44,9 @@ public struct TorusKey {
         self.nodesData = nodesData
     }
 
-    let finalKeyData: FinalKeyData?
-    let oAuthKeyData: OAuthKeyData?
-    let sessionData: SessionData?
-    let metadata: Metadata?
-    let nodesData: NodesData?
+    public let finalKeyData: FinalKeyData?
+    public let oAuthKeyData: OAuthKeyData?
+    public let sessionData: SessionData?
+    public let metadata: Metadata?
+    public let nodesData: NodesData?
 }

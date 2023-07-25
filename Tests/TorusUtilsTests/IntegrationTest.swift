@@ -59,7 +59,7 @@ class IntegrationTests: XCTestCase {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: TORUS_TEST_EMAIL)
-            let data = try await tu.getPublicAddressExtended(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "google-lrc", verifierId: "hello@tor.us")
+            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "google-lrc", verifierId: "hello@tor.us")
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x5b56E06009528Bffb1d6336575731ee3B63f6150")
             exp1.fulfill()
         } catch let err {
@@ -83,7 +83,7 @@ class IntegrationTests: XCTestCase {
         let verifierID: String = "somev2user@gmail.com"
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
+            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
 
             XCTAssertEqual(val.finalKeyData?.evmAddress, "0xE91200d82029603d73d6E307DbCbd9A7D0129d8D")
             exp1.fulfill()

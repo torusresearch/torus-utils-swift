@@ -70,7 +70,7 @@ class CyanTest: XCTestCase {
             var verifierID: String = TORUS_TEST_EMAIL
             do {
                 var nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-                var data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
+                var data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
                 XCTAssertEqual(data.finalKeyData?.evmAddress, "0xA3767911A84bE6907f26C572bc89426dDdDB2825")
                 exp1.fulfill()
 
@@ -78,7 +78,7 @@ class CyanTest: XCTestCase {
                 verifier = "tkey-google-cyan"
                 verifierID = "somev2user@gmail.com"
                 nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-                data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
+                data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
                 XCTAssertEqual(data.finalKeyData?.evmAddress, "0xdE6805586F158aE3C8B25bBB73eef33ED34883D3")
                 exp2.fulfill()
 
@@ -86,7 +86,7 @@ class CyanTest: XCTestCase {
                 verifier = "tkey-google-cyan"
                 verifierID = "caspertorus@gmail.com"
                 nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-                data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePub: nodeDetails.getTorusNodePub(), verifier: verifier, verifierID: verifierID)
+                data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
                 XCTAssertEqual(data.finalKeyData?.evmAddress, "0xE6bcd804CBFfb95f750e32300517Ad9EC251dAFD")
                 exp3.fulfill()
             } catch let err {
