@@ -102,7 +102,7 @@ class TestnetTest: XCTestCase {
         }
     }
 
-    func test_login_aqua() async {
+    func test_login_testnet() async {
         let exp1 = XCTestExpectation(description: "should be able to login")
         let verifier: String = TORUS_TEST_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
@@ -137,7 +137,7 @@ class TestnetTest: XCTestCase {
         }
     }
 
-    func test_aggregate_login_aqua() async throws {
+    func test_aggregate_login_testnet() async throws {
         let exp1 = XCTestExpectation(description: "should be able to aggregate login")
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL

@@ -71,6 +71,24 @@ extension TorusUtils {
         }
         return nil
     }
+    
+    internal func isLegacyNetwork() -> Bool {
+        if case .legacy = network {
+            return true
+        }
+        return false
+    }
+    
+    internal func isMigratedLegacyNetwork() -> Bool {
+        if case .legacy(let legacyNetwork) = network {
+            let legacyRoute = legacyNetwork.migration_map
+            if !legacyRoute.migrationCompleted {
+                return true
+            }
+            return false
+        }
+        return false
+    }
 
 
 
@@ -86,7 +104,7 @@ extension TorusUtils {
         guard let encodedUnwrapped = encoded else {
             throw TorusUtilError.runtime("Unable to serialize dictionary into JSON. \(dictionary)")
         }
-        var request = try! makeUrlRequest(url: "\(metadataHost)/get")
+        var request = try! makeUrlRequest(url: "\(self.legacyMetadataHost)/get")
         request.httpBody = encodedUnwrapped
         do {
             let val = try await urlSession.data(for: request)
@@ -115,7 +133,7 @@ extension TorusUtils {
                     let dict: [String: Any] = ["pub_key_X": x, "pub_key_Y": y, "set_data": ["data": msg]]
                     data = try JSONSerialization.data(withJSONObject: dict)
                 }
-                var request = try! makeUrlRequest(url: "\(legacyMetadataHost)/get_or_set_nonce")
+                var request = try! makeUrlRequest(url: "\(self.legacyMetadataHost)/get_or_set_nonce")
                 request.httpBody = data
                 let val = try await urlSession.data(for: request)
                 let decoded = try JSONDecoder().decode(GetOrSetNonceResult.self, from: val.0)
@@ -141,10 +159,7 @@ extension TorusUtils {
             }
             var pubKeyX = String(publicKey.prefix(64))
             var pubKeyY = String(publicKey.suffix(64))
-            if !legacyNonce {
-             pubKeyX.stripPaddingLeft(padChar: "0")
-             pubKeyY.stripPaddingLeft(padChar: "0")
-            }
+
             return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
@@ -166,8 +181,6 @@ extension TorusUtils {
                          "verifieridentifier": verifier,
                          "verifier_id": verifierParams.verifier_id,
                          "extended_verifier_id": verifierParams.extended_verifier_id,
-                         "test" :true
-                 
         ] as [String: Codable]
                 
         let keepingCurrent = loadedStrings.merging(valueDict) { current, _ in current }
@@ -188,7 +201,7 @@ extension TorusUtils {
         do {
             rpcdata = try JSONEncoder().encode(dataForRequest)
         } catch {
-            os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+            os_log("get share or key assign - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
         }
 
         // Create Array of URLRequest Promises
@@ -280,10 +293,10 @@ extension TorusUtils {
                     case.success(let model):
                         let data = model.data
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data)
-                        os_log("promise - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
+                        os_log("retrieveShare promise - reponse: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, decoded.message ?? "")
                         
                         if decoded.error != nil {
-                            os_log("promise - decode error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
+                            os_log("retrieveShare promise - decode error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, decoded.error?.message ?? "")
                             throw TorusUtilError.runtime(decoded.error?.message ?? "")
                         }
                         
@@ -297,8 +310,9 @@ extension TorusUtils {
                         if let first = keyObj.first {
 
                             let pubkey = first.publicKey
-                            let pubNonce = first.nonceData?.pubNonce?.x
                             let nonceData = first.nonceData
+                            let pubNonce = nonceData?.pubNonce?.x
+                            
                             
                             pubkeyArr.append(pubkey)
                             if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil {
@@ -309,26 +323,27 @@ extension TorusUtils {
                             //                            pubkeyArr.append(pubkey)
                             guard let result = thresholdSame(arr: pubkeyArr, threshold: threshold)
                             else {
-                                
-                                os_log("invalid result from nodes, threshold number of public key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug)
+                                os_log("retrieveShare - invalid result from nodes, threshold number of public key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug)
                                 throw NSError()
                             }
-                            return result
-
                             
                             // if both thresholdNonceData and extended_verifier_id are not available
                             // then we need to throw otherwise the address would be incorrect.
-                            if result == nil && verifierParams.extended_verifier_id == nil {
+                            if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !isLegacyNetwork() {
                                 os_log("invalid metadata result from nodes, nonce metadata is empty for verifier: %@ and verifierId: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, verifier, verifierParams.verifier_id)
                             }
+
+                            
+                            return result
+
+                            
                         }
                         
                     case.failure(let error):
                         throw error
                     }
                 } catch {
-                    
-                        os_log("promise - commitment request error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error))
+                        os_log("retrieveShare promise - commitment request error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error))
                 }
             }
             throw TorusUtilError.commitmentRequestFailed
@@ -337,9 +352,9 @@ extension TorusUtils {
         // optimistically run lagrange interpolation once threshold number of shares have been received
         // this is matched against the user public key to ensure that shares are consistent
         // Note: no need of thresholdMetadataNonce for extended_verifier_id key
-        if promiseArrRequest.count >= threshold {
+        if completeShareRequestResponseArr.count >= threshold {
             
-            if thresholdPublicKey != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil) {
+            if thresholdPublicKey != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil || isLegacyNetwork()) {
                 
                 // Code block to execute if all conditions are true
                 var sharePromises = [String]()
@@ -404,7 +419,7 @@ extension TorusUtils {
                 }
                 
                 if verifierParams.extended_verifier_id == nil && validTokens.count < threshold {
-                    os_log("Insufficient number of session tokens from nodes, required: %@, found: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, threshold, validTokens.count)
+                    os_log("retrieveShare - Insufficient number of session tokens from nodes, required: %@, found: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, threshold, validTokens.count)
                     throw TorusUtilError.apiRequestFailed
                 }
 
@@ -584,7 +599,7 @@ extension TorusUtils {
         let encoder = JSONEncoder()
         var failedLookUpCount = 0
         let jsonRPCRequest = JSONRPCrequest(
-            method: "CommitmentRequest",
+            method: JRPC_METHODS.COMMITMENT_REQUEST,
             params: ["messageprefix": "mug00",
                      "tokencommitment": tokenCommitment,
                      "temppubx": pubKeyX,
@@ -1039,7 +1054,7 @@ extension TorusUtils {
             let threshold = (endpoints.count / 2) + 1
             var failedLookupCount = 0
             let jsonRPCRequest = JSONRPCrequest(
-                method: "VerifierLookupRequest",
+                method: JRPC_METHODS.LEGACY_VERIFIER_LOOKUP_REQUEST,
                 params: ["verifier": verifier, "verifier_id": verifierId])
             guard let rpcdata = try? encoder.encode(jsonRPCRequest)
             else {
@@ -1145,7 +1160,7 @@ extension TorusUtils {
         let threshold = (endpoints.count / 2) + 1
         var failedLookupCount = 0
         let jsonRPCRequest = JSONRPCrequest(
-            method: "VerifierLookupRequest",
+            method: JRPC_METHODS.LEGACY_VERIFIER_LOOKUP_REQUEST,
             params: ["verifier": verifier, "verifier_id": verifierId])
         guard let rpcdata = try? encoder.encode(jsonRPCRequest)
         else {
@@ -1269,7 +1284,7 @@ extension TorusUtils {
         }
         os_log("newEndpoints2 : %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, endpoints)
 
-        let SignerObject = JSONRPCrequest(method: "KeyAssign", params: ["verifier": verifier, "verifier_id": verifierId])
+        let SignerObject = JSONRPCrequest(method: JRPC_METHODS.LEGACY_KEY_ASSIGN, params: ["verifier": verifier, "verifier_id": verifierId])
         do {
             let rpcdata = try encoder.encode(SignerObject)
             var request = try! makeUrlRequest(url: signerHost)
@@ -1331,10 +1346,7 @@ extension TorusUtils {
               }
               var pubKeyX = String(publicKey.prefix(64))
               var pubKeyY = String(publicKey.suffix(64))
-              if !legacyNonce {
-               pubKeyX.stripPaddingLeft(padChar: "0")
-               pubKeyY.stripPaddingLeft(padChar: "0")
-              }
+
               return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: sigData.base64EncodedString())
           } catch let error {
               throw error

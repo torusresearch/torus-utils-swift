@@ -129,17 +129,6 @@ open class TorusUtils: AbstractTorusUtils {
         
         }
     
-    private func isLegacyNetwork() -> Bool {
-        if case .legacy(let legacyNetwork) = network {
-            let legacyRoute = legacyNetwork.migration_map
-            if !legacyRoute.migrationCompleted {
-                return true
-            }
-            return false
-        }
-        return false
-    }
-    
     
     private func getNewPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil, enableOneKey: Bool) async throws -> TorusPublicKey {
         do {
@@ -487,7 +476,7 @@ open class TorusUtils: AbstractTorusUtils {
             
             let dataForRequest = ["jsonrpc": "2.0",
                                   "id": 10,
-                                  "method": "ShareRequest",
+                                  "method": AnyCodable(JRPC_METHODS.LEGACY_SHARE_REQUEST),
                                   "params": AnyCodable(params)
                                 ] as [String: AnyCodable]
             do {

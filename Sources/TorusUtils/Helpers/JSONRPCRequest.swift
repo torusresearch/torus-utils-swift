@@ -54,7 +54,7 @@ public struct SignerResponse: Codable {
 public struct KeyAssignRequest: Encodable {
     public var id: Int = 10
     public var jsonrpc: String = "2.0"
-    public var method: String = "KeyAssign"
+    public var method: String = JRPC_METHODS.LEGACY_KEY_ASSIGN
     public var params: Any
     public var torusNonce: String
     public var torusSignature: String
