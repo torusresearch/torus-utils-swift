@@ -52,8 +52,8 @@ public struct PointHex : Decodable, Hashable, Equatable {
     let y: String
     
     init(from: Point) {
-        x = from.x.serialize().hexString
-        y = from.x.serialize().hexString
+        x = String(from.x, radix: 16)
+        y = String(from.y, radix: 16)
     }
 }
 
