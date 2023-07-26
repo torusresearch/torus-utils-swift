@@ -17,7 +17,7 @@ import CoreMedia
 @testable import TorusUtils
 
 class OneKeyTest: XCTestCase {
-    var TORUS_TEST_EMAIL = "hello@tor.us"
+    var TORUS_TEST_EMAIL = "himanshu@tor.us"
     var TORUS_TEST_VERIFIER = "torus-test-health"
     var TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
     var fnd: NodeDetailManager!

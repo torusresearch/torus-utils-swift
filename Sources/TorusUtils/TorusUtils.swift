@@ -469,7 +469,6 @@ open class TorusUtils: AbstractTorusUtils {
     // MARK: - retreiveDecryptAndReconstuct
 
         private func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: [String: Codable], verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
-            print("fuck")
             // Rebuild extraParams
             let session = createURLSession()
             let threshold = Int(endpoints.count / 2) + 1
@@ -497,7 +496,7 @@ open class TorusUtils: AbstractTorusUtils {
                 os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             }
             
-            print("rpc", String(data: rpcdata, encoding: .utf8)!)
+//            print("rpc", String(data: rpcdata, encoding: .utf8)!)
             
             var shareResponses : [PointHex] = []
             var resultArray = [Int: RetrieveDecryptAndReconstuctResponseModel]()
@@ -512,7 +511,6 @@ open class TorusUtils: AbstractTorusUtils {
                     throw error
                 }
             }
-            print("len", requestArr.count)
             return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
                 for (i, rq) in requestArr.enumerated() {
                     group.addTask {
@@ -530,7 +528,6 @@ open class TorusUtils: AbstractTorusUtils {
                         try Task.checkCancellation()
                         switch val {
                         case .success(let model):
-                            print("model", model)
                             let _data = model.data
                             let i = model.index
                             
@@ -539,12 +536,10 @@ open class TorusUtils: AbstractTorusUtils {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }
                             os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-                            print("aaa")
                             guard
                                 let decodedResult = decoded.result as? LegacyLookupResponse
                             else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
                             // Due to multiple keyAssign
-                            print("dec result", decodedResult)
                             let keyObj = decodedResult.keys
                             if let first = keyObj.first {
 
