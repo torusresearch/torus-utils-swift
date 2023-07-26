@@ -195,14 +195,6 @@ final class SapphireTest: XCTestCase {
         }
     }
 
-//    func teststring() {
-//        let metadata = EciesHex(iv: <#T##String#>, ephemPublicKey: <#T##String#>, ciphertext: <#T##String#>, mac: <#T##String#>, mode: <#T##String?#>)
-//        let str = "YjYxM2EzNTQzYTNjMDAzYjdjYjUzNzY3NTE2ZTk2ODdjNGJiMmUwMmNhNTUyYjllYjM4ZWRkODE0NGYyZGI0YjQyYjc4M2E4MzIxODlkNzc4YzFjMmNhNTFiNDVhNTU3"
-//        let data = Data(base64Encoded: str, options: [])
-//        
-//        
-//        
-//    }
     // func testImportKeyForNewUser() async throws {
     //     let email = "faker@gmail.com"
     //     let token = try generateIdToken(email: email)
@@ -297,22 +289,22 @@ final class SapphireTest: XCTestCase {
 
     }
     
-//    func testAllowTssVerifierIdFetchShare () async throws {
-//        
-//        let email = TORUS_TEST_EMAIL //faker random address ???
-//        let verifierId = TORUS_TEST_EMAIL
-//        let nonce = 0
-//        let tssTag = "default"
-//        let tssVerifierId = "\(email)\u{0015}\(tssTag)\u{0016}\(nonce)"
-//        
-//        let token = try generateIdToken(email: email)
-//        let nodeManager = NodeDetailManager(network: TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
-//        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
-//        let verifierParams = VerifierParams(verifier_id: verifierId, extended_verifier_id: tssVerifierId)
-//        
-//        try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_EMAIL, verifierParams: verifierParams, idToken: token)
-//    }
-//
+    func testAllowTssVerifierIdFetchShare () async throws {
+        
+        let email = TORUS_TEST_EMAIL //faker random address ???
+        let verifierId = TORUS_TEST_EMAIL
+        let nonce = 0
+        let tssTag = "default"
+        let tssVerifierId = "\(email)\u{0015}\(tssTag)\u{0016}\(nonce)"
+        
+        let token = try generateIdToken(email: email)
+        let nodeManager = NodeDetailManager(network: TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
+        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
+        let verifierParams = VerifierParams(verifier_id: verifierId, extended_verifier_id: tssVerifierId)
+        
+        try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_EMAIL, verifierParams: verifierParams, idToken: token)
+    }
+
 //     it("should allow test tss verifier id to fetch shares", async function () {
 //       const email = faker.internet.email();
 //       const nonce = 0;
@@ -386,19 +378,35 @@ final class SapphireTest: XCTestCase {
         }
     }
     
-//    func testAggregrateLogin() async throws {
-//        let email = TORUS_TEST_EMAIL // faker
-//        let idToken = try generateIdToken(email: email)
-//        let hashedIdToken = keccak256Data()
-//
-//        let nodeManager = NodeDetailManager(network: .SAPPHIRE_DEVNET)
-//        let endpoint = try await nodeManager.getNodeDetails(verifier: HashEnabledVerifier, verifierID: HashEnabledVerifier)
-//
-//        let verifierParams = VerifierParams(verifier_id: email,
-//                                            additionalParams: [
-//            "sub_verifier_ids" : [TORUS_TEST_VERIFIER]
-//        let result = try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierParams: VerifierParams, idToken: idToken )
-//    }
+    func testAggregrateLogin() async throws {
+        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
+        let verifierID: String = TORUS_TEST_EMAIL
+        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
+        let hashedIDToken = jwt.sha3(.keccak256)
+        let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Codable]
+
+        let nodeManager = NodeDetailManager(network: .sapphire(.SAPPHIRE_DEVNET))
+        let endpoint = try await nodeManager.getNodeDetails(verifier: HashEnabledVerifier, verifierID: HashEnabledVerifier)
+
+        let verifierParams = VerifierParams(verifier_id: verifierID)
+        do {
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
+            
+            let data = try await torus.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+            
+            XCTAssertNotNil(data.finalKeyData?.evmAddress)
+            XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
+            XCTAssertNotNil(data.oAuthKeyData?.evmAddress)
+            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+            XCTAssertNotNil(data.metadata?.nonce)
+            XCTAssertEqual(data.metadata?.upgraded, false)
+            exp1.fulfill()
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+    }
     
     
     

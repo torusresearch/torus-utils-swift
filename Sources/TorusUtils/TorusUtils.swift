@@ -90,8 +90,7 @@ open class TorusUtils: AbstractTorusUtils {
                 throw fatalError("Torus Node Pub not available")
             }
             
-            let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-            let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: buffer)
+            let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: extraParams)
             return result
         case .sapphire(_) :
             
@@ -325,7 +324,7 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
     
-    private func legacyRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> TorusKey {
+    private func legacyRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
             return try await withThrowingTaskGroup(of: TorusKey.self, body: { [unowned self] group in
                 group.addTask { [unowned self] in
                     try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
@@ -350,7 +349,7 @@ open class TorusUtils: AbstractTorusUtils {
             })
         }
 
-        private func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> TorusKey {
+        private func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
             guard
                 let privateKey = generatePrivateKeyData(),
                 let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1 ..< 65)
@@ -469,27 +468,37 @@ open class TorusUtils: AbstractTorusUtils {
     
     // MARK: - retreiveDecryptAndReconstuct
 
-        private func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: Data, verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
+        private func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: [String: Codable], verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
+            print("fuck")
             // Rebuild extraParams
             let session = createURLSession()
             let threshold = Int(endpoints.count / 2) + 1
             var rpcdata: Data = Data()
+            
+            let loadedStrings = extraParams
+            let valueDict = ["verifieridentifier": verifier,
+                             "verifier_id": verifierId,
+                             "nodesignatures": nodeSignatures.tostringDict(),
+                             "idtoken": tokenCommitment
+            ] as [String: Codable]
+            let finalItem = loadedStrings.merging(valueDict) { current, _ in current }
+            let params =  ["encrypted": "yes",
+                        "item": AnyCodable([finalItem])
+            ] as [String: AnyCodable]
+            
+            let dataForRequest = ["jsonrpc": "2.0",
+                                  "id": 10,
+                                  "method": "ShareRequest",
+                                  "params": AnyCodable(params)
+                                ] as [String: AnyCodable]
             do {
-                if let loadedStrings = try NSKeyedUnarchiver.unarchiveTopLevelObjectWithData(extraParams) as? [String: Any] {
-                    let value = ["verifieridentifier": verifier, "verifier_id": verifierId, "nodesignatures": nodeSignatures.tostringDict(), "idtoken": tokenCommitment] as [String: Any]
-                    let keepingCurrent = loadedStrings.merging(value) { current, _ in current }
-                    // TODO: Look into hetrogeneous array encoding
-                    let dataForRequest = ["jsonrpc": "2.0",
-                                          "id": 10,
-                                          "method": "ShareRequest",
-                                          "params": ["encrypted": "yes",
-                                                     "item": [keepingCurrent]] as [String: Any]] as [String: Any]
-                    rpcdata = try JSONSerialization.data(withJSONObject: dataForRequest)
-                }
+                rpcdata = try JSONEncoder().encode(dataForRequest)
             } catch {
-                os_log("retrieveDecryptAndReconstruct - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+                os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             }
-
+            
+            print("rpc", String(data: rpcdata, encoding: .utf8)!)
+            
             var shareResponses : [PointHex] = []
             var resultArray = [Int: RetrieveDecryptAndReconstuctResponseModel]()
             var errorStack = [Error]()
@@ -503,6 +512,7 @@ open class TorusUtils: AbstractTorusUtils {
                     throw error
                 }
             }
+            print("len", requestArr.count)
             return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: {[unowned self] group in
                 for (i, rq) in requestArr.enumerated() {
                     group.addTask {
@@ -520,6 +530,7 @@ open class TorusUtils: AbstractTorusUtils {
                         try Task.checkCancellation()
                         switch val {
                         case .success(let model):
+                            print("model", model)
                             let _data = model.data
                             let i = model.index
                             
@@ -528,12 +539,12 @@ open class TorusUtils: AbstractTorusUtils {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }
                             os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-
+                            print("aaa")
                             guard
                                 let decodedResult = decoded.result as? LegacyLookupResponse
                             else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
                             // Due to multiple keyAssign
-                            
+                            print("dec result", decodedResult)
                             let keyObj = decodedResult.keys
                             if let first = keyObj.first {
 
