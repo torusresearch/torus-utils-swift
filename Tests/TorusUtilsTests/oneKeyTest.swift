@@ -58,7 +58,7 @@ class OneKeyTest: XCTestCase {
     func test_login() async {
         let exp1 = XCTestExpectation(description: "should still login v1 account correctly")
         let verifier: String = TORUS_TEST_VERIFIER
-        let email = "randomemail123@tor.us"
+        let email = TORUS_TEST_EMAIL
         let verifierID: String = email
         let jwt = try! generateIdToken(email: email)
         let verifierParams = VerifierParams(verifier_id: verifierID)

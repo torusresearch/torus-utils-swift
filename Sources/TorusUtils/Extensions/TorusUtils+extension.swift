@@ -819,31 +819,29 @@ extension TorusUtils {
     // MARK: - Lagrange interpolation
 
     internal func thresholdLagrangeInterpolation(data filteredData: [Int: String], endpoints: [String], lookupPubkeyX: String, lookupPubkeyY: String) throws -> (String, String, String) {
-        // all possible combinations of share indexes to interpolate
-        let shareCombinations = combinations(elements: Array(filteredData.keys), k: Int(endpoints.count / 2) + 1)
-        for shareIndexSet in shareCombinations {
-            var sharesToInterpolate: [Int: String] = [:]
-            shareIndexSet.forEach { sharesToInterpolate[$0] = filteredData[$0] }
-            do {
-                let data = try lagrangeInterpolation(shares: sharesToInterpolate)
-                // Split key in 2 parts, X and Y
+        // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
+        let allCombis = kCombinations(s: filteredData.count, k: Int(endpoints.count / 2) + 1)
 
-                guard let finalPrivateKey = data.web3.hexData, let publicKey = SECP256K1.privateToPublic(privateKey: finalPrivateKey)?.subdata(in: 1 ..< 65) else {
-                    throw TorusUtilError.decodingFailed("\(data)")
+        for j in 0..<allCombis.count {
+            let currentCombi = allCombis[j]
+            let currentCombiShares = filteredData.enumerated().reduce(into: [ Int : String ]()) { acc, current in
+                let (index, curr) = current
+                if (currentCombi.contains(index)) {
+                    acc[curr.key] = curr.value
                 }
-                let paddedPubKey = publicKey.toHexString().padLeft(padChar: "0", count: 128)
-                let pubKeyX = String(paddedPubKey.prefix(paddedPubKey.count / 2))
-                let pubKeyY = String(paddedPubKey.suffix(paddedPubKey.count / 2))
-                os_log("retrieveDecryptAndReconstuct: private key rebuild %@ %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data, pubKeyX, pubKeyY)
-                print("??",pubKeyX,lookupPubkeyX,pubKeyY,lookupPubkeyY)
-                // Verify
-                if pubKeyX == lookupPubkeyX && pubKeyY == lookupPubkeyY {
-                    return (pubKeyX, pubKeyY, data)
-                } else {
-                    os_log("retrieveDecryptAndReconstuct: verification failed", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
-                }
-            } catch {
-                os_log("retrieveDecryptAndReconstuct: lagrangeInterpolation: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+            }
+            let derivedPrivateKey = try lagrangeInterpolation(shares: currentCombiShares, offset: 0)
+
+            let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKey) )?.toHexString()
+            
+            let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
+            let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
+            let decryptedPubKeyXBigInt = BigUInt(decryptedPubKeyX, radix: 16)!
+            let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
+            let thresholdPublicKeyXBigInt = BigUInt(lookupPubkeyX, radix: 16)!
+            let thresholdPublicKeyYBigInt = BigUInt(lookupPubkeyY, radix: 16)!
+            if decryptedPubKeyXBigInt == thresholdPublicKeyXBigInt && decryptedPubKeyYBigInt == thresholdPublicKeyYBigInt {
+                return (decryptedPubKeyX,decryptedPubKeyY,derivedPrivateKey)
             }
         }
         throw TorusUtilError.interpolationFailed
