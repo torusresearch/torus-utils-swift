@@ -149,14 +149,14 @@ class TestnetTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D")
-            XCTAssertEqual(data.finalKeyData?.X, "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d")
-            XCTAssertEqual(data.finalKeyData?.Y, "f963f2d08ed4dd0da9b8a8d74c6fdaeef7bdcde31f84fcce19fa2173d40b2c10")
-            XCTAssertEqual(data.finalKeyData?.privKey, "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355")
-            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x5b58d8a16fDA79172cd42Dc3068d5CEf26a5C81D")
-            XCTAssertEqual(data.oAuthKeyData?.X, "37a4ac8cbef68e88bcec5909d9b6fffb539187365bb723f3d7bffe56ae80e31d")
-            XCTAssertEqual(data.oAuthKeyData?.Y, "f963f2d08ed4dd0da9b8a8d74c6fdaeef7bdcde31f84fcce19fa2173d40b2c10")
-            XCTAssertEqual(data.oAuthKeyData?.privKey, "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355")
+            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x938a40E155d118BD31E439A9d92D67bd55317965")
+            XCTAssertEqual(data.finalKeyData?.X, "1c50e34ef5b7afcf5b0c6501a6ae00ec3a09a321dd885c5073dd122e2a251b95")
+            XCTAssertEqual(data.finalKeyData?.Y, "2cc74beb28f2c4a7c4034f80836d51b2781b36fefbeafb4eb1cd055bdf73b1e6")
+            XCTAssertEqual(data.finalKeyData?.privKey, "3cbfa57d702327ec1af505adc88ad577804a1a7780bc013ed9e714c547fb5cb1")
+            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x938a40E155d118BD31E439A9d92D67bd55317965")
+            XCTAssertEqual(data.oAuthKeyData?.X, "1c50e34ef5b7afcf5b0c6501a6ae00ec3a09a321dd885c5073dd122e2a251b95")
+            XCTAssertEqual(data.oAuthKeyData?.Y, "2cc74beb28f2c4a7c4034f80836d51b2781b36fefbeafb4eb1cd055bdf73b1e6")
+            XCTAssertEqual(data.oAuthKeyData?.privKey, "3cbfa57d702327ec1af505adc88ad577804a1a7780bc013ed9e714c547fb5cb1")
             XCTAssertEqual(data.sessionData?.sessionTokenData.count, 0)
             XCTAssertEqual(data.sessionData?.sessionAuthKey, "")
             XCTAssertEqual(data.metadata?.pubNonce, nil)
@@ -188,7 +188,7 @@ extension TestnetTest {
             // should fail if un-commented threshold 4/5
             // endpoints[1] = "https://ndjnfjbfrj/random"
             let data = try await tu.retrieveShares(endpoints: endpoints, torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-            XCTAssertEqual(data.finalKeyData?.privKey, "f726ce4ac79ae4475d72633c94769a8817aff35eebe2d4790aed7b5d8a84aa1d")
+            XCTAssertEqual(data.finalKeyData?.privKey, "9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)

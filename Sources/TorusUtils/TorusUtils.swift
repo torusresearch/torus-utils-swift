@@ -525,19 +525,32 @@ open class TorusUtils: AbstractTorusUtils {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }
                             os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-                            guard
-                                let decodedResult = decoded.result as? LegacyLookupResponse
-                            else { throw TorusUtilError.decodingFailed("keys not found in result \(decoded)") }
-                            // Due to multiple keyAssign
-                            let keyObj = decodedResult.keys
-                            if let first = keyObj.first {
-
-                                let pointHex = PointHex(from: first.publicKey)
-                                shareResponses.append(pointHex)
-                                let metadata = first.metadata
-                                let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
-                                resultArray[i] = model
+                            if let decodedResult = decoded.result as? LegacyLookupResponse {
+                                print("case non mig")
+                                let keyObj = decodedResult.keys
+                                if let first = keyObj.first {
+                                    let pointHex = PointHex(from: first.publicKey)
+                                    shareResponses.append(pointHex)
+                                    let metadata = first.metadata
+                                    let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
+                                    resultArray[i] = model
+                                }
+                            } else if let decodedResult = decoded.result as? LegacyShareRequestResult {
+                                print("case mig")
+                                let keyObj = decodedResult.keys
+                                if let first = keyObj.first {
+                                    let pointHex = PointHex(from: .init(x: first.publicKey.X, y: first.publicKey.Y))
+                                    shareResponses.append(pointHex)
+                                    let metadata = first.metadata
+                                    let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
+                                    resultArray[i] = model
+                                }
+                            } else {
+                                print("decode fail")
                             }
+                            
+                            // Due to multiple keyAssign
+
                             let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
 
                             // Comparing dictionaries, so the order of keys doesn't matter

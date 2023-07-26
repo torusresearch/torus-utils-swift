@@ -78,3 +78,38 @@ public struct KeyAssignment : Decodable {
         self.nonceData = try container.decodeIfPresent(GetOrSetNonceResult.self, forKey: .nonce_data)
     }
 }
+
+public struct LegacyKeyAssignment : Decodable {
+    
+    let index: String
+    let publicKey: PublicKey
+    let threshold: String
+    let verifiers: [String: [String]]
+    let share: String
+    let metadata: EciesHex
+    
+    struct PublicKey : Hashable, Codable {
+        let X: String
+        let Y: String
+    }
+
+    enum CodingKeys: CodingKey {
+        case Index
+        case PublicKey
+        case Threshold
+        case Verifiers
+        case Share
+        case Metadata
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.index = try container.decode(String.self, forKey: .Index)
+        self.publicKey = try container.decode(PublicKey.self, forKey: .PublicKey)
+        self.threshold = try container.decode(String.self, forKey: .Threshold)
+        self.verifiers = try container.decode([String: [String]].self, forKey: .Verifiers)
+        self.share = try container.decode(String.self, forKey: .Share)
+        self.metadata = try container.decode(EciesHex.self, forKey: .Metadata)
+    }
+}
+

@@ -157,7 +157,7 @@ public struct JSONRPCrequest <T:Encodable>: Encodable {
 public struct JSONRPCresponse: Decodable {
     public var id: Int
     public var jsonrpc = "2.0"
-    public var result: Decodable?
+    public var result: Any?
     public var error: ErrorMessage?
     public var message: String?
 
@@ -197,6 +197,8 @@ public struct JSONRPCresponse: Decodable {
         if let rawValue = try? container.decodeIfPresent(VerifierLookupResponse.self, forKey: .result){
             result = rawValue
         }else if let rawValue = try? container.decodeIfPresent(ShareRequestResult.self, forKey: .result){
+            result = rawValue
+        }else if let rawValue = try? container.decodeIfPresent(LegacyShareRequestResult.self, forKey: .result){
             result = rawValue
         }else if let rawValue = try? container.decodeIfPresent(CommitmentRequestResponse.self, forKey: .result){
             result = rawValue

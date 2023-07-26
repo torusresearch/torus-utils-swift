@@ -203,12 +203,14 @@ extension TorusUtils {
         } catch {
             os_log("get share or key assign - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
         }
+        print("rpcc", String(data: rpcdata, encoding: .utf8)!)
 
         // Create Array of URLRequest Promises
 
         var requestArray = [URLRequest]()
 
         for endpoint in endpoints {
+            print(endpoint)
             do {
                 var request = try makeUrlRequest(url: endpoint, httpMethod: .post)
                 request.httpBody = rpcdata
@@ -284,8 +286,7 @@ extension TorusUtils {
                     }
                 }
             }
-            var success = 0
-            var failure = 0
+
             for try await val in group {
                 do {
                     switch val {
@@ -594,8 +595,7 @@ extension TorusUtils {
     internal func commitmentRequest(endpoints: [String], verifier: String, pubKeyX: String, pubKeyY: String, timestamp: String, tokenCommitment: String) async throws -> [CommitmentRequestResponse] {
         let session = createURLSession()
         
-        // TODO: threshold = Int(endpoints.count / 4) * 3 + 1 is failing since 3 nodes is failing: need to fix endpoints
-        let threshold = Int(endpoints.count / 4) * 3 
+        let threshold = Int(endpoints.count / 4) * 3 + 1
         let encoder = JSONEncoder()
         var failedLookUpCount = 0
         let jsonRPCRequest = JSONRPCrequest(
@@ -835,7 +835,7 @@ extension TorusUtils {
                 let pubKeyX = String(paddedPubKey.prefix(paddedPubKey.count / 2))
                 let pubKeyY = String(paddedPubKey.suffix(paddedPubKey.count / 2))
                 os_log("retrieveDecryptAndReconstuct: private key rebuild %@ %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data, pubKeyX, pubKeyY)
-
+                print("??",pubKeyX,lookupPubkeyX,pubKeyY,lookupPubkeyY)
                 // Verify
                 if pubKeyX == lookupPubkeyX && pubKeyY == lookupPubkeyY {
                     return (pubKeyX, pubKeyY, data)

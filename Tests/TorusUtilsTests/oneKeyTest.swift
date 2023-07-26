@@ -17,7 +17,7 @@ import CoreMedia
 @testable import TorusUtils
 
 class OneKeyTest: XCTestCase {
-    var TORUS_TEST_EMAIL = "himanshu@tor.us"
+    var TORUS_TEST_EMAIL = "hello@tor.us"
     var TORUS_TEST_VERIFIER = "torus-test-health"
     var TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
     var fnd: NodeDetailManager!
@@ -32,7 +32,7 @@ class OneKeyTest: XCTestCase {
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = true) async throws -> AllNodeDetailsModel {
         do {
             let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-            tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.CYAN))
+            tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.TESTNET))
             return nodeDetails
         } catch {
             throw error
@@ -42,7 +42,7 @@ class OneKeyTest: XCTestCase {
     func test_fetch_public_address() async {
         let exp1 = XCTestExpectation(description: "should still fetch v1 public address correctly")
         let verifier = "google-lrc"
-        let verifierID = TORUS_TEST_EMAIL
+        let verifierID = "himanshu@tor.us"
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
@@ -58,18 +58,19 @@ class OneKeyTest: XCTestCase {
     func test_login() async {
         let exp1 = XCTestExpectation(description: "should still login v1 account correctly")
         let verifier: String = TORUS_TEST_VERIFIER
-        let verifierID: String = TORUS_TEST_EMAIL
-        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
+        let email = "randomemail123@tor.us"
+        let verifierID: String = email
+        let jwt = try! generateIdToken(email: email)
         let verifierParams = VerifierParams(verifier_id: verifierID)
-        let extraParams = ["verifier_id": TORUS_TEST_EMAIL] as [String: Codable]
+        let extraParams = ["verifier_id": email] as [String: Codable]
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),  verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
             XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
             exp1.fulfill()
-        } catch {
-            XCTFail()
+        } catch let err{
+            XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
     }
