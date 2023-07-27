@@ -373,59 +373,58 @@ final class SapphireTest: XCTestCase {
         }
     }
     
+    func testFetchPublicAddressWhenVerifierIDHashEnabled() async throws {
+        let exp1 = XCTestExpectation(description: "should fetch public address when verifierID hash enabled")
+        
+        do {
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: HashEnabledVerifier, veriferID: TORUS_TEST_EMAIL)
+
+            let data = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
+            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219")
+            XCTAssertEqual(data.oAuthKeyData?.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
+            XCTAssertEqual(data.oAuthKeyData?.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
+            XCTAssertEqual(data.finalKeyData?.evmAddress, "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03")
+            XCTAssertEqual(data.finalKeyData?.X, "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a")
+            XCTAssertEqual(data.finalKeyData?.Y, "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e")
+
+            XCTAssertEqual(data.metadata?.pubNonce?.x, "d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d")
+            XCTAssertEqual(data.metadata?.pubNonce?.y, "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e")
+            XCTAssertEqual(data.metadata?.nonce, BigUInt(hex: "51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d"))
+            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+            XCTAssertEqual(data.metadata?.upgraded, false)
+            XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+        
+    }
     
-    
-//
-//     // to do: update pub keys
-//     it.skip("should lookup return hash when verifierID hash enabled", async function () {
-//       const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails({ verifier: HashEnabledVerifier, verifierId: TORUS_TEST_VERIFIER });
-//       const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
-//       for (const endpoint of torusNodeEndpoints) {
-//         const pubKeyX = "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a";
-//         const pubKeyY = "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e";
-//         const response = await lookupVerifier(endpoint, pubKeyX, pubKeyY);
-//         const verifierID = response.result.verifiers[HashEnabledVerifier][0];
-//         expect(verifierID).to.equal("086c23ab78578f2fce9a1da11c0071ec7c2225adb1bf499ffaee98675bee29b7");
-//       }
-//     });
-//
-//     it("should fetch user type and public address when verifierID hash enabled", async function () {
-//       const verifierDetails = { verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL };
-//       const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails(verifierDetails);
-//       const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
-//       const { address } = (await torus.getPublicAddress(torusNodeEndpoints, verifierDetails, true)) as TorusPublicKey;
-//       expect(address).to.equal("0xF79b5ffA48463eba839ee9C97D61c6063a96DA03");
-//     });
-//     it("should be able to login when verifierID hash enabled", async function () {
-//       const token = generateIdToken(TORUS_TEST_EMAIL, "ES256");
-//       const verifierDetails = { verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL };
-//
-//       const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails(verifierDetails);
-//       const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
-//       const retrieveSharesResponse = await torus.retrieveShares(torusNodeEndpoints, HashEnabledVerifier, { verifier_id: TORUS_TEST_EMAIL }, token);
-//
-//       expect(retrieveSharesResponse.privKey).to.be.equal("066270dfa345d3d0415c8223e045f366b238b50870de7e9658e3c6608a7e2d32");
-//     });
-//
-//     it("should be able to aggregate login", async function () {
-//       const email = faker.internet.email();
-//       const idToken = generateIdToken(email, "ES256");
-//       const hashedIdToken = keccak256(Buffer.from(idToken, "utf8"));
-//       const verifierDetails = { verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email };
-//
-//       const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails(verifierDetails);
-//       const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
-//       const retrieveSharesResponse = await torus.retrieveShares(
-//         torusNodeEndpoints,
-//         TORUS_TEST_AGGREGATE_VERIFIER,
-//         {
-//           verify_params: [{ verifier_id: email, idtoken: idToken }],
-//           sub_verifier_ids: [TORUS_TEST_VERIFIER],
-//           verifier_id: email,
-//         },
-//         hashedIdToken.substring(2)
-//       );
-//       expect(retrieveSharesResponse.ethAddress).to.not.equal(null);
-//       expect(retrieveSharesResponse.ethAddress).to.not.equal("");
-//     });
+    func testFetchUserTypeAndPublicAddressWhenVerifierIDHashEnabled() async throws {
+        let exp1 = XCTestExpectation(description: "should fetch user type and public address when verifierID hash enabled")
+        
+        do {
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: HashEnabledVerifier, veriferID: TORUS_TEST_EMAIL)
+
+            let data = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
+            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219")
+            XCTAssertEqual(data.oAuthKeyData?.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
+            XCTAssertEqual(data.oAuthKeyData?.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
+            XCTAssertEqual(data.finalKeyData?.evmAddress, "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03")
+            XCTAssertEqual(data.finalKeyData?.X, "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a")
+            XCTAssertEqual(data.finalKeyData?.Y, "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e")
+
+            XCTAssertEqual(data.metadata?.pubNonce?.x, "d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d")
+            XCTAssertEqual(data.metadata?.pubNonce?.y, "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e")
+            XCTAssertEqual(data.metadata?.nonce, BigUInt(hex: "51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d"))
+            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+            XCTAssertEqual(data.metadata?.upgraded, false)
+            XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+        
+    }
+
 }
