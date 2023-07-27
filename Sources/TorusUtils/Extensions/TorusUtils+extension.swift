@@ -239,6 +239,7 @@ extension TorusUtils {
         idToken: String,
         extraParams: [String: Any] = [:]
     ) async throws -> TorusKey {
+        
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
         guard
@@ -318,37 +319,39 @@ extension TorusUtils {
                             
                             pubkeyArr.append(pubkey)
                             if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil {
-                                if pubNonce != nil {
+                                if pubNonce != "" {
                                     thresholdNonceData = nonceData
                                 }
                             }
                             //                            pubkeyArr.append(pubkey)
                             guard let result = thresholdSame(arr: pubkeyArr, threshold: threshold)
                             else {
-                                os_log("retrieveShare - invalid result from nodes, threshold number of public key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug)
-                                throw NSError()
+                                throw TorusUtilError.thresholdError
                             }
-                            
-                            // if both thresholdNonceData and extended_verifier_id are not available
-                            // then we need to throw otherwise the address would be incorrect.
-                            if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !isLegacyNetwork() {
-                                os_log("invalid metadata result from nodes, nonce metadata is empty for verifier: %@ and verifierId: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, verifier, verifierParams.verifier_id)
-                            }
-                            
+                         
                             thresholdPublicKey = result
-                            return result
-
                             
+                            if (thresholdPublicKey?.X == nil) {
+                                throw TorusUtilError.thresholdError
+                            }
+                            
+                            if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !isLegacyNetwork() {
+                                throw TorusUtilError.metadataNonceMissing
+                            }
+                            
+                            return
                         }
                         
                     case.failure(let error):
                         throw error
                     }
                 } catch {
-                        os_log("retrieveShare promise - share request error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error))
+                    os_log("retrieveShare promise - share request error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug))
                 }
             }
-            throw TorusUtilError.commitmentRequestFailed
+            
+            os_log("retrieveShare - invalid result from nodes, threshold number of public key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
+            throw TorusUtilError.thresholdError
         })
         
         // optimistically run lagrange interpolation once threshold number of shares have been received
@@ -356,7 +359,7 @@ extension TorusUtils {
         // Note: no need of thresholdMetadataNonce for extended_verifier_id key
         if completeShareRequestResponseArr.count >= threshold {
             
-            if thresholdPublicKey?.X != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil || isLegacyNetwork()) {
+            if thresholdPublicKey?.X != nil && (thresholdNonceData != nil && thresholdNonceData?.pubNonce?.x != "" || verifierParams.extended_verifier_id != nil || isLegacyNetwork()) {
                 // Code block to execute if all conditions are true
                 var sharePromises = [String]()
                 var sessionTokenSigPromises = [String?]()
@@ -980,7 +983,6 @@ extension TorusUtils {
                                 throw error
                             } else {
                                 let decodedResult = result!
-                                print("decodedResult", decodedResult)
                                 keyArray.append(decodedResult)
                                 if let k = decodedResult.keys,
                                    let key = k.first {
@@ -1383,7 +1385,6 @@ extension TorusUtils {
     internal func getPublicKeyPointFromPubkeyString( pubKey: String) throws ->  (String, String) {
         let publicKeyHashData = Data.fromHex(pubKey.strip04Prefix())
         guard publicKeyHashData?.count == 64 else {
-            print(publicKeyHashData?.count)
             throw "Invalid address,"
         }
         

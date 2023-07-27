@@ -134,7 +134,8 @@ open class TorusUtils: AbstractTorusUtils {
 
             let nonceResult = result.nonceResult;
 
-            if ( nonceResult == nil && extendedVerifierId != nil && !self.isLegacyNetwork() ) { throw TorusUtilError.runtime("metadata nonce is missing in share response")}
+            if (nonceResult?.pubNonce?.x == nil && extendedVerifierId == nil && !self.isLegacyNetwork() ) { throw TorusUtilError.runtime("metadata nonce is missing in share response")
+            }
             
             var modifiedPubKey: String
             var oAuthPubKeyString : String
@@ -177,7 +178,7 @@ open class TorusUtils: AbstractTorusUtils {
                 ),
                 metadata: .init(
                     pubNonce: pubNonce,
-                    nonce: BigUInt((nonceResult?.nonce)!, radix: 16),
+                    nonce: BigUInt(nonceResult?.nonce ?? "0", radix: 16),
                     typeOfUser: UserType(rawValue: "v2")!,
                     upgraded: nonceResult?.upgraded ?? false
                 ),

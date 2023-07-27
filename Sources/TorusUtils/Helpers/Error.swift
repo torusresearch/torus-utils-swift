@@ -27,6 +27,7 @@ public enum TorusUtilError: Error, Equatable {
     case invalidKeySize
     case runtime(_ msg: String)
     case retrieveOrImportShareError
+    case metadataNonceMissing
     case empty
 }
 
@@ -73,6 +74,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Could not encode data \(msg ?? "")"
         case .retrieveOrImportShareError:
             return "retrieve or import share failed"
+        case .metadataNonceMissing:
+            return "Unable to fetch metadata nonce"
         }
     }
 
