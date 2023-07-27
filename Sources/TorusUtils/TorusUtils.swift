@@ -212,8 +212,8 @@ open class TorusUtils: AbstractTorusUtils {
                     throw error
                 }
             }
-
-            let result = try await formatLegacyPublicData(finalKeyResult: data, enableOneKey: enableOneKey, isNewKey: isNewKey)
+            let keyLookupData = KeyLookupResponse(pubKeyX: data.pubKeyX, pubKeyY: data.pubKeyY, address: data.address, isNewKey: isNewKey)
+            let result = try await formatLegacyPublicData(finalKeyResult: keyLookupData, enableOneKey: enableOneKey, isNewKey: isNewKey)
             return result
         } catch {
             throw error

@@ -533,8 +533,8 @@ extension TorusUtils {
 
 
                 
-                let (finalPubX , finalPubY) = try getPublicKeyPointFromAddress(address: modifiedPubKey)
-                let (oAuthKeyX, oAuthKeyY) = try getPublicKeyPointFromAddress(address: oAuthPubKey!)
+                let (finalPubX , finalPubY) = try getPublicKeyPointFromPubkeyString(pubKey: modifiedPubKey)
+                let (oAuthKeyX, oAuthKeyY) = try getPublicKeyPointFromPubkeyString(pubKey: oAuthPubKey!)
                 let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
                 
                 // deriving address from pub key coz pubkey is always available
@@ -1215,16 +1215,17 @@ extension TorusUtils {
                                 throw error
                             } else {
                                 guard
-                                    let decodedResult = result as? [String: [[String: String]]],
+                                    let decodedResult = result as? [String: [[String: Any]]],
                                     let k = decodedResult["keys"],
                                     let keys = k.first,
-                                    let pubKeyX = keys["pub_key_X"],
-                                    let pubKeyY = keys["pub_key_Y"],
-                                    let address = keys["address"]
+                                    let pubKeyX = keys["pub_key_X"] as? String,
+                                    let pubKeyY = keys["pub_key_Y"] as? String,
+                                    let address = keys["address"] as? String,
+                                    let isNewKey = keys["is_new_key"] as? Bool
                                 else {
                                     throw TorusUtilError.decodingFailed("keys not found in \(result )")
                                 }
-                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY,  address: address)
+                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY,  address: address, isNewKey: isNewKey)
                                 resultArray.append(model)
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
