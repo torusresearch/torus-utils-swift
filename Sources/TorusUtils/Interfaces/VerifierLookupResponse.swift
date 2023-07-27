@@ -40,9 +40,9 @@ struct VerifierLookupResponse : Codable {
     
     var keys: [Key]?
     var is_new_key: Bool
-    var node_index: Int
+    var node_index: String
     
-    public init(keys: [Key]?, is_new_key: Bool, node_index: Int) {
+    public init(keys: [Key]?, is_new_key: Bool, node_index: String) {
         self.keys = keys
         self.is_new_key = is_new_key
         self.node_index = node_index
@@ -52,7 +52,7 @@ struct VerifierLookupResponse : Codable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.keys = try container.decodeIfPresent([VerifierLookupResponse.Key].self, forKey: .keys)
         self.is_new_key = try container.decode(Bool.self, forKey: .is_new_key)
-        self.node_index = Int(try container.decode(String.self, forKey: .node_index))!
+        self.node_index = try container.decode(String.self, forKey: .node_index)
     }
     
 }

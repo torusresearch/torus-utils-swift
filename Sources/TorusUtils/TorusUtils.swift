@@ -150,7 +150,9 @@ open class TorusUtils: AbstractTorusUtils {
                 modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
                 oAuthPubKeyString = modifiedPubKey
                 
-                let noncePub = "04" + (nonceResult?.pubNonce?.x ?? "0").addLeading0sForLength64() + (nonceResult?.pubNonce?.y ?? "0").addLeading0sForLength64();
+                let pubNonceX = (nonceResult?.pubNonce?.x ?? "0")
+                let pubNonceY = (nonceResult?.pubNonce?.y ?? "0")
+                let noncePub = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64();
                 modifiedPubKey =  combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
 
@@ -187,8 +189,6 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
 
-
-    
 
     
     //   Legacy

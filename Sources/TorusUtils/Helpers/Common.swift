@@ -3,7 +3,7 @@ import CryptoKit
 
 
 func normalizeKeysResult(keyArr: [VerifierLookupResponse.Key]) -> VerifierLookupResponse {
-    var finalResult: VerifierLookupResponse = VerifierLookupResponse(keys: [], is_new_key: false, node_index: 0)
+    var finalResult: VerifierLookupResponse = VerifierLookupResponse(keys: [], is_new_key: false, node_index: "0")
     
     if (!keyArr.isEmpty) {
         finalResult.keys = keyArr.map { key in

@@ -899,9 +899,13 @@ extension TorusUtils {
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
         var failedLookupCount = 0
+        
+        // flag to check if node with index 1 is queried for metadata
+        var isNodeOneVisited = false
+        
         let methodName = JRPC_METHODS.GET_OR_SET_KEY
         
-        let params = GetPublicAddressOrKeyAssignParams(verifier: verifier, verifier_id: verifierId, extended_verifier_id: extendedVerifierId, one_key_flow: false, fetch_node_index: false )
+        let params = GetPublicAddressOrKeyAssignParams(verifier: verifier, verifier_id: verifierId, extended_verifier_id: extendedVerifierId, one_key_flow: true, fetch_node_index: true )
 
         let jsonRPCRequest = JSONRPCrequest(
             method: methodName,
@@ -963,21 +967,22 @@ extension TorusUtils {
                                 let error = KeyLookupError.createErrorFromString(errorString:  "")
                                 throw error
                             } else {
-                                if let decodedResult = result  {
-                                    keyArray.append(decodedResult)
-                                    if let k = decodedResult.keys,
-                                       let key = k.first {
-                                        let model = KeyLookupResponse(pubKeyX: key.pub_key_X, pubKeyY: key.pub_key_Y, address: key.address, isNewKey: decodedResult.is_new_key)
-                                        
-                                        resultArray.append(model)
-                                        if let nonceData = key.nonce_data {
-                                            let pubNonceX = nonceData.pubNonce?.x
-                                            if pubNonceX != nil && nonceResult == nil {
-                                                    nonceResult = key.nonce_data
-                                            }
+                                let decodedResult = result!
+                                print("decodedResult", decodedResult)
+                                keyArray.append(decodedResult)
+                                if let k = decodedResult.keys,
+                                   let key = k.first {
+                                    let model = KeyLookupResponse(pubKeyX: key.pub_key_X, pubKeyY: key.pub_key_Y, address: key.address, isNewKey: decodedResult.is_new_key)
+                                    
+                                    resultArray.append(model)
+                                    if let nonceData = key.nonce_data {
+                                        let pubNonceX = nonceData.pubNonce?.x
+                                        if pubNonceX != nil && pubNonceX != "" && nonceResult == nil {
+                                                nonceResult = key.nonce_data
                                         }
                                     }
                                 }
+                                
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
                             
@@ -988,8 +993,12 @@ extension TorusUtils {
                                     os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
                                     session.invalidateAndCancel()
                                     keyArray.forEach( { result in
-                                        if result != nil && result.node_index != 0 {
-                                            nodeIndexesArray.append(result.node_index)
+                                        
+                                        if result.node_index == "1" {
+                                            isNodeOneVisited = true
+                                        }
+                                        if result != nil && result.node_index != "0" {
+                                            nodeIndexesArray.append(Int(result.node_index)!)
                                         }
                                         
                                     })
@@ -1007,7 +1016,8 @@ extension TorusUtils {
                 } catch {
                     failedLookupCount += 1
                     os_log("%@: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, methodName, error.localizedDescription)
-                    if failedLookupCount > (endpoints.count -  threshold) {
+                    
+                    if (isNodeOneVisited && failedLookupCount > (endpoints.count -  threshold)) || (failedLookupCount == endpoints.count) {
                         os_log("%@: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, methodName, TorusUtilError.runtime("threshold nodes unavailable").localizedDescription)
                         session.invalidateAndCancel()
                         throw error

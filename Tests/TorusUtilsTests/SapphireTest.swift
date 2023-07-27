@@ -99,6 +99,12 @@ final class SapphireTest: XCTestCase {
             let result = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
 
             XCTAssertEqual(result.finalKeyData?.evmAddress.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
+            
+            XCTAssertEqual(result.metadata?.typeOfUser, .v2)
+            
+            XCTAssertEqual(result.metadata?.pubNonce?.x, "78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c")
+            
+            XCTAssertEqual(result.metadata?.pubNonce?.y, "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7")
         } catch let err {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
@@ -106,15 +112,23 @@ final class SapphireTest: XCTestCase {
         
     }
 
-//    it("should be able to key assign", async function () {
-//      const email = faker.internet.email();
-//      const verifierDetails = { verifier: TORUS_TEST_VERIFIER, verifierId: email };
-//      const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails(verifierDetails);
-//      const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
-//      const publicAddress = await torus.getPublicAddress(torusNodeEndpoints, verifierDetails);
-//      expect(publicAddress).to.not.equal("");
-//      expect(publicAddress).to.not.equal(null);
-//    });
+    func testKeyAssignSapphireDevnet() async {
+        let exp1 = XCTestExpectation(description: "should be able to key assign")
+        let fakeEmail = generateRandomEmail(of: 6)
+        let verifier: String = TORUS_TEST_VERIFIER
+        let verifierID: String = fakeEmail
+        do {
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
+            let data = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+            XCTAssertNotNil(data.finalKeyData)
+            XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
+            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+            exp1.fulfill()
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+    }
     
     func testAbleToLogin() async throws {
         let exp1 = XCTestExpectation(description: "Should be able to do a Login")
