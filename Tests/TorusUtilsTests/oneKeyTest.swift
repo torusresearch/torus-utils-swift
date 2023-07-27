@@ -85,8 +85,8 @@ class OneKeyTest: XCTestCase {
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),  verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-            XCTAssertEqual(data.finalKeyData?.privKey, "9ec5b0504e252e35218c7ce1e4660eac190a1505abfbec7102946f92ed750075")
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x2876820fd9536BD5dd874189A85d71eE8bDf64c2")
+            XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
+            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x53010055542cCc0f2b6715a5c53838eC4aC96EF7")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -95,7 +95,7 @@ class OneKeyTest: XCTestCase {
     }
 
     func test_aggregate_login() async {
-        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let exp1 = XCTestExpectation(description: "Should be able to aggregate login")
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
@@ -116,7 +116,7 @@ class OneKeyTest: XCTestCase {
 
     func test_key_assign() async {
         let fakeEmail = generateRandomEmail(of: 6)
-        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let exp1 = XCTestExpectation(description: "Should be able to assign key")
         let verifier: String = "google-lrc"
         let verifierID: String = fakeEmail
         do {
