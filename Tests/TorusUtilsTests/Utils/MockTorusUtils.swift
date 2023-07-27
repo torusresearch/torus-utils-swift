@@ -14,11 +14,11 @@ import CommonSources
 
 class MockTorusUtils: AbstractTorusUtils {
 
-    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel]?, verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String:Codable]) async throws -> TorusKey {
+    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel], indexes: [BigUInt], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String:Codable]) async throws -> TorusKey {
         return TorusKey(finalKeyData: nil, oAuthKeyData: nil, sessionData: nil, metadata: nil, nodesData: nil)
     }
     
-    func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel]?, verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> TorusPublicKey {
+    func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> TorusPublicKey {
 //        GetPublicAddressResult(address: "")
         return TorusPublicKey(finalKeyData: nil, oAuthKeyData: nil, metadata: nil, nodesData: nil)
     }

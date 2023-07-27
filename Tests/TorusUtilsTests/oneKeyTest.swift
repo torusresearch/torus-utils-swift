@@ -66,7 +66,7 @@ class OneKeyTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),  verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(),  verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
             XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
             exp1.fulfill()
         } catch let err{
@@ -84,7 +84,7 @@ class OneKeyTest: XCTestCase {
         let extraParams = ["verifier_id": verifierID] as [String: Codable]
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),  verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
             XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x53010055542cCc0f2b6715a5c53838eC4aC96EF7")
             exp1.fulfill()
@@ -105,7 +105,7 @@ class OneKeyTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),  verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B")
             exp1.fulfill()
         } catch let err {

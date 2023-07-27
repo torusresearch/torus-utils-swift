@@ -125,7 +125,7 @@ class CyanTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
             
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA")
             XCTAssertEqual(data.finalKeyData?.X, "35739417e3be1b1e56cdf8c509d8dee5412712514b18df1bc961ac6465a0c949")
@@ -161,7 +161,7 @@ class CyanTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(),verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x34117FDFEFBf1ad2DFA6d4c43804E6C710a6fB04")
             XCTAssertEqual(data.finalKeyData?.X, "afd12f2476006ef6aa8778190b29676a70039df8688f9dee69c779bdc8ff0223")
             XCTAssertEqual(data.finalKeyData?.Y, "e557a5ee879632727f5979d6b9cea69d87e3dab54a8c1b6685d86dfbfcd785dd")

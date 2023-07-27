@@ -176,7 +176,14 @@ class MainnetTests: XCTestCase {
 //        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+            let data = try await tu.retrieveShares(
+                 endpoints: nodeDetails.getTorusNodeEndpoints(),
+                 torusNodePubs: nodeDetails.getTorusNodePub(),
+                 indexes: nodeDetails.getTorusIndexes(),
+                 verifier: TORUS_TEST_VERIFIER,
+                 verifierParams: verifierParams,
+                 idToken: jwt,
+                 extraParams: extraParams)
            
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x90A926b698047b4A87265ba1E9D8b512E8489067")
             XCTAssertEqual(data.finalKeyData?.X, "a92d8bf1f01ad62e189a5cb0f606b89aa6df1b867128438c38e3209f3b9fc34f")
@@ -213,7 +220,7 @@ class MainnetTests: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
             
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x621a4d458cFd345dAE831D9E756F10cC40A50381")
             XCTAssertEqual(data.finalKeyData?.X, "52abc69ebec21deacd273dbdcb4d40066b701177bba906a187676e3292e1e236")

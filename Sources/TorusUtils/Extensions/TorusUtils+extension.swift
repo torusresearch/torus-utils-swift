@@ -1422,9 +1422,8 @@ extension TorusUtils {
             typeOfUser = .init(rawValue: nonceResult?.typeOfUser ?? ".v1") ?? .v1
             if typeOfUser == .v1 {
                 finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
-                let nonce2 = BigInt(nonce).modulus(modulusValue)
                 if nonce != BigInt(0) {
-                    guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
+                    guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce).serialize().addLeading0sForLength64()) else {
                         throw TorusUtilError.decryptionFailed
                     }
                     finalPubKey = combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
@@ -1452,7 +1451,7 @@ extension TorusUtils {
             let localPubkeyY = finalKeyResult.pubKeyY
             finalPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
             if localNonce != BigInt(0) {
-                let nonce2 = BigInt(localNonce).modulus(modulusValue)
+                let nonce2 = BigInt(localNonce)
                 guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                     throw TorusUtilError.decryptionFailed
                 }
