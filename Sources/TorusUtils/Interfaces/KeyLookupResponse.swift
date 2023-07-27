@@ -24,14 +24,17 @@ public struct KeyLookupResponse: CustomStringConvertible, Hashable {
     public let pubKeyX: String
     public let pubKeyY: String
     public let address: String
+    public let isNewKey: Bool
+
     public var description: String {
         return "public key X is \(pubKeyX) public key Y is \(pubKeyY) address is \(address)"
     }
 
-    public init(pubKeyX: String, pubKeyY: String, address: String) {
+    public init(pubKeyX: String, pubKeyY: String, address: String, isNewKey: Bool) {
         self.pubKeyX = pubKeyX
         self.pubKeyY = pubKeyY
         self.address = address
+        self.isNewKey = isNewKey
     }
 
 }

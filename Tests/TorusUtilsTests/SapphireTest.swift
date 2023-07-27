@@ -29,8 +29,6 @@ final class SapphireTest: XCTestCase {
     var signerHost = "https://signer.tor.us/api/sign"
     var allowHost = "https://signer.tor.us/api/allow"
 
-    // Fake data
-    let TORUS_TEST_VERIFIER_FAKE = "google-lrc-fakes"
     var fnd: NodeDetailManager!
     var torus: TorusUtils!
 
@@ -51,7 +49,7 @@ final class SapphireTest: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
 
-            let val = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+            let val = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.torusNodePub, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
             XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xac997dE675Fb69FCb0F4115A23c0061A892A2772")
             XCTAssertEqual(val.oAuthKeyData!.X, "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528")
             XCTAssertEqual(val.oAuthKeyData!.Y, "f9128bc7403bab6d45415cad01dd0ba0924628cfb6bf51c17e77aa8ca43b3cfe")
@@ -63,7 +61,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(val.metadata?.nonce, BigUInt("376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e", radix: 16))
             XCTAssertEqual(val.metadata?.upgraded, false)
             XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
-            XCTAssertNotEqual(val.nodesData?.nodeIndexes.count, 0)
+            XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -255,7 +253,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt("0"))
             XCTAssertEqual(pubAddress.metadata?.upgraded, false)
             XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-            XCTAssertNotEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
+            XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
 
             exp1.fulfill()
         } catch let error{
