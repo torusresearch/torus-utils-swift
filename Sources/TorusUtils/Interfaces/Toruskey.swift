@@ -17,7 +17,7 @@ public struct TorusKey {
     }
 
     public struct SessionData {
-        public let sessionTokenData: [SessionToken]
+        public let sessionTokenData: [SessionToken?]
         public let sessionAuthKey: String
     }
 

@@ -272,9 +272,11 @@ extension TorusUtils {
         var thresholdNonceData : GetOrSetNonceResult?
         var pubkeyArr = [KeyAssignment.PublicKey]()
         var completeShareRequestResponseArr = [ShareRequestResult]()
-        // step 2.
-        let thresholdPublicKey : KeyAssignment.PublicKey = try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
+        var thresholdPublicKey : KeyAssignment.PublicKey?
+        
+        try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
 
+            
             for (i, rq) in promiseArrRequest.enumerated() {
                 group.addTask {
                     do {
@@ -332,8 +334,8 @@ extension TorusUtils {
                             if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !isLegacyNetwork() {
                                 os_log("invalid metadata result from nodes, nonce metadata is empty for verifier: %@ and verifierId: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, verifier, verifierParams.verifier_id)
                             }
-
                             
+                            thresholdPublicKey = result
                             return result
 
                             
@@ -343,7 +345,7 @@ extension TorusUtils {
                         throw error
                     }
                 } catch {
-                        os_log("retrieveShare promise - commitment request error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error))
+                        os_log("retrieveShare promise - share request error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error))
                 }
             }
             throw TorusUtilError.commitmentRequestFailed
@@ -354,7 +356,7 @@ extension TorusUtils {
         // Note: no need of thresholdMetadataNonce for extended_verifier_id key
         if completeShareRequestResponseArr.count >= threshold {
             
-            if thresholdPublicKey != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil || isLegacyNetwork()) {
+            if thresholdPublicKey?.X != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil || isLegacyNetwork()) {
                 // Code block to execute if all conditions are true
                 var sharePromises = [String]()
                 var sessionTokenSigPromises = [String?]()
@@ -385,33 +387,31 @@ extension TorusUtils {
                         if (sessionTokenMetadata.first?.ephemPublicKey != nil) {
                             sessionTokenPromises.append(try? decryptNodeData(eciesData: sessionTokenMetadata[0], ciphertextHex: sessionTokens[0], privKey: sessionAuthKey))
                         } else {
-                            sessionTokenSigPromises.append(sessionTokenSigs[0])
+                            sessionTokenPromises.append(sessionTokenSigs[0])
                         }
                     } else {
-                        sessionTokenSigPromises.append(nil)
+                        sessionTokenPromises.append(nil)
                     }
                     
                     if keys.count > 0 {
                         let latestKey = currentShareResponse.keys[0]
                         nodeIndexes.append(Int(latestKey.nodeIndex))
-                        
-                        if latestKey.shareMetadata != nil {
-                            let data = Data(base64Encoded: latestKey.share, options: [] )!
-                            let binaryString = String(data: data, encoding: .ascii) ?? ""
-                            let paddedBinaryString = binaryString.padding(toLength: 64, withPad: "0", startingAt: 0)
+                        let data = Data(base64Encoded: latestKey.share, options: [] )!
+                        let binaryString = String(data: data, encoding: .ascii) ?? ""
+                        let paddedBinaryString = binaryString.padding(toLength: 64, withPad: "0", startingAt: 0)
 
-                            sharePromises.append(try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey).padLeft(padChar: "0", count: 64))
-                        }
+                        sharePromises.append(try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey).padLeft(padChar: "0", count: 64))
+                        
                     } else {
-//                        nodeIndexes.append(nil)
-//                        sharePromises.append(nil)
+                        os_log("retrieveShare -  0 keys returned from nodes", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
+                        throw TorusUtilError.thresholdError
                     }
                     
                 }
-                var allPromises = sharePromises + sessionTokenSigPromises + sessionTokenPromises
                 
-                let validTokens = sessionTokenPromises.filter { sig in
-                    if let _ = sig {
+                
+                let validTokens = sessionTokenPromises.filter { token in
+                    if let _ = token {
                         return true
                     }
                     return false
@@ -419,6 +419,19 @@ extension TorusUtils {
                 
                 if verifierParams.extended_verifier_id == nil && validTokens.count < threshold {
                     os_log("retrieveShare - Insufficient number of session tokens from nodes, required: %@, found: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, threshold, validTokens.count)
+                    throw TorusUtilError.apiRequestFailed
+                }
+
+                
+                let validSigs = sessionTokenSigPromises.filter { sig in
+                    if let _ = sig {
+                        return true
+                    }
+                    return false
+                }
+                
+                if verifierParams.extended_verifier_id == nil && validSigs.count < threshold {
+                    os_log("retrieveShare - Insufficient number of session signatures from nodes, required: %@, found: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, threshold, validSigs.count)
                     throw TorusUtilError.apiRequestFailed
                 }
 
@@ -445,7 +458,6 @@ extension TorusUtils {
 
                 for j in 0..<allCombis.count {
                     let currentCombi = allCombis[j]
-                    let totalShare = decryptedShares.count
                     let currentCombiShares = decryptedShares.enumerated().reduce(into: [ Int : String ]()) { acc, current in
                         let (index, curr) = current
                         if (currentCombi.contains(index)) {
@@ -455,7 +467,7 @@ extension TorusUtils {
                     let derivedPrivateKey = try lagrangeInterpolation(shares: currentCombiShares, offset: 0)
                     let derivedPrivateKeyHex = derivedPrivateKey
                 
-                    guard let derivedPrivateKeyData = Data(hexString: derivedPrivateKeyHex) else {
+                    guard Data(hexString: derivedPrivateKeyHex) != nil else {
                         continue
                     }
                     let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKey) )?.toHexString()
@@ -464,8 +476,8 @@ extension TorusUtils {
                     let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
                     let decryptedPubKeyXBigInt = BigUInt(decryptedPubKeyX, radix: 16)!
                     let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
-                    let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey.X, radix: 16)!
-                    let thresholdPublicKeyYBigInt = BigUInt(thresholdPublicKey.Y, radix: 16)!
+                    let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey?.X ?? "0", radix: 16)!
+                    let thresholdPublicKeyYBigInt = BigUInt(thresholdPublicKey?.Y ?? "0", radix: 16)!
                     returnedKey = derivedPrivateKey
                     if decryptedPubKeyXBigInt == thresholdPublicKeyXBigInt && decryptedPubKeyYBigInt == thresholdPublicKeyYBigInt {
                         returnedKey = derivedPrivateKey
@@ -486,7 +498,7 @@ extension TorusUtils {
                 let oauthPubKeyX = String(oAuthPubKey!.suffix(128).prefix(64))
                 let oauthPubKeyY = String(oAuthPubKey!.suffix(64))
                 
-                let metadataNonce = BigInt(thresholdNonceData?.nonce ?? "0", radix: 16) ?? BigInt(0)
+                var metadataNonce = BigInt(thresholdNonceData?.nonce ?? "0", radix: 16) ?? BigInt(0)
                 let privateKeyWithNonce = (oAuthKeyBigInt + metadataNonce).modulus(modulusValue)
 
                 var pubKeyNonceResult: PubNonce?
@@ -502,7 +514,7 @@ extension TorusUtils {
                     if (self.enableOneKey) {
                         // get nonce
                         let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey)
-                        let metadataNonce = BigInt(hex: nonceResult.nonce ?? "0")
+                        metadataNonce = BigInt(hex: nonceResult.nonce ?? "0") ?? BigInt(0)
                         let pubNonceX = nonceResult.pubNonce?.x
                         let pubNonceY = nonceResult.pubNonce?.y
                         let usertype = nonceResult.typeOfUser
@@ -516,7 +528,7 @@ extension TorusUtils {
                     } else {
                         typeOfUser = .v1
                         // for imported keys in legacy networks
-                        let metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oauthPubKeyX, "pub_key_Y": oauthPubKeyY])
+                        metadataNonce = BigInt(try await getMetadata(dictionary: ["pub_key_X": oauthPubKeyX, "pub_key_Y": oauthPubKeyY]))
                         let privateKeyWithNonce = ((BigInt(oAuthKey, radix: 16)!) + BigInt(metadataNonce)).modulus(modulusValue)
                         modifiedPubKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                     }
@@ -571,8 +583,8 @@ extension TorusUtils {
                         privKey: oAuthKey
                     ),
                     sessionData: .init(
-                        sessionTokenData: [],
-                        sessionAuthKey: ""
+                        sessionTokenData: sessionTokenData,
+                        sessionAuthKey: sessionAuthKey
                     ),
                     metadata: .init(
                         pubNonce: pubKeyNonceResult,
@@ -580,7 +592,7 @@ extension TorusUtils {
                         typeOfUser: typeOfUser,
                         upgraded: isUpgraded
                     ),
-                    nodesData: .init(nodeIndexes: [])
+                    nodesData: .init(nodeIndexes: nodeIndexes)
                 )
 
             }
