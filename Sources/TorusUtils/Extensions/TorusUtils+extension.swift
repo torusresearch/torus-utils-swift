@@ -988,12 +988,18 @@ extension TorusUtils {
                                 }
                             }
                             let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
-                            if (nonceResult != nil || extendedVerifierId != nil) {
+                            
+                            // proceed if we have key result and either of nonceResult, extendedVerifierId, isLegacyNetwork is
+                            // available
+                            if (keyResult != nil && (nonceResult != nil || extendedVerifierId != nil || isLegacyNetwork())) {
                                 if let keyResult = keyResult {
                                     os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
                                     session.invalidateAndCancel()
                                     keyArray.forEach( { body in
-                                        nodeIndexesArray.append(body.node_index)
+                                        if body.node_index != 0 {
+                                            nodeIndexesArray.append(body.node_index)
+                                        }
+                                        
                                     })
                                     
                                     return KeyLookupResult( keyResult: keyResult, nodeIndexes: nodeIndexesArray, nonceResult: nonceResult)

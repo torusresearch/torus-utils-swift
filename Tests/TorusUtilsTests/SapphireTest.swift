@@ -255,7 +255,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt("0"))
             XCTAssertEqual(pubAddress.metadata?.upgraded, false)
             XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-            XCTAssertNotEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
+            XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
 
             exp1.fulfill()
         } catch let error{
