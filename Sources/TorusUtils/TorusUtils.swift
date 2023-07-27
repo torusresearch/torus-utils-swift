@@ -525,8 +525,10 @@ open class TorusUtils: AbstractTorusUtils {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }
                             os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
+                            var X = lookupPubkeyX
+                            var Y = lookupPubkeyY
                             if let decodedResult = decoded.result as? LegacyLookupResponse {
-                                print("case non mig")
+                                // case non migration
                                 let keyObj = decodedResult.keys
                                 if let first = keyObj.first {
                                     let pointHex = PointHex(from: first.publicKey)
@@ -536,17 +538,19 @@ open class TorusUtils: AbstractTorusUtils {
                                     resultArray[i] = model
                                 }
                             } else if let decodedResult = decoded.result as? LegacyShareRequestResult {
-                                print("case mig")
+                                // case migration
                                 let keyObj = decodedResult.keys
                                 if let first = keyObj.first {
                                     let pointHex = PointHex(from: .init(x: first.publicKey.X, y: first.publicKey.Y))
                                     shareResponses.append(pointHex)
                                     let metadata = first.metadata
+                                    X = pointHex.x
+                                    Y = pointHex.y
                                     let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
                                     resultArray[i] = model
                                 }
                             } else {
-                                print("decode fail")
+                                TorusUtilError.runtime("decode fail")
                             }
                             
                             // Due to multiple keyAssign
@@ -567,7 +571,7 @@ open class TorusUtils: AbstractTorusUtils {
                             
                             
                             if filteredData.count < threshold { throw TorusUtilError.thresholdError }
-                            let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY)
+                            let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: X, lookupPubkeyY: Y)
                             session.invalidateAndCancel()
                             return thresholdLagrangeInterpolationData
                         case .failure(let error):

@@ -379,21 +379,22 @@ final class SapphireTest: XCTestCase {
     }
     
     func testAggregrateLogin() async throws {
-        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let exp1 = XCTestExpectation(description: "Should be able to aggregate login")
+        let email = TORUS_TEST_EMAIL
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
-        let verifierID: String = TORUS_TEST_EMAIL
-        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
+        let verifierID: String = email
+        let jwt = try! generateIdToken(email: email)
         let hashedIDToken = jwt.sha3(.keccak256)
-        let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Codable]
+        let extraParams = ["verifier_id": email, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": email, "idtoken": jwt]]] as [String: Codable]
 
         let nodeManager = NodeDetailManager(network: .sapphire(.SAPPHIRE_DEVNET))
-        let endpoint = try await nodeManager.getNodeDetails(verifier: HashEnabledVerifier, verifierID: HashEnabledVerifier)
+        let endpoint = try await nodeManager.getNodeDetails(verifier: HashEnabledVerifier, verifierID: verifierID)
 
         let verifierParams = VerifierParams(verifier_id: verifierID)
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
             
-            let data = try await torus.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+            let data = try await torus.retrieveShares(endpoints: endpoint.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             
             XCTAssertNotNil(data.finalKeyData?.evmAddress)
             XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
