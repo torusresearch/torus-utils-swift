@@ -421,9 +421,12 @@ open class TorusUtils: AbstractTorusUtils {
                         switch val {
                         case .success(let model):
                             let _data = model.data
-                            let i = Int(indexes[model.index])
+//                            let i = Int(indexes[model.index])
+                            let i = Int(indexes[model.index]) - 1
+                            
                             
                             let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
+                            
                             if decoded.error != nil {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }

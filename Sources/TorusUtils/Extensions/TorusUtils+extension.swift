@@ -1127,7 +1127,7 @@ extension TorusUtils {
 
                                 let result = decoded.result
                                 let error = decoded.error
-                                if let _ = error {
+                                 if let _ = error {
                                     let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
                                     throw error
                                 } else {
@@ -1234,21 +1234,23 @@ extension TorusUtils {
                             // result of decoded data
                             let result = decoded.result
                             let error = decoded.error
+                            print("decodedResult", result)
                             if let _ = error {
                                 let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
                                 throw error
                             } else {
                                 guard
                                     let decodedResult = result as? [String: [[String: Any]]],
+    
                                     let k = decodedResult["keys"],
                                     let keys = k.first,
                                     let pubKeyX = keys["pub_key_X"] as? String,
                                     let pubKeyY = keys["pub_key_Y"] as? String,
-                                    let address = keys["address"] as? String,
-                                    let isNewKey = keys["is_new_key"] as? Bool
+                                    let address = keys["address"] as? String
                                 else {
                                     throw TorusUtilError.decodingFailed("keys not found in \(result )")
                                 }
+                                let isNewKey = keys["is_new_key"] as? Bool ?? false
                                 let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY,  address: address, isNewKey: isNewKey)
                                 resultArray.append(model)
                             }
