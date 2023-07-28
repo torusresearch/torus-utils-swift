@@ -54,37 +54,29 @@ open class TorusUtils: AbstractTorusUtils {
 
     // MARK: - getPublicAddress
     
-    public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel]? = nil, verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> TorusPublicKey {
+    public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> TorusPublicKey {
         switch network {
         case .legacy(_) :
-            guard let torusNodePubs = torusNodePubs else {
-                throw fatalError("Torus Node Pub not available")
-            }
             return  try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs , verifier: verifier, verifierId: verifierId, enableOneKey: self.enableOneKey)
         case .sapphire(_) :
             return try await getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId, enableOneKey: self.enableOneKey)
         }
-        throw TorusUtilError.runtime("invalid network, \(network)")
     }
     
     
     public func retrieveShares(
         endpoints: [String],
-        torusNodePubs : [TorusNodePubModel]? = nil,
+        torusNodePubs : [TorusNodePubModel],
+        indexes : [BigUInt],
         verifier: String,
         verifierParams: VerifierParams,
         idToken: String,
         extraParams: [String:Codable] = [:]
     ) async throws -> TorusKey {
         
-//        Support legacy node (api)
         switch network {
         case .legacy(_) :
-            guard let torusNodePubs = torusNodePubs else {
-                throw fatalError("Torus Node Pub not available")
-            }
-            
-            let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: extraParams)
+            let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, indexes: indexes, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: extraParams)
             return result
         case .sapphire(_) :
             
@@ -102,24 +94,19 @@ open class TorusUtils: AbstractTorusUtils {
             )
             return result
         }
-        throw TorusUtilError.runtime("invalid network, \(network)")
 
     }
     
     
     
     
-    public func getUserTypeAndAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel]? = nil, verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> TorusPublicKey {
+    public func getUserTypeAndAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> TorusPublicKey {
         switch network {
         case .legacy(_) :
-            guard let torusNodePubs = torusNodePubs else {
-                throw fatalError("Torus Node Pub not available")
-            }
             return try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, enableOneKey: true)
         case .sapphire(_) :
             return try await getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId, enableOneKey: true)
         }
-        throw TorusUtilError.runtime("invalid network, \(network)")
         
         }
     
@@ -134,7 +121,8 @@ open class TorusUtils: AbstractTorusUtils {
 
             let nonceResult = result.nonceResult;
 
-            if ( nonceResult == nil && extendedVerifierId != nil && !self.isLegacyNetwork() ) { throw TorusUtilError.runtime("metadata nonce is missing in share response")}
+            if (nonceResult?.pubNonce?.x == nil && extendedVerifierId == nil && !self.isLegacyNetwork() ) { throw TorusUtilError.runtime("metadata nonce is missing in share response")
+            }
             
             var modifiedPubKey: String
             var oAuthPubKeyString : String
@@ -150,7 +138,9 @@ open class TorusUtils: AbstractTorusUtils {
                 modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
                 oAuthPubKeyString = modifiedPubKey
                 
-                let noncePub = "04" + (nonceResult?.pubNonce?.x ?? "0").addLeading0sForLength64() + (nonceResult?.pubNonce?.y ?? "0").addLeading0sForLength64();
+                let pubNonceX = (nonceResult?.pubNonce?.x ?? "0")
+                let pubNonceY = (nonceResult?.pubNonce?.y ?? "0")
+                let noncePub = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64();
                 modifiedPubKey =  combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
 
@@ -175,7 +165,7 @@ open class TorusUtils: AbstractTorusUtils {
                 ),
                 metadata: .init(
                     pubNonce: pubNonce,
-                    nonce: BigUInt((nonceResult?.nonce)!, radix: 16),
+                    nonce: BigUInt(nonceResult?.nonce ?? "0", radix: 16),
                     typeOfUser: UserType(rawValue: "v2")!,
                     upgraded: nonceResult?.upgraded ?? false
                 ),
@@ -187,8 +177,6 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
 
-
-    
 
     
     //   Legacy
@@ -220,10 +208,14 @@ open class TorusUtils: AbstractTorusUtils {
         }
     }
     
-    private func legacyRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
+    private func legacyRetrieveShares(torusNodePubs: [TorusNodePubModel],
+                                      indexes : [BigUInt],
+                                      endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
             return try await withThrowingTaskGroup(of: TorusKey.self, body: { [unowned self] group in
                 group.addTask { [unowned self] in
-                    try await handleRetrieveShares(torusNodePubs: torusNodePubs, endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
+                    try await handleRetrieveShares(torusNodePubs: torusNodePubs,
+                                                   indexes: indexes,
+                                                   endpoints: endpoints, verifier: verifier, verifierId: verifierId, idToken: idToken, extraParams: extraParams)
                 }
                 group.addTask { [unowned self] in
                     // 60 second timeout for login
@@ -245,7 +237,9 @@ open class TorusUtils: AbstractTorusUtils {
             })
         }
 
-        private func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
+        private func handleRetrieveShares(torusNodePubs: [TorusNodePubModel],
+                                          indexes : [BigUInt],
+                                          endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
             guard
                 let privateKey = generatePrivateKeyData(),
                 let publicKey = SECP256K1.privateToPublic(privateKey: privateKey)?.subdata(in: 1 ..< 65)
@@ -263,13 +257,11 @@ open class TorusUtils: AbstractTorusUtils {
             let timestamp = String(Int(getTimestamp()))
             let hashedToken = idToken.sha3(.keccak256)
 
-            var publicAddress: String = ""
             var lookupPubkeyX: String = ""
             var lookupPubkeyY: String = ""
-            var pk: String = ""
             do {
                 let getPublicAddressData = try await getPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId)
-                publicAddress = getPublicAddressData.finalKeyData!.evmAddress
+                let publicAddress = getPublicAddressData.finalKeyData!.evmAddress
                 let localPubkeyX = getPublicAddressData.finalKeyData!.X.addLeading0sForLength64()
                 let localPubkeyY = getPublicAddressData.finalKeyData!.Y.addLeading0sForLength64()
                 lookupPubkeyX = localPubkeyX
@@ -277,7 +269,10 @@ open class TorusUtils: AbstractTorusUtils {
                 let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
                 os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
                 
-                let (oAuthKeyX, oAuthKeyY, oAuthKey) = try await retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
+                let (oAuthKeyX, oAuthKeyY, oAuthKey) = try await retrieveDecryptAndReconstruct(
+                    endpoints: endpoints,
+                    indexes: indexes,
+                                                                                            extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
                 
                 var metadataNonce: BigUInt
                 var typeOfUser: UserType = .v1
@@ -364,7 +359,9 @@ open class TorusUtils: AbstractTorusUtils {
     
     // MARK: - retreiveDecryptAndReconstuct
 
-        private func retrieveDecryptAndReconstruct(endpoints: [String], extraParams: [String: Codable], verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
+        private func retrieveDecryptAndReconstruct(endpoints: [String],
+                                                   indexes: [BigUInt],
+                                                   extraParams: [String: Codable], verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
             // Rebuild extraParams
             let session = createURLSession()
             let threshold = Int(endpoints.count / 2) + 1
@@ -392,7 +389,6 @@ open class TorusUtils: AbstractTorusUtils {
                 os_log("import share - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             }
             
-//            print("rpc", String(data: rpcdata, encoding: .utf8)!)
             
             var shareResponses : [PointHex] = []
             var resultArray = [Int: RetrieveDecryptAndReconstuctResponseModel]()
@@ -425,9 +421,12 @@ open class TorusUtils: AbstractTorusUtils {
                         switch val {
                         case .success(let model):
                             let _data = model.data
-                            let i = model.index
+//                            let i = Int(indexes[model.index])
+                            let i = Int(indexes[model.index]) - 1
+                            
                             
                             let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)
+                            
                             if decoded.error != nil {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }

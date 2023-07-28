@@ -112,7 +112,7 @@ class TestnetTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares( endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+            let data = try await tu.retrieveShares( endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(),verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
 
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0xF8d2d3cFC30949C1cb1499C9aAC8F9300535a8d6")
             XCTAssertEqual(data.finalKeyData?.X, "6de2e34d488dd6a6b596524075b032a5d5eb945bcc33923ab5b88fd4fd04b5fd")
@@ -148,7 +148,7 @@ class TestnetTest: XCTestCase {
         let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x938a40E155d118BD31E439A9d92D67bd55317965")
             XCTAssertEqual(data.finalKeyData?.X, "1c50e34ef5b7afcf5b0c6501a6ae00ec3a09a321dd885c5073dd122e2a251b95")
             XCTAssertEqual(data.finalKeyData?.Y, "2cc74beb28f2c4a7c4034f80836d51b2781b36fefbeafb4eb1cd055bdf73b1e6")
@@ -187,7 +187,7 @@ extension TestnetTest {
             endpoints[0] =    "https://ndjnfjbfrj/random"
             // should fail if un-commented threshold 4/5
             // endpoints[1] = "https://ndjnfjbfrj/random"
-            let data = try await tu.retrieveShares(endpoints: endpoints, torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+            let data = try await tu.retrieveShares(endpoints: endpoints, torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
             XCTAssertEqual(data.finalKeyData?.privKey, "9b0fb017db14a0a25ed51f78a258713c8ae88b5e58a43acb70b22f9e2ee138e3")
             exp1.fulfill()
         } catch let err {

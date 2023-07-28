@@ -76,8 +76,8 @@ final class SapphireTest: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
 
-            let publicAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-            let publicAddress2 = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+            let publicAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+            let publicAddress2 = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(),torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
 
             XCTAssertEqual(publicAddress.finalKeyData?.evmAddress, publicAddress2.finalKeyData?.evmAddress)
             XCTAssertNotEqual(publicAddress.finalKeyData?.evmAddress, nil)
@@ -96,9 +96,15 @@ final class SapphireTest: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
 
-            let result = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+            let result = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
 
             XCTAssertEqual(result.finalKeyData?.evmAddress.lowercased(), "0x4924F91F5d6701dDd41042D94832bB17B76F316F".lowercased())
+            
+            XCTAssertEqual(result.metadata?.typeOfUser, .v2)
+            
+            XCTAssertEqual(result.metadata?.pubNonce?.x, "78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c")
+            
+            XCTAssertEqual(result.metadata?.pubNonce?.y, "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7")
         } catch let err {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
@@ -106,15 +112,23 @@ final class SapphireTest: XCTestCase {
         
     }
 
-//    it("should be able to key assign", async function () {
-//      const email = faker.internet.email();
-//      const verifierDetails = { verifier: TORUS_TEST_VERIFIER, verifierId: email };
-//      const nodeDetails = await TORUS_NODE_MANAGER.getNodeDetails(verifierDetails);
-//      const torusNodeEndpoints = nodeDetails.torusNodeSSSEndpoints;
-//      const publicAddress = await torus.getPublicAddress(torusNodeEndpoints, verifierDetails);
-//      expect(publicAddress).to.not.equal("");
-//      expect(publicAddress).to.not.equal(null);
-//    });
+    func testKeyAssignSapphireDevnet() async {
+        let exp1 = XCTestExpectation(description: "should be able to key assign")
+        let fakeEmail = generateRandomEmail(of: 6)
+        let verifier: String = TORUS_TEST_VERIFIER
+        let verifierID: String = fakeEmail
+        do {
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
+            let data = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+            XCTAssertNotNil(data.finalKeyData)
+            XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
+            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+            exp1.fulfill()
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+    }
     
     func testAbleToLogin() async throws {
         let exp1 = XCTestExpectation(description: "Should be able to do a Login")
@@ -126,7 +140,14 @@ final class SapphireTest: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
 
-            let data = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
+            let data = try await torus.retrieveShares(
+                endpoints: nodeDetails.getTorusNodeEndpoints(),
+                torusNodePubs: nodeDetails.getTorusNodePub(),
+                indexes: nodeDetails.getTorusIndexes(),
+                verifier: TORUS_TEST_VERIFIER,
+                verifierParams: verifierParams,
+                idToken: token
+            )
             
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
             XCTAssertEqual(data.finalKeyData?.X, "f3eaf63bf1fd645d4159832ccaad7f42457e287ac929363ba636eb7e87978bff")
@@ -136,14 +157,14 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(data.oAuthKeyData?.X, "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528")
             XCTAssertEqual(data.oAuthKeyData?.Y, "f9128bc7403bab6d45415cad01dd0ba0924628cfb6bf51c17e77aa8ca43b3cfe")
             XCTAssertEqual(data.oAuthKeyData?.privKey, "cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f")
-            XCTAssertEqual(data.sessionData?.sessionTokenData.count, 0)
-            XCTAssertEqual(data.sessionData?.sessionAuthKey, "")
+            XCTAssertNotEqual(data.sessionData?.sessionTokenData.count, 0)
+            XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
             XCTAssertEqual(data.metadata?.pubNonce?.x, "78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c")
             XCTAssertEqual(data.metadata?.pubNonce?.y, "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7")
             XCTAssertEqual(data.metadata?.nonce, BigUInt(hex: "376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e"))
             XCTAssertEqual(data.metadata?.typeOfUser, .v2)
             XCTAssertEqual(data.metadata?.upgraded, false)
-            XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
+            XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
 
             exp1.fulfill()
         } catch let error{
@@ -167,7 +188,9 @@ final class SapphireTest: XCTestCase {
             var torusNodeEndpoints = nodeDetails.getTorusNodeSSSEndpoints()
             torusNodeEndpoints[1] = "https://example.com"
 
-            let data = try await torus.retrieveShares(endpoints: torusNodeEndpoints, verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
+            let data = try await torus.retrieveShares(endpoints: torusNodeEndpoints,
+                                                      torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(),
+                                                      verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
             
             XCTAssertEqual(data.finalKeyData?.evmAddress, "0x4924F91F5d6701dDd41042D94832bB17B76F316F")
             XCTAssertEqual(data.finalKeyData?.X, "f3eaf63bf1fd645d4159832ccaad7f42457e287ac929363ba636eb7e87978bff")
@@ -177,14 +200,14 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(data.oAuthKeyData?.X, "9508a251dfc4146a132feb96111c136538f4fabd20fc488dbcaaf762261c1528")
             XCTAssertEqual(data.oAuthKeyData?.Y, "f9128bc7403bab6d45415cad01dd0ba0924628cfb6bf51c17e77aa8ca43b3cfe")
             XCTAssertEqual(data.oAuthKeyData?.privKey, "cd7d1dc7aec71fd2ee284890d56ac34d375bbc15ff41a1d87d088170580b9b0f")
-            XCTAssertEqual(data.sessionData?.sessionTokenData.count, 0)
-            XCTAssertEqual(data.sessionData?.sessionAuthKey, "")
+            XCTAssertNotEqual(data.sessionData?.sessionTokenData.count, 0)
+            XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
             XCTAssertEqual(data.metadata?.pubNonce?.x, "78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c")
             XCTAssertEqual(data.metadata?.pubNonce?.y, "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7")
             XCTAssertEqual(data.metadata?.nonce, BigUInt(hex: "376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e"))
             XCTAssertEqual(data.metadata?.typeOfUser, .v2)
             XCTAssertEqual(data.metadata?.upgraded, false)
-            XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
+            XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
 
             exp1.fulfill()
         } catch let error{
@@ -192,44 +215,6 @@ final class SapphireTest: XCTestCase {
             exp1.fulfill()
         }
     }
-
-    // func testImportKeyForNewUser() async throws {
-    //     let email = "faker@gmail.com"
-    //     let token = try generateIdToken(email: email)
-    //     let privKeyBuffer = generatePrivateExcludingIndexes(shareIndexes: [])
-    //     let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
-    //     let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: email)
-    //     let sssEndpoints = endpoints.torusNodeSSSEndpoints
-    //     let verifierParams = VerifierParams(verifier_id: email)
-        
-    //     let response = try await torus?.importPrivateKey(endpoints: sssEndpoints, nodeIndexes: endpoints.torusIndexes, nodePubKeys: endpoints.torusNodePub.map( TorusNodePubModelToINodePub) , verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token, newPrivateKey: privKeyBuffer.serialize().toHexString() )
-        
-    //     XCTAssertEqual(response?.privKey.lowercased(), privKeyBuffer.serialize().toHexString().lowercased())
-    // }
-    
-    
-    // func testImporKeyForExistingUser() async throws {
-    //     let email = TORUS_IMPORT_EMAIL
-    //     let token = try generateIdToken(email: email)
-    //     let privKeyBuffer = generatePrivateExcludingIndexes(shareIndexes: [])
-    //     let nodeManager = NodeDetailManager(network:  TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
-    //     let endpoints = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: email)
-    //     let sssEndpoints = endpoints.torusNodeSSSEndpoints
-    //     let verifierParams = VerifierParams(verifier_id: email)
-        
-    //     let publicAddress = try await torus?.getPublicAddress(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: email)
-        
-    //     let response = try await torus?.importPrivateKey(endpoints: sssEndpoints, nodeIndexes: endpoints.torusIndexes, nodePubKeys: endpoints.torusNodePub.map( TorusNodePubModelToINodePub) , verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token, newPrivateKey: privKeyBuffer.serialize().toHexString() )
-        
-        
-    //     XCTAssertEqual(response?.privKey.lowercased(), privKeyBuffer.serialize().toHexString().lowercased())
-        
-        
-    //     let publicAddressNew = try await torus?.getPublicAddressExtended(endpoints: sssEndpoints, verifier: TORUS_TEST_VERIFIER, verifierId: email)
-    //     XCTAssertEqual(publicAddressNew?.address.lowercased(), response?.ethAddress.lowercased())
-    //     XCTAssertNotEqual(publicAddressNew?.address.lowercased(), publicAddress?.lowercased())
-        
-    // }
 
     func testPubAdderessOfTssVerifierId() async throws {
         let email = TORUS_EXTENDED_VERIFIER_EMAIL
@@ -240,7 +225,7 @@ final class SapphireTest: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: email)
             
-            let pubAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeSSSEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, extendedVerifierId: tssVerifierId)
+            let pubAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeSSSEndpoints(),torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, extendedVerifierId: tssVerifierId)
             
             XCTAssertEqual(pubAddress.oAuthKeyData!.evmAddress, "0xBd6Bc8aDC5f2A0526078Fd2016C4335f64eD3a30")
             XCTAssertEqual(pubAddress.oAuthKeyData!.X, "d45d4ad45ec643f9eccd9090c0a2c753b1c991e361388e769c0dfa90c210348c")
@@ -267,18 +252,20 @@ final class SapphireTest: XCTestCase {
         
         let exp1 = XCTestExpectation(description: "should assign key to tss verifier id")
         
-        // fixme
-        let email = "faker@gmail.com" //faker random address
-        let verifierId = TORUS_TEST_EMAIL //faker random address
+        let fakeEmail = generateRandomEmail(of: 6)
+        let verifierId = fakeEmail //faker random address
         let nonce = 0
         let tssTag = "default"
-        let tssVerifierId = "\(email)\u{0015}\(tssTag)\u{0016}\(nonce)"
+        let tssVerifierId = "\(verifierId)\u{0015}\(tssTag)\u{0016}\(nonce)"
         
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: verifierId)
-            let publicAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeSSSEndpoints(), verifier: TORUS_TEST_VERIFIER, verifierId: verifierId)
-            XCTAssertNotEqual(publicAddress.finalKeyData?.evmAddress, nil)
-            XCTAssertNotEqual(publicAddress.finalKeyData?.evmAddress, "")
+            let keyData = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeSSSEndpoints(),torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: verifierId, extendedVerifierId: tssVerifierId)
+            XCTAssertNotEqual(keyData.finalKeyData?.evmAddress, nil)
+            XCTAssertNotEqual(keyData.finalKeyData?.evmAddress, "")
+            XCTAssertEqual(keyData.metadata?.typeOfUser, .v2)
+            XCTAssertEqual(keyData.metadata?.nonce, BigUInt("0"))
+            XCTAssertEqual(keyData.metadata?.upgraded, false)
             exp1.fulfill()
         } catch let error{
             XCTFail(error.localizedDescription)
@@ -289,18 +276,27 @@ final class SapphireTest: XCTestCase {
     
     func testAllowTssVerifierIdFetchShare () async throws {
         
-        let email = TORUS_TEST_EMAIL //faker random address ???
+        let email = generateRandomEmail(of: 6) //faker random address ???
         let verifierId = TORUS_TEST_EMAIL
         let nonce = 0
         let tssTag = "default"
         let tssVerifierId = "\(email)\u{0015}\(tssTag)\u{0016}\(nonce)"
         
         let token = try generateIdToken(email: email)
-        let nodeManager = NodeDetailManager(network: TorusNetwork.sapphire(.SAPPHIRE_DEVNET))
-        let endpoint = try await nodeManager.getNodeDetails(verifier: TORUS_TEST_VERIFIER, verifierID: verifierId)
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: verifierId)
         let verifierParams = VerifierParams(verifier_id: verifierId, extended_verifier_id: tssVerifierId)
         
-        try await torus?.retrieveShares(endpoints: endpoint.torusNodeSSSEndpoints, verifier: TORUS_TEST_EMAIL, verifierParams: verifierParams, idToken: token)
+        
+        let result = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(),
+                                                    torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(),
+                                                    verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
+        
+        XCTAssertNotEqual(result.finalKeyData?.privKey, nil)
+        XCTAssertNotEqual(result.finalKeyData?.evmAddress, nil)
+        XCTAssertEqual(result.metadata?.typeOfUser, .v2)
+        XCTAssertEqual(result.metadata?.nonce, BigUInt("0"))
+        XCTAssertEqual(result.metadata?.upgraded, true)
+        
     }
 
     
@@ -311,7 +307,9 @@ final class SapphireTest: XCTestCase {
         
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: HashEnabledVerifier)
-            let pubAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeSSSEndpoints(), verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
+            let pubAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeSSSEndpoints(),
+                                                              torusNodePubs: nodeDetails.getTorusNodePub(),
+                                                              verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
             XCTAssertEqual(pubAddress.oAuthKeyData!.evmAddress, "0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219")
             XCTAssertEqual(pubAddress.oAuthKeyData!.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
             XCTAssertEqual(pubAddress.oAuthKeyData!.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
@@ -323,7 +321,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt("51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d", radix: 16))
             XCTAssertEqual(pubAddress.metadata?.upgraded, false)
             XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-            XCTAssertNotEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
+            XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
 
             exp1.fulfill()
         } catch let error{
@@ -342,7 +340,9 @@ final class SapphireTest: XCTestCase {
         
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: HashEnabledVerifier, veriferID: HashEnabledVerifier)
-            let result = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeSSSEndpoints(), verifier: HashEnabledVerifier, verifierParams: verifierParams, idToken: token )
+            let result = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeSSSEndpoints(),
+                                                        torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(),
+                                                        verifier: HashEnabledVerifier, verifierParams: verifierParams, idToken: token )
             XCTAssertEqual(result.finalKeyData?.evmAddress, "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03")
             XCTAssertEqual(result.finalKeyData?.X, "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a")
             XCTAssertEqual(result.finalKeyData?.Y, "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e")
@@ -351,14 +351,14 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(result.oAuthKeyData?.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
             XCTAssertEqual(result.oAuthKeyData?.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
             XCTAssertEqual(result.oAuthKeyData?.privKey, "b47769e81328794adf3534e58d02803ca2a5e4588db81780f5bf679c77988946")
-            XCTAssertEqual(result.sessionData?.sessionTokenData.count, 0)
-            XCTAssertEqual(result.sessionData?.sessionAuthKey, "")
+            XCTAssertNotEqual(result.sessionData?.sessionTokenData.count, 0)
+            XCTAssertNotEqual(result.sessionData?.sessionAuthKey, "")
             XCTAssertEqual(result.metadata?.pubNonce?.x, "d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d")
             XCTAssertEqual(result.metadata?.pubNonce?.y, "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e")
             XCTAssertEqual(result.metadata?.nonce, BigUInt(hex: "51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d"))
             XCTAssertEqual(result.metadata?.typeOfUser, .v2)
             XCTAssertEqual(result.metadata?.upgraded, false)
-            XCTAssertEqual(result.nodesData?.nodeIndexes.count, 0)
+            XCTAssertNotEqual(result.nodesData?.nodeIndexes.count, 0)
             exp1.fulfill()
         } catch let error{
             XCTFail(error.localizedDescription)
@@ -368,7 +368,8 @@ final class SapphireTest: XCTestCase {
     
     func testAggregrateLogin() async throws {
         let exp1 = XCTestExpectation(description: "Should be able to aggregate login")
-        let email = TORUS_TEST_EMAIL
+     
+        let email = generateRandomEmail(of: 6)
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = email
         let jwt = try! generateIdToken(email: email)
@@ -382,7 +383,7 @@ final class SapphireTest: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
             
-            let data = try await torus.retrieveShares(endpoints: endpoint.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+            let data = try await torus.retrieveShares(endpoints: endpoint.torusNodeEndpoints, torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             
             XCTAssertNotNil(data.finalKeyData?.evmAddress)
             XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
@@ -397,58 +398,4 @@ final class SapphireTest: XCTestCase {
         }
     }
     
-    func testFetchPublicAddressWhenVerifierIDHashEnabled() async throws {
-        let exp1 = XCTestExpectation(description: "should fetch public address when verifierID hash enabled")
-        
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: HashEnabledVerifier, veriferID: TORUS_TEST_EMAIL)
-
-            let data = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219")
-            XCTAssertEqual(data.oAuthKeyData?.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
-            XCTAssertEqual(data.oAuthKeyData?.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03")
-            XCTAssertEqual(data.finalKeyData?.X, "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a")
-            XCTAssertEqual(data.finalKeyData?.Y, "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e")
-
-            XCTAssertEqual(data.metadata?.pubNonce?.x, "d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d")
-            XCTAssertEqual(data.metadata?.pubNonce?.y, "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e")
-            XCTAssertEqual(data.metadata?.nonce, BigUInt(hex: "51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d"))
-            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
-            XCTAssertEqual(data.metadata?.upgraded, false)
-            XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
-        
-    }
-    
-    func testFetchUserTypeAndPublicAddressWhenVerifierIDHashEnabled() async throws {
-        let exp1 = XCTestExpectation(description: "should fetch user type and public address when verifierID hash enabled")
-        
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: HashEnabledVerifier, veriferID: TORUS_TEST_EMAIL)
-
-            let data = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219")
-            XCTAssertEqual(data.oAuthKeyData?.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
-            XCTAssertEqual(data.oAuthKeyData?.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03")
-            XCTAssertEqual(data.finalKeyData?.X, "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a")
-            XCTAssertEqual(data.finalKeyData?.Y, "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e")
-
-            XCTAssertEqual(data.metadata?.pubNonce?.x, "d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d")
-            XCTAssertEqual(data.metadata?.pubNonce?.y, "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e")
-            XCTAssertEqual(data.metadata?.nonce, BigUInt(hex: "51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d"))
-            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
-            XCTAssertEqual(data.metadata?.upgraded, false)
-            XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
-        
-    }
-
 }
