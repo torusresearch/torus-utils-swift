@@ -1,13 +1,6 @@
-//
-//  File.swift
-//  
-//
-//  Created by Dhruv Jaiswal on 02/04/23.
-//
-
 import Foundation
 
-public struct KeyLookupResponseModel: CustomStringConvertible, Hashable {
+public struct LegacyKeyLookupResponse: CustomStringConvertible, Hashable {
 
     public let pubKeyX: String
     public let pubKeyY: String
@@ -22,6 +15,26 @@ public struct KeyLookupResponseModel: CustomStringConvertible, Hashable {
         self.pubKeyY = pubKeyY
         self.keyIndex = keyIndex
         self.address = address
+    }
+
+}
+
+public struct KeyLookupResponse: CustomStringConvertible, Hashable {
+
+    public let pubKeyX: String
+    public let pubKeyY: String
+    public let address: String
+    public let isNewKey: Bool
+
+    public var description: String {
+        return "public key X is \(pubKeyX) public key Y is \(pubKeyY) address is \(address)"
+    }
+
+    public init(pubKeyX: String, pubKeyY: String, address: String, isNewKey: Bool) {
+        self.pubKeyX = pubKeyX
+        self.pubKeyY = pubKeyY
+        self.address = address
+        self.isNewKey = isNewKey
     }
 
 }

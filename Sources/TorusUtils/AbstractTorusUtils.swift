@@ -1,8 +1,11 @@
+import BigInt
 import FetchNodeDetails
+import CryptoSwift
+import CommonSources
 import Foundation
 
 public protocol AbstractTorusUtils {
-    func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel
+    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel], indexes: [BigUInt], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String:Codable]) async throws -> TorusKey
 
-    func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel
+    func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, extendedVerifierId :String?) async throws -> TorusPublicKey
 }

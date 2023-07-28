@@ -14,15 +14,20 @@ public enum TorusUtilError: Error, Equatable {
     case encodingFailed(String? = nil)
     case decodingFailed(String? = nil)
     case commitmentRequestFailed
+    case importShareFailed
     case decryptionFailed
     case thresholdError
     case promiseFulfilled
+    case privateKeyDeriveFailed
     case timeout
+    case missingNodePubKeyError
     case unableToDerive
     case interpolationFailed
     case nodesUnavailable
     case invalidKeySize
     case runtime(_ msg: String)
+    case retrieveOrImportShareError
+    case metadataNonceMissing
     case empty
 }
 
@@ -41,12 +46,18 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Decryption Failed"
         case .commitmentRequestFailed:
             return "commitment request failed"
+        case .importShareFailed:
+            return "import share failed"
         case .thresholdError:
             return "Threshold error"
         case .promiseFulfilled:
             return "Promise fulfilled"
+        case .privateKeyDeriveFailed:
+            return "could not derive private key"
         case .timeout:
             return "Timeout"
+        case .missingNodePubKeyError:
+            return "Missing node pub key for node index"
         case .unableToDerive:
             return "could not derive private key"
         case .interpolationFailed:
@@ -61,6 +72,10 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Invalid key size. Expected 32 bytes"
         case let .encodingFailed(msg):
             return "Could not encode data \(msg ?? "")"
+        case .retrieveOrImportShareError:
+            return "retrieve or import share failed"
+        case .metadataNonceMissing:
+            return "Unable to fetch metadata nonce"
         }
     }
 
@@ -107,6 +122,9 @@ extension TorusUtilError: LocalizedError {
             return "Invalid key size. Expected 32 bytes"
         case let .encodingFailed(msg):
             return "Could not encode data \(msg ?? "")"
+        default:
+            return "default Error msg"
+            
         }
     }
 }
