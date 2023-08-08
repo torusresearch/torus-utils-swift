@@ -181,9 +181,12 @@ open class TorusUtils: AbstractTorusUtils {
             let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
             os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
             let (x, y, key) = try await retrieveDecryptAndReconstruct(endpoints: endpoints, extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
+            var typeOfUser: TypeOfUser = .v1
+            var nonce = BigUInt(0)
             if enableOneKey {
                 let result = try await getOrSetNonce(x: x, y: y, privateKey: key, getOnly: true)
-                let nonce = BigUInt(result.nonce ?? "0", radix: 16) ?? 0
+                nonce = BigUInt(result.nonce ?? "0", radix: 16) ?? 0
+                typeOfUser = .init(rawValue: result.typeOfUser) ?? .v1
                 if nonce != BigInt(0) {
                     let tempNewKey = BigInt(nonce) + BigInt(key, radix: 16)!
                     let newKey = tempNewKey.modulus(modulusValue)
@@ -203,11 +206,22 @@ open class TorusUtils: AbstractTorusUtils {
                     pk = key
                 }
             }
-            return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk)
+            return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk, nonce: nonce, userType: typeOfUser)
         } catch {
             os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error
         }
+    }
+    
+    open func getPostBoxKey(torusKey: RetrieveSharesResponseModel) -> String {
+        if torusKey.userType == .v1 {
+            return torusKey.privateKey
+        }
+        if torusKey.nonce > 0 {
+            let result = BigUInt(torusKey.privateKey, radix: 16)! - torusKey.nonce
+            return String(result)
+        }
+        return torusKey.privateKey
     }
 
     open func generatePrivateKeyData() -> Data? {

@@ -8,6 +8,7 @@
 import FetchNodeDetails
 import Foundation
 import TorusUtils
+import BigInt
 
 class MockTorusUtils: AbstractTorusUtils {
 
@@ -22,7 +23,7 @@ class MockTorusUtils: AbstractTorusUtils {
     }
 
     func retrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
-        return .init(publicKey: "", privateKey: "")
+        return .init(publicKey: "", privateKey: "", nonce: BigUInt(0), userType: .v1)
     }
 
     func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
