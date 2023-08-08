@@ -37,4 +37,8 @@ class MockTorusUtils: AbstractTorusUtils {
     func getOrSetNonce(x: String, y: String, privateKey: String?, getOnly: Bool) async throws -> GetOrSetNonceResultModel {
         return GetOrSetNonceResultModel.init(typeOfUser: "v1")
     }
+    
+    func getPostBoxKey(torusKey: RetrieveSharesResponseModel) -> String {
+        return ""
+    }
 }

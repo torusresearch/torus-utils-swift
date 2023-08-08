@@ -146,6 +146,17 @@ open class TorusUtils: AbstractTorusUtils {
             throw TorusUtilError.timeout
         })
     }
+    
+    public func getPostBoxKey(torusKey: RetrieveSharesResponseModel) -> String {
+        if torusKey.userType == .v1 {
+            return torusKey.privateKey
+        }
+        if torusKey.nonce > 0 {
+            let result = BigUInt(torusKey.privateKey, radix: 16)! - torusKey.nonce
+            return String(result)
+        }
+        return torusKey.privateKey
+    }
 
     func handleRetrieveShares(torusNodePubs: [TorusNodePubModel], endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: Data) async throws -> RetrieveSharesResponseModel {
         guard
@@ -211,17 +222,6 @@ open class TorusUtils: AbstractTorusUtils {
             os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error
         }
-    }
-    
-    open func getPostBoxKey(torusKey: RetrieveSharesResponseModel) -> String {
-        if torusKey.userType == .v1 {
-            return torusKey.privateKey
-        }
-        if torusKey.nonce > 0 {
-            let result = BigUInt(torusKey.privateKey, radix: 16)! - torusKey.nonce
-            return String(result)
-        }
-        return torusKey.privateKey
     }
 
     open func generatePrivateKeyData() -> Data? {
