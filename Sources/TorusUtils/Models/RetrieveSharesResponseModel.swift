@@ -12,12 +12,12 @@ public struct RetrieveSharesResponseModel {
     public let publicAddress: String
     public let privateKey: String
     public let nonce: BigUInt
-    public let userType: TypeOfUser
+    public let typeOfUser: TypeOfUser
 
-    public init(publicKey: String, privateKey: String, nonce: BigUInt, userType: TypeOfUser) {
+    public init(publicKey: String, privateKey: String, nonce: BigUInt, typeOfUser: TypeOfUser) {
         self.publicAddress = publicKey
         self.privateKey = privateKey
         self.nonce = nonce
-        self.userType = userType
+        self.typeOfUser = typeOfUser
     }
 }

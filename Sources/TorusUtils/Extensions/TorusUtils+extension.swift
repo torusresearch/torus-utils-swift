@@ -661,6 +661,7 @@ extension TorusUtils {
     public func getUserTypeAndAddress(endpoints: [String], torusNodePub: [TorusNodePubModel], verifier: String, verifierID: String, doesKeyAssign: Bool = false) async throws -> GetUserAndAddressModel {
         do {
             var data: KeyLookupResponseModel
+            var isNewKey = false
             do {
                 data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID)
             } catch {
@@ -668,6 +669,7 @@ extension TorusUtils {
                         do {
                             _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePub, verifier: verifier, verifierId: verifierID, signerHost: signerHost, network: network)
                             data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierID, timeout: 1)
+                            isNewKey = true
                         } catch {
                             throw TorusUtilError.configurationError
                         }

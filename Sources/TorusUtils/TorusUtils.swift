@@ -19,7 +19,6 @@ open class TorusUtils: AbstractTorusUtils {
     var urlSession: URLSession
     var enableOneKey: Bool
     var serverTimeOffset: TimeInterval = 0
-    var isNewKey = false
     var metaDataHost: String
     var signerHost: String
     var allowHost: String
@@ -42,6 +41,7 @@ open class TorusUtils: AbstractTorusUtils {
     public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, isExtended: Bool) async throws -> GetPublicAddressModel {
         do {
                 var data: KeyLookupResponseModel
+                var isNewKey = false
                 do {
                     data = try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
                 } catch {
@@ -49,6 +49,7 @@ open class TorusUtils: AbstractTorusUtils {
                             do {
                                 _ = try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network)
                                 data = try await awaitKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId, timeout: 1)
+                                isNewKey = true
                             } catch {
                                 throw TorusUtilError.configurationError
                             }
@@ -148,12 +149,13 @@ open class TorusUtils: AbstractTorusUtils {
     }
     
     public func getPostBoxKey(torusKey: RetrieveSharesResponseModel) -> String {
-        if torusKey.userType == .v1 {
+        if torusKey.typeOfUser == .v1 {
             return torusKey.privateKey
         }
         if torusKey.nonce > 0 {
-            let result = BigUInt(torusKey.privateKey, radix: 16)! - torusKey.nonce
-            return String(result)
+            let result = (BigInt(torusKey.privateKey, radix: 16) ?? BigInt("0")) - BigInt(torusKey.nonce)
+            let postboxKey = result.modulus(modulusValue)
+            return String(postboxKey)
         }
         return torusKey.privateKey
     }
@@ -217,7 +219,7 @@ open class TorusUtils: AbstractTorusUtils {
                     pk = key
                 }
             }
-            return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk, nonce: nonce, userType: typeOfUser)
+            return RetrieveSharesResponseModel(publicKey: publicAddress, privateKey: pk, nonce: nonce, typeOfUser: typeOfUser)
         } catch {
             os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error

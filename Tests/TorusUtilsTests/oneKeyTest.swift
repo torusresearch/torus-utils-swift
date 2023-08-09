@@ -125,4 +125,69 @@ class OneKeyTest: XCTestCase {
             exp1.fulfill()
         }
     }
+    
+    func test_v2_key_assign() async {
+        let fakeEmail = generateRandomEmail(of: 6)
+        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+        let verifier: String = "google-lrc"
+        let verifierID: String = fakeEmail
+        do {
+            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID, isExtended: true)
+            XCTAssertNotNil(data.address)
+            XCTAssertNotEqual(data.address, "")
+            XCTAssertEqual(data.typeOfUser, .v2)
+            print("data", data.pubNonce)
+            exp1.fulfill()
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+    }
+    
+    func test_v2_random_login() async {
+        let exp1 = XCTestExpectation(description: "should still login v2 account correctly")
+        let verifier: String = TORUS_TEST_VERIFIER
+        let verifierID: String = generateRandomEmail(of: 6)
+        let jwt = try! generateIdToken(email: verifierID)
+        let extraParams = ["verifier_id": verifierID] as [String: Any]
+        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
+        do {
+            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+            let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer)
+            XCTAssertNotNil(data.publicAddress)
+            XCTAssertNotNil(data.privateKey)
+            XCTAssertNotEqual(data.publicAddress, "")
+            XCTAssertNotEqual(data.privateKey, "")
+            XCTAssertEqual(data.typeOfUser, .v2)
+            exp1.fulfill()
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+    }
+    
+    func test_v2_login_web_comptability() async {
+        let exp1 = XCTestExpectation(description: "should still login v2 account correctly")
+        let verifier: String = TORUS_TEST_VERIFIER
+        let verifierID: String = "iostest@example.com"
+        let jwt = try! generateIdToken(email: verifierID)
+        let extraParams = ["verifier_id": verifierID] as [String: Any]
+        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
+        do {
+            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+            let data = try await tu.retrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID, idToken: jwt, extraParams: buffer)
+            XCTAssertNotNil(data.publicAddress)
+            XCTAssertNotNil(data.privateKey)
+            XCTAssertNotEqual(data.publicAddress, "")
+            XCTAssertNotEqual(data.privateKey, "")
+            XCTAssertEqual(data.typeOfUser, .v2)
+            print("data.privateKey", data.privateKey, data.publicAddress)
+            exp1.fulfill()
+        } catch let err {
+            XCTFail(err.localizedDescription)
+            exp1.fulfill()
+        }
+    }
+
 }
