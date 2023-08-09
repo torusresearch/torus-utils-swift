@@ -152,8 +152,9 @@ open class TorusUtils: AbstractTorusUtils {
         if torusKey.typeOfUser == .v1 {
             return torusKey.privateKey
         }
-        if torusKey.nonce > 0 {
-            let result = (BigInt(torusKey.privateKey, radix: 16) ?? BigInt("0")) - BigInt(torusKey.nonce)
+        if torusKey.nonce > 0  {
+            let key = BigInt(torusKey.privateKey, radix: 16)!
+            let result = key - BigInt(torusKey.nonce)
             let postboxKey = result.modulus(modulusValue)
             return String(postboxKey)
         }

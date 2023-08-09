@@ -40,11 +40,11 @@ class OneKeyTest: XCTestCase {
     func test_fetch_public_address() async {
         let exp1 = XCTestExpectation(description: "should still fetch v1 public address correctly")
         let verifier = "google-lrc"
-        let verifierID = TORUS_TEST_EMAIL
+        let verifierID = "himanshu@tor.us"
         do {
             let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
             let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID, isExtended: true)
-            XCTAssertEqual(data.address, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
+            XCTAssertEqual(data.address, "0xf1e76fcDD28b5AA06De01de508fF21589aB9017E")
             // XCTAssertEqual(val["typeOfUser"], TypeOfUser.v1.rawValue)
             exp1.fulfill()
         } catch let err {
