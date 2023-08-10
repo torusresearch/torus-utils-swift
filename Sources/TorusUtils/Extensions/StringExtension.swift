@@ -63,6 +63,11 @@ extension String {
         }
         // String(format: "%064d", self)
     }
+    
+    
+    func customBytes() -> Array<UInt8> {
+      data(using: String.Encoding.utf8, allowLossyConversion: true)?.bytes ?? Array(utf8)
+    }
 }
 
 extension StringProtocol {
