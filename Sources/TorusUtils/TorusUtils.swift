@@ -156,7 +156,7 @@ open class TorusUtils: AbstractTorusUtils {
             let key = BigInt(torusKey.privateKey, radix: 16)!
             let result = key - BigInt(torusKey.nonce)
             let postboxKey = result.modulus(modulusValue)
-            return postboxKey.magnitude.serialize().toHexString()
+            return BigUInt(postboxKey).serialize().suffix(64).toHexString()
         }
         return torusKey.privateKey
     }
