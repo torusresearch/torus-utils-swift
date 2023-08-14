@@ -32,9 +32,9 @@
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift.git",
         "state": {
-          "branch": "sapphire",
+          "branch": null,
           "revision": "c7b4e5a65eb737c029acb2d1aff84854a618384d",
-          "version": null
+          "version": "5.0.0-alpha"
         }
       },
       {
