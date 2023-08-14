@@ -15,8 +15,8 @@
         "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift.git",
         "state": {
           "branch": null,
-          "revision": "039f56c5d7960f277087a0be51f5eb04ed0ec073",
-          "version": "1.5.1"
+          "revision": "32f641cf24fc7abc1c591a2025e9f2f572648b0f",
+          "version": "1.7.2"
         }
       },
       {
@@ -24,8 +24,8 @@
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift.git",
         "state": {
           "branch": null,
-          "revision": "8614fcda423118db58ce58a172b906e7aa18652f",
-          "version": "4.0.0"
+          "revision": "94a0ee598abfcc2104ceeda80eecf4b55242ba62",
+          "version": "4.0.1"
         }
       },
       {
@@ -42,8 +42,8 @@
         "repositoryURL": "https://github.com/vapor/jwt-kit.git",
         "state": {
           "branch": null,
-          "revision": "3537dd319dfbcc403a5165d8c19c4834e8e64730",
-          "version": "4.5.0"
+          "revision": "9e929d925434b91857661bcd455d1bd53f00bf22",
+          "version": "4.13.0"
         }
       },
       {
