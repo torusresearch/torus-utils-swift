@@ -13,7 +13,7 @@ let package = Package(
             targets: ["TorusUtils"])
     ],
     dependencies: [
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", .exact("5.0.0-alpha")),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", .branch("alpha")),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
         .package(
