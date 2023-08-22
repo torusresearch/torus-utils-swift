@@ -9,9 +9,7 @@
 import Foundation
 import CryptoSwift
 
-#if canImport(secp256k1)
 import secp256k1
-#endif
 import BigInt
 import CryptoKit
 import OSLog
