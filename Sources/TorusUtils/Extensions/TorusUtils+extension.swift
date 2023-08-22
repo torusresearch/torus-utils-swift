@@ -523,7 +523,7 @@ extension TorusUtils {
                         // get nonce
                         let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey)
 //                        BigInt( Data(hex: nonceResult.nonce ?? "0"))
-                        metadataNonce = BigInt( Data(hex: nonceResult.nonce ?? "0"))
+                        metadataNonce = BigInt( nonceResult.nonce ?? "0", radix: 16)!
                         let pubNonceX = nonceResult.pubNonce?.x
                         let pubNonceY = nonceResult.pubNonce?.y
                         let usertype = nonceResult.typeOfUser
@@ -1383,16 +1383,6 @@ extension TorusUtils {
               throw error
           }
       }
-
-    internal func publicKeyToAddress(key: Data) -> Data {
-        return keccak256Data(key).suffix(20)
-//        return key.web3.keccak256.suffix(20)
-    }
-
-    internal func publicKeyToAddress(key: String) -> String {
-        return keccak256Data(Data( hex: key)).suffix(20).toHexString().toChecksumAddress()
-//        return key.web3.keccak256fromHex.suffix(20).toHexString().toChecksumAddress()
-    }
 
     internal func getPublicKeyPointFromPubkeyString( pubKey: String) throws ->  (String, String) {
         let publicKeyHashData = Data.fromHex(pubKey.strip04Prefix())

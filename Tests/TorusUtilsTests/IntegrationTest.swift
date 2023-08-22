@@ -44,17 +44,6 @@ class IntegrationTests: XCTestCase {
         return nodeDetails
     }
 
-    func test_secpTest() {
-        let key = Data(hex: "fda99cc749072df6aae7b2866017bcf4d371bb12949317d37bd1d2d5eb4dcf7f")
-        
-        let publicKey = SECP256K1.privateToPublic(privateKey: key)?.subdata(in: 1 ..< 65)
-        let address1 = IntegrationTests.utils?.publicKeyToAddress(key: publicKey!).toHexString()
-
-        let address2 = IntegrationTests.utils?.publicKeyToAddress(key: publicKey!.toHexString())
-        XCTAssertEqual(address1?.toChecksumAddress(), address2?.toChecksumAddress())
-        
-    }
-
     func test_getPublicAddress() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         do {

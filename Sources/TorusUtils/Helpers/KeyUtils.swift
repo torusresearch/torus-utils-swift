@@ -15,20 +15,6 @@ func stripHexPrefix(_ str: String) -> String {
     return str.hasPrefix("0x") ? String(str.dropFirst(2)) : str
 }
 
-func generateAddressFromPrivKey(privateKey: String) -> String {
-    do {
-        let privateKeyData = Data(hexString: privateKey)!
-        let key = try P256.KeyAgreement.PrivateKey(rawRepresentation: privateKeyData)
-        let publicKey = key.publicKey.rawRepresentation.dropFirst().dropLast() // Remove the first byte (0x04)
-        let ethAddressLower = "0x" + keccak256Hex(publicKey).suffix(38)
-        return ethAddressLower.toChecksumAddress()
-    } catch {
-        // Handle the error if necessary
-        print("Failed to generate address from private key: \(error)")
-        return ""
-    }
-}
-
 struct BasePoint {
     let x: Data
     let y: Data
