@@ -2,7 +2,6 @@ import BigInt
 import FetchNodeDetails
 import JWTKit
 import secp256k1
-import web3
 import XCTest
 
 import CommonSources
@@ -45,7 +44,7 @@ final class SapphireTest: XCTestCase {
     
     func testFetchPublicAddress() async throws {
         let exp1 = XCTestExpectation(description: "Should be able to fetch public address")
-
+        
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
 
@@ -204,7 +203,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
             XCTAssertEqual(data.metadata?.pubNonce?.x, "78a88b99d960808543e75076529c913c1678bc7fafbb943f1ce58235fd2f4e0c")
             XCTAssertEqual(data.metadata?.pubNonce?.y, "6b451282135dfacd22561e0fb5bf21aea7b1f26f2442164b82b0e4c8f152f7a7")
-            XCTAssertEqual(data.metadata?.nonce, BigUInt(hex: "376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e"))
+            XCTAssertEqual(data.metadata?.nonce, BigUInt(hex:"376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e"))
             XCTAssertEqual(data.metadata?.typeOfUser, .v2)
             XCTAssertEqual(data.metadata?.upgraded, false)
             XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
