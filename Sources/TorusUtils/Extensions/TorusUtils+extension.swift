@@ -148,7 +148,8 @@ extension TorusUtils {
         do {
         
             let privKeyData = Data(hex: privateKey)
-            guard let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
+            // this pubkey is not being padded in backend as well on web, so do not pad here.
+            guard let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString()
             else {
                 throw TorusUtilError.runtime("invalid priv key")
             }
@@ -512,34 +513,40 @@ extension TorusUtils {
                 var pubKeyNonceResult: PubNonce?
                 var typeOfUser: UserType = .v1
                 
-                var modifiedPubKey = "04" + oauthPubKeyX.addLeading0sForLength64() + oauthPubKeyY.addLeading0sForLength64()
-                
+                var finalPubKey = "04" + oauthPubKeyX.addLeading0sForLength64() + oauthPubKeyY.addLeading0sForLength64()
                 if verifierParams.extended_verifier_id != nil {
                     typeOfUser = .v2
                     // For TSS key, no need to add pub nonce
-                    modifiedPubKey = String(modifiedPubKey.suffix(128))
+                    finalPubKey = String(finalPubKey.suffix(128))
                 } else if case .legacy(_) = self.network {
                     if (self.enableOneKey) {
                         // get nonce
                         let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey)
-//                        BigInt( Data(hex: nonceResult.nonce ?? "0"))
+                        //                        BigInt( Data(hex: nonceResult.nonce ?? "0"))
                         metadataNonce = BigInt( nonceResult.nonce ?? "0", radix: 16)!
-                        let pubNonceX = nonceResult.pubNonce?.x
-                        let pubNonceY = nonceResult.pubNonce?.y
                         let usertype = nonceResult.typeOfUser
-                        if usertype == "v2" {
+                        
+                        if (usertype == "v2") {
+                            let pubNonceX = nonceResult.pubNonce?.x
+                            let pubNonceY = nonceResult.pubNonce?.y
                             typeOfUser = .v2
                             let pubkey2 = "04" + pubNonceX!.addLeading0sForLength64() + pubNonceY!.addLeading0sForLength64()
-                            let combined = combinePublicKeys(keys: [modifiedPubKey, pubkey2], compressed: false)
-                            modifiedPubKey = combined
+                            let combined = combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
+                            finalPubKey = combined
                             pubKeyNonceResult = .init(x: pubNonceX!, y: pubNonceY!)
+                        } else {
+                            typeOfUser = .v1
+                            // for imported keys in legacy networks
+                            metadataNonce = BigInt(try await getMetadata(dictionary: ["pub_key_X": oauthPubKeyX, "pub_key_Y": oauthPubKeyY]))
+                            let privateKeyWithNonce = ((BigInt(oAuthKey, radix: 16)!) + BigInt(metadataNonce)).modulus(modulusValue)
+                            finalPubKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                         }
                     } else {
                         typeOfUser = .v1
                         // for imported keys in legacy networks
                         metadataNonce = BigInt(try await getMetadata(dictionary: ["pub_key_X": oauthPubKeyX, "pub_key_Y": oauthPubKeyY]))
                         let privateKeyWithNonce = ((BigInt(oAuthKey, radix: 16)!) + BigInt(metadataNonce)).modulus(modulusValue)
-                        modifiedPubKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
+                        finalPubKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                     }
                 } else {
                     typeOfUser = .v2
@@ -547,27 +554,29 @@ extension TorusUtils {
                     let pubNonceX = thresholdNonceData!.pubNonce!.x
                     let pubNonceY = thresholdNonceData!.pubNonce!.y
                     let pubkey2 = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
-                    let combined = combinePublicKeys(keys: [modifiedPubKey, pubkey2], compressed: false)
-                    modifiedPubKey = combined
+                    let combined = combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
+                    finalPubKey = combined
                     pubKeyNonceResult = .init(x: pubNonceX, y: pubNonceY)
                 }
 
 
                 
-                let (finalPubX , finalPubY) = try getPublicKeyPointFromPubkeyString(pubKey: modifiedPubKey)
                 let (oAuthKeyX, oAuthKeyY) = try getPublicKeyPointFromPubkeyString(pubKey: oAuthPubKey!)
                 let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
                 
-                // deriving address from pub key coz pubkey is always available
-                // but finalPrivKey won't be available for  v2 user upgraded to 2/n
-                let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
+ 
                 var finalPrivKey = ""
                 
                 if typeOfUser == .v1 || (typeOfUser == .v2 && metadataNonce > BigInt(0)) {
                     let privateKeyWithNonce = ((BigInt(oAuthKey, radix: 16) ?? BigInt(0)) + metadataNonce).modulus(modulusValue)
                     finalPrivKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
+                    
                 }
     
+                let (finalPubX , finalPubY) = try getPublicKeyPointFromPubkeyString(pubKey: finalPubKey)
+                // deriving address from pub key coz pubkey is always available
+                // but finalPrivKey won't be available for  v2 user upgraded to 2/n
+                let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
                     
                 var isUpgraded: Bool?
                 
@@ -581,8 +590,8 @@ extension TorusUtils {
                 return TorusKey(
                     finalKeyData: .init(
                         evmAddress: finalEvmAddress,
-                        X: finalPubX,
-                        Y: finalPubY,
+                        X: finalPubX.addLeading0sForLength64(),
+                        Y: finalPubY.addLeading0sForLength64(),
                         privKey: finalPrivKey
                     ),
                     oAuthKeyData: .init(
@@ -1418,9 +1427,7 @@ extension TorusUtils {
         let (oAuthX, oAuthY) = (pubKeyX.addLeading0sForLength64(), pubKeyY.addLeading0sForLength64())
         if enableOneKey {
             nonceResult = try await getOrSetNonce(x: pubKeyX, y: pubKeyY, privateKey: nil, getOnly: !isNewKey)
-            pubNonce = nonceResult?.pubNonce
             nonce = BigUInt(nonceResult?.nonce ?? "0") ?? 0
-
             typeOfUser = .init(rawValue: nonceResult?.typeOfUser ?? ".v1") ?? .v1
             if typeOfUser == .v1 {
                 finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
@@ -1433,6 +1440,7 @@ extension TorusUtils {
                     finalPubKey = String(finalPubKey.suffix(128))
                 }
             } else if typeOfUser == .v2 {
+                pubNonce = nonceResult?.pubNonce
                 if nonceResult?.upgraded ?? false {
                     finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                 } else {
@@ -1479,13 +1487,13 @@ extension TorusUtils {
         result = TorusPublicKey(
             finalKeyData: .init(
                 evmAddress: finalAddress,
-                X: finalX,
-                Y: finalY
+                X: finalX.addLeading0sForLength64(),
+                Y: finalY.addLeading0sForLength64()
             ),
             oAuthKeyData: .init(
                 evmAddress: oAuthAddress,
-                X: oAuthX,
-                Y: oAuthY
+                X: oAuthX.addLeading0sForLength64(),
+                Y: oAuthY.addLeading0sForLength64()
             ),
             metadata: .init(
                 pubNonce: pubNonce,
