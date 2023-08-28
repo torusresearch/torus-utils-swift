@@ -278,6 +278,7 @@ extension TorusUtils {
         
         var thresholdNonceData : GetOrSetNonceResult?
         var pubkeyArr = [KeyAssignment.PublicKey]()
+        var isNewKeyArr: [String] = []
         var completeShareRequestResponseArr = [ShareRequestResult]()
         var thresholdPublicKey : KeyAssignment.PublicKey?
         
@@ -314,6 +315,7 @@ extension TorusUtils {
                             let decodedResult = decoded.result as? ShareRequestResult
                         else { throw TorusUtilError.decodingFailed("ShareReqeust error decoding error : \(decoded), can't decode into shareRequestResult") }
                         
+                        isNewKeyArr.append(decodedResult.isNewKey)
                         completeShareRequestResponseArr.append(decodedResult)
                         let keyObj = decodedResult.keys
                         if let first = keyObj.first {
@@ -360,6 +362,7 @@ extension TorusUtils {
             throw TorusUtilError.thresholdError
         })
         
+        
         // optimistically run lagrange interpolation once threshold number of shares have been received
         // this is matched against the user public key to ensure that shares are consistent
         // Note: no need of thresholdMetadataNonce for extended_verifier_id key
@@ -373,6 +376,11 @@ extension TorusUtils {
                 var nodeIndexes = [Int]()
                 var sessionTokenData = [SessionToken?]()
                 
+                guard let isNewKey = thresholdSame(arr: isNewKeyArr, threshold: threshold)
+                else {
+                    os_log("retrieveShare - invalid result from nodes, threshold number of is_new_key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
+                    throw TorusUtilError.thresholdError
+                }
                 
                 for currentShareResponse in completeShareRequestResponseArr {
                     let sessionTokens = currentShareResponse.sessionTokens
@@ -520,8 +528,8 @@ extension TorusUtils {
                     finalPubKey = String(finalPubKey.suffix(128))
                 } else if case .legacy(_) = self.network {
                     if (self.enableOneKey) {
-                        // get nonce
-                        let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey)
+                        // get or set nonce based on isNewKey variable
+                        let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey, getOnly: isNewKey == "false")
                         //                        BigInt( Data(hex: nonceResult.nonce ?? "0"))
                         metadataNonce = BigInt( nonceResult.nonce ?? "0", radix: 16)!
                         let usertype = nonceResult.typeOfUser
