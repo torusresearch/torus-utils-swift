@@ -2,7 +2,6 @@ import BigInt
 import FetchNodeDetails
 import JWTKit
 import secp256k1
-import web3
 import XCTest
 
 import CommonSources
@@ -45,22 +44,12 @@ class IntegrationTests: XCTestCase {
         return nodeDetails
     }
 
-    func test_secpTest() {
-        if let key = Data(hex: "fda99cc749072df6aae7b2866017bcf4d371bb12949317d37bd1d2d5eb4dcf7f") {
-            let publicKey = SECP256K1.privateToPublic(privateKey: key)?.subdata(in: 1 ..< 65)
-            let address1 = IntegrationTests.utils?.publicKeyToAddress(key: publicKey!).toHexString()
-
-            let address2 = IntegrationTests.utils?.publicKeyToAddress(key: publicKey!.toHexString())
-            XCTAssertEqual(address1?.toChecksumAddress(), address2?.toChecksumAddress())
-        }
-    }
-
     func test_getPublicAddress() async {
         let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: TORUS_TEST_EMAIL)
             let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "google-lrc", verifierId: "hello@tor.us")
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x5b56E06009528Bffb1d6336575731ee3B63f6150")
+            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -118,7 +107,7 @@ class IntegrationTests: XCTestCase {
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val.address, "0x5b56E06009528Bffb1d6336575731ee3B63f6150")
+            XCTAssertEqual(val.address, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)

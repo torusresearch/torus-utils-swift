@@ -4,16 +4,15 @@
 import PackageDescription
 let package = Package(
     name: "TorusUtils",
-    platforms: [
-        .iOS(.v13), .macOS(.v10_15)
-    ],
+    platforms: [.iOS(.v13), .macOS(.v10_15)],
     products: [
         .library(
             name: "TorusUtils",
             targets: ["TorusUtils"])
     ],
     dependencies: [
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", .exact("5.0.0-alpha")),
+        .package(name:"secp256k1", url: "https://github.com/GigaBitcoin/secp256k1.swift.git", from: "0.12.2"),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift.git", from: "5.0.0"),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift.git",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
         .package(
@@ -25,10 +24,10 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable"]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", "secp256k1"]),
         .testTarget(
             name: "TorusUtilsTests",
-            dependencies: ["TorusUtils", "CryptoSwift", .product(name: "JWTKit", package: "jwt-kit"), "FetchNodeDetails"]
+            dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit")]
         )
     ],
     swiftLanguageVersions: [.v5]

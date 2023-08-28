@@ -34,9 +34,9 @@ public class Point : Decodable  {
     func encode(enc: String) throws -> Data {
         switch enc {
         case "arr":
-            let prefix = Data(hex: "0x04")!
-            let xData = Data(hex: x.description)!
-            let yData = Data(hex: y.description)!
+            let prefix = Data(hex: "04")
+            let xData = Data(hex: x.description)
+            let yData = Data(hex: y.description)
             return prefix + xData + yData
 //        case "elliptic-compressed":
 //            let publicKey = try getCompressedPublicKey()

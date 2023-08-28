@@ -9,7 +9,6 @@ import BigInt
 import FetchNodeDetails
 import JWTKit
 import secp256k1
-import web3
 import XCTest
 import CommonSources
 

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import BigInt
 
 // Necessary for decryption
 
@@ -36,3 +37,12 @@ extension Data {
     }
 }
 
+
+extension BigUInt {
+    init?(hex: String) {
+        guard let result = BigUInt(hex, radix: 16) else{
+            return nil
+        }
+        self = result
+    }
+}

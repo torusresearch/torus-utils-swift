@@ -5,7 +5,6 @@
 //
 
 import Foundation
-import web3
 
 extension String {
     var fullRange: Range<Index> {
