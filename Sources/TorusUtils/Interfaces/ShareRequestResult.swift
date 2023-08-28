@@ -8,6 +8,7 @@ struct ShareRequestResult : Decodable {
     let sessionTokenSigMetadata: [EciesHex]
     let nodePubX: String
     let nodePubY: String
+    let isNewKey: String
     
     enum CodingKeys: CodingKey {
         case keys
@@ -17,6 +18,7 @@ struct ShareRequestResult : Decodable {
         case session_token_sig_metadata
         case node_pubx
         case node_puby
+        case is_new_key
     }
     
     init(from decoder: Decoder) throws {
@@ -24,7 +26,8 @@ struct ShareRequestResult : Decodable {
         self.keys = try container.decode([KeyAssignment].self, forKey: .keys)
         self.nodePubX = try container.decode(String.self, forKey: .node_pubx)
         self.nodePubY = try container.decode(String.self, forKey: .node_puby)
-        
+        self.isNewKey = try container.decode(String.self, forKey: .is_new_key)
+
         if let sessionTokens = try? container.decodeIfPresent([String].self, forKey: .session_tokens) {
             self.sessionTokens = sessionTokens
         } else {
@@ -48,6 +51,7 @@ struct ShareRequestResult : Decodable {
         } else {
             self.sessionTokenSigMetadata = []
         }
+        
     }
     
 //    public func encode(to encoder: Encoder) throws {
