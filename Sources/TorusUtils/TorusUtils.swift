@@ -429,8 +429,8 @@ open class TorusUtils: AbstractTorusUtils {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }
                             os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-                            var X = lookupPubkeyX
-                            var Y = lookupPubkeyY
+                            var X = lookupPubkeyX.addLeading0sForLength64()
+                            var Y = lookupPubkeyY.addLeading0sForLength64()
                             if let decodedResult = decoded.result as? LegacyLookupResponse {
                                 // case non migration
                                 let keyObj = decodedResult.keys
@@ -475,7 +475,7 @@ open class TorusUtils: AbstractTorusUtils {
                             
                             
                             if filteredData.count < threshold { throw TorusUtilError.thresholdError }
-                            let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: X, lookupPubkeyY: Y)
+                            let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: X.addLeading0sForLength64(), lookupPubkeyY: Y.addLeading0sForLength64())
                             session.invalidateAndCancel()
                             return thresholdLagrangeInterpolationData
                         case .failure(let error):
