@@ -782,7 +782,7 @@ extension TorusUtils {
          let macKey = Array(hash.suffix(32))
          do {
              // AES-CBCblock-256
-             let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .zeroPadding)
+             let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
              
              let encrypt = try aes.encrypt(msg.customBytes())
              let data = Data(encrypt)
@@ -840,7 +840,7 @@ extension TorusUtils {
 
                 do {
                     // AES-CBCblock-256
-                    let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .zeroPadding)
+                    let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
                     let decrypt = try aes.decrypt(share)
                     result[nodeIndex] = decrypt.hexa
                 } catch let err {
@@ -1544,7 +1544,7 @@ extension TorusUtils {
         let aesEncryptionKey = hash.prefix(64)
         do {
             // AES-CBCblock-256
-            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .zeroPadding)
+            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
             let decrypt = try aes.decrypt(opts.ciphertext.hexa)
             let data = Data(decrypt)
             return data
