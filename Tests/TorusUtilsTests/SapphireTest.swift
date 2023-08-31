@@ -416,7 +416,8 @@ final class SapphireTest: XCTestCase {
     func testAggregrateLogin() async throws {
         let exp1 = XCTestExpectation(description: "Should be able to aggregate login")
      
-        let email = generateRandomEmail(of: 6)
+        let email = "hEJTRg@gmail.com"
+        print("email", email)
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = email
         let jwt = try! generateIdToken(email: email)

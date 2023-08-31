@@ -489,7 +489,7 @@ extension TorusUtils {
                     }
                     let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKey) )?.toHexString()
                     
-                    let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
+                    let decryptedPubKeyX = String(decryptedPubKey!.suffix(128).prefix(64))
                     let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
                     let decryptedPubKeyXBigInt = BigUInt(decryptedPubKeyX, radix: 16)!
                     let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
@@ -500,10 +500,16 @@ extension TorusUtils {
                         break
                     }
                 }
+                
+                
                 guard let oAuthKey = returnedKey else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
+//                let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: oAuthKey) )?.toHexString()
+
+//                print("decryptedPubKey", returnedKey, decryptedPubKey, thresholdPublicKey)
+              
                 let oAuthKeyBigInt = BigInt(oAuthKey , radix: 16)!
                 
                 guard let derivedPrivateKeyData = Data(hexString: oAuthKey) else {
