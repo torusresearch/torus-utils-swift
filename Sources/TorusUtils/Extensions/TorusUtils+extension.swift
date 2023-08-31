@@ -416,7 +416,10 @@ extension TorusUtils {
                         let data = Data(base64Encoded: latestKey.share, options: [] )!
                         let binaryString = String(data: data, encoding: .ascii) ?? ""
                         let paddedBinaryString = binaryString.padding(toLength: 64, withPad: "0", startingAt: 0)
-                        let decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey).addLeading0sForLength64()
+                        var decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey)
+                        if ( decryptedShare.count < 64 ) {
+                            decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey, padding: .zeroPadding).addLeading0sForLength64()
+                        }
                         sharePromises.append(decryptedShare)
                         
                     } else {
@@ -729,7 +732,7 @@ extension TorusUtils {
         return BigUInt(message, radix: 16)!
     }
     
-    internal func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String) throws -> String {
+    internal func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String, padding: Padding = .pkcs7) throws -> String {
 
         let eciesOpts = ECIES(
             iv: eciesData.iv,
@@ -738,7 +741,7 @@ extension TorusUtils {
             mac: eciesData.mac
         )
         
-        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts).toHexString()
+        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts, padding: padding).toHexString()
         return decryptedSigBuffer
     }
 
@@ -841,8 +844,8 @@ extension TorusUtils {
                 do {
                     // AES-CBCblock-256
                     let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-                    let decrypt = try aes.decrypt(share)
-                    result[nodeIndex] = decrypt.hexa
+                    let decryptData = try aes.decrypt(share)
+                    result[nodeIndex] = decryptData.hexa
                 } catch let err {
                     result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
                 }
@@ -1519,7 +1522,7 @@ extension TorusUtils {
         return tupleElements
     }
 
-    public func decrypt(privateKey: String, opts: ECIES) throws -> Data {
+    public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
         let ephermalPublicKey = opts.ephemPublicKey.strip04Prefix()
         let ephermalPublicKeyBytes = ephermalPublicKey.hexa
         var ephermOne = ephermalPublicKeyBytes.prefix(32)
@@ -1544,9 +1547,9 @@ extension TorusUtils {
         let aesEncryptionKey = hash.prefix(64)
         do {
             // AES-CBCblock-256
-            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-            let decrypt = try aes.decrypt(opts.ciphertext.hexa)
-            let data = Data(decrypt)
+            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: padding)
+            let decryptData = try aes.decrypt(opts.ciphertext.hexa)
+            let data = Data(decryptData)
             return data
 
 
