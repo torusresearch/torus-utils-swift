@@ -417,7 +417,10 @@ extension TorusUtils {
                         let binaryString = String(data: data, encoding: .ascii) ?? ""
                         let paddedBinaryString = binaryString.padding(toLength: 64, withPad: "0", startingAt: 0)
                         var decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey)
-                        if ( decryptedShare.count < 64 ) {
+                        
+                        // temporary workaround on decrypt padding issue
+                        if ( decryptedShare.count < 58 ) {
+                            print(decryptedShare)
                             decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey, padding: .zeroPadding).addLeading0sForLength64()
                         }
                         sharePromises.append(decryptedShare)
