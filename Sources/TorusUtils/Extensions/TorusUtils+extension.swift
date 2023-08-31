@@ -420,7 +420,6 @@ extension TorusUtils {
                         
                         // temporary workaround on decrypt padding issue
                         if ( decryptedShare.count < 58 ) {
-                            print(decryptedShare)
                             decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey, padding: .zeroPadding).addLeading0sForLength64()
                         }
                         sharePromises.append(decryptedShare)
