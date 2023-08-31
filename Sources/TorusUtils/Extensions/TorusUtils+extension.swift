@@ -495,7 +495,6 @@ extension TorusUtils {
                     let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
                     let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey?.X ?? "0", radix: 16)!
                     let thresholdPublicKeyYBigInt = BigUInt(thresholdPublicKey?.Y ?? "0", radix: 16)!
-                    returnedKey = derivedPrivateKey
                     if decryptedPubKeyXBigInt == thresholdPublicKeyXBigInt && decryptedPubKeyYBigInt == thresholdPublicKeyYBigInt {
                         returnedKey = derivedPrivateKey
                         break
