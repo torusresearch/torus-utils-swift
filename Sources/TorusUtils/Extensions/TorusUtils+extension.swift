@@ -493,9 +493,13 @@ extension TorusUtils {
                         continue
                     }
                     let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKey) )?.toHexString()
+                    print(decryptedPubKey?.count)
                     
                     let decryptedPubKeyX = String(decryptedPubKey!.suffix(128).prefix(64))
                     let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
+                    print(decryptedPubKeyX)
+                    print(thresholdPublicKey?.X)
+                    
                     if decryptedPubKeyX == thresholdPublicKey?.X.addLeading0sForLength64() && decryptedPubKeyY == thresholdPublicKey?.Y.addLeading0sForLength64() {
                         returnedKey = derivedPrivateKey
                         break
