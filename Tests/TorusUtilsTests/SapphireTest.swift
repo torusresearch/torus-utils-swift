@@ -430,7 +430,7 @@ final class SapphireTest: XCTestCase {
         let verifierParams = VerifierParams(verifier_id: verifierID)
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
-            
+
             let data = try await torus.retrieveShares(endpoints: endpoint.torusNodeEndpoints, torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             
             XCTAssertNotNil(data.finalKeyData?.evmAddress)
@@ -439,6 +439,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(data.metadata?.typeOfUser, .v2)
             XCTAssertNotNil(data.metadata?.nonce)
             XCTAssertEqual(data.metadata?.upgraded, false)
+
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
