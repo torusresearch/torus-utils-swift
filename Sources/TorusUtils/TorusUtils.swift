@@ -55,10 +55,9 @@ open class TorusUtils: AbstractTorusUtils {
     // MARK: - getPublicAddress
     
     public func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, extendedVerifierId :String? = nil ) async throws -> TorusPublicKey {
-        switch network {
-        case .legacy(_) :
+        if (self.isLegacyNetwork()) {
             return  try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs , verifier: verifier, verifierId: verifierId, enableOneKey: self.enableOneKey)
-        case .sapphire(_) :
+        } else {
             return try await getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId, enableOneKey: self.enableOneKey)
         }
     }
@@ -74,11 +73,10 @@ open class TorusUtils: AbstractTorusUtils {
         extraParams: [String:Codable] = [:]
     ) async throws -> TorusKey {
         
-        switch network {
-        case .legacy(_) :
+        if (self.isLegacyNetwork()) {
             let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, indexes: indexes, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: extraParams)
             return result
-        case .sapphire(_) :
+        } else {
             
             let result = try await retrieveShare(
                 legacyMetadataHost: self.legacyMetadataHost,
@@ -101,14 +99,14 @@ open class TorusUtils: AbstractTorusUtils {
     
     
     public func getUserTypeAndAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, extendedVerifierId :String? = nil) async throws -> TorusPublicKey {
-        switch network {
-        case .legacy(_) :
+        if (self.isLegacyNetwork()) {
             return try await getLegacyPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, enableOneKey: true)
-        case .sapphire(_) :
+        }
+        else {
             return try await getNewPublicAddress(endpoints: endpoints, verifier: verifier, verifierId: verifierId, extendedVerifierId: extendedVerifierId, enableOneKey: true)
         }
         
-        }
+    }
     
     
     private func getNewPublicAddress(endpoints: [String], verifier: String, verifierId: String, extendedVerifierId :String? = nil, enableOneKey: Bool) async throws -> TorusPublicKey {
@@ -431,8 +429,8 @@ open class TorusUtils: AbstractTorusUtils {
                                 throw TorusUtilError.decodingFailed(decoded.error?.data)
                             }
                             os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-                            var X = lookupPubkeyX
-                            var Y = lookupPubkeyY
+                            var X = lookupPubkeyX.addLeading0sForLength64()
+                            var Y = lookupPubkeyY.addLeading0sForLength64()
                             if let decodedResult = decoded.result as? LegacyLookupResponse {
                                 // case non migration
                                 let keyObj = decodedResult.keys
@@ -477,7 +475,7 @@ open class TorusUtils: AbstractTorusUtils {
                             
                             
                             if filteredData.count < threshold { throw TorusUtilError.thresholdError }
-                            let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: X, lookupPubkeyY: Y)
+                            let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: X.addLeading0sForLength64(), lookupPubkeyY: Y.addLeading0sForLength64())
                             session.invalidateAndCancel()
                             return thresholdLagrangeInterpolationData
                         case .failure(let error):

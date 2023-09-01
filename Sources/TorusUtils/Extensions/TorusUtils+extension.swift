@@ -178,7 +178,7 @@ extension TorusUtils {
     
     private func getShareOrKeyAssign(endpoints: [String], nodeSigs: [CommitmentRequestResponse], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Any] = [:]) async throws -> [URLRequest] {
         let session = createURLSession()
-        let threshold = Int(endpoints.count / 2) + 1
+        let threshold =  Int(endpoints.count / 2) + 1
         var rpcdata: Data = Data()
         
         let loadedStrings = extraParams
@@ -230,6 +230,40 @@ extension TorusUtils {
 
 
     
+    private func reconstructKey(decryptedShares: [Int: String], thresholdPublicKey: KeyAssignment.PublicKey) throws -> String? {
+        
+        // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
+        let allCombis = kCombinations(s: decryptedShares.count, k: 3)
+        var returnedKey: String? = nil
+
+        for j in 0..<allCombis.count {
+            let currentCombi = allCombis[j]
+            let currentCombiShares = decryptedShares.enumerated().reduce(into: [ Int : String ]()) { acc, current in
+                let (index, curr) = current
+                if (currentCombi.contains(index)) {
+                    acc[curr.key] = curr.value
+                }
+            }
+            let derivedPrivateKey = try lagrangeInterpolation(shares: currentCombiShares, offset: 0)
+            let derivedPrivateKeyHex = derivedPrivateKey
+        
+            guard Data(hexString: derivedPrivateKeyHex) != nil else {
+                continue
+            }
+            let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKeyHex.addLeading0sForLength64()) )?.toHexString()
+            print("decryptedPubKey", decryptedPubKey, derivedPrivateKey)
+            let decryptedPubKeyX = String(decryptedPubKey!.suffix(128).prefix(64))
+            let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
+            if decryptedPubKeyX == thresholdPublicKey.X.addLeading0sForLength64() && decryptedPubKeyY == thresholdPublicKey.Y.addLeading0sForLength64() {
+                returnedKey = derivedPrivateKey
+                break
+            }
+        }
+        
+        return returnedKey
+
+    }
+    
     
     // MARK: - retrieveShare
     // TODO: add importShare functionality later
@@ -278,6 +312,7 @@ extension TorusUtils {
         
         var thresholdNonceData : GetOrSetNonceResult?
         var pubkeyArr = [KeyAssignment.PublicKey]()
+        var isNewKeyArr: [String] = []
         var completeShareRequestResponseArr = [ShareRequestResult]()
         var thresholdPublicKey : KeyAssignment.PublicKey?
         
@@ -314,6 +349,7 @@ extension TorusUtils {
                             let decodedResult = decoded.result as? ShareRequestResult
                         else { throw TorusUtilError.decodingFailed("ShareReqeust error decoding error : \(decoded), can't decode into shareRequestResult") }
                         
+                        isNewKeyArr.append(decodedResult.isNewKey)
                         completeShareRequestResponseArr.append(decodedResult)
                         let keyObj = decodedResult.keys
                         if let first = keyObj.first {
@@ -360,6 +396,7 @@ extension TorusUtils {
             throw TorusUtilError.thresholdError
         })
         
+        
         // optimistically run lagrange interpolation once threshold number of shares have been received
         // this is matched against the user public key to ensure that shares are consistent
         // Note: no need of thresholdMetadataNonce for extended_verifier_id key
@@ -367,12 +404,18 @@ extension TorusUtils {
             
             if thresholdPublicKey?.X != nil && (thresholdNonceData != nil && thresholdNonceData?.pubNonce?.x != "" || verifierParams.extended_verifier_id != nil || isLegacyNetwork()) {
                 // Code block to execute if all conditions are true
-                var sharePromises = [String]()
+                var sharePkcs7 = [String]()
+                var shareZeroPadding = [String]()
                 var sessionTokenSigPromises = [String?]()
                 var sessionTokenPromises = [String?]()
                 var nodeIndexes = [Int]()
                 var sessionTokenData = [SessionToken?]()
                 
+                guard let isNewKey = thresholdSame(arr: isNewKeyArr, threshold: threshold)
+                else {
+                    os_log("retrieveShare - invalid result from nodes, threshold number of is_new_key results are not matching", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
+                    throw TorusUtilError.thresholdError
+                }
                 
                 for currentShareResponse in completeShareRequestResponseArr {
                     let sessionTokens = currentShareResponse.sessionTokens
@@ -408,8 +451,17 @@ extension TorusUtils {
                         let data = Data(base64Encoded: latestKey.share, options: [] )!
                         let binaryString = String(data: data, encoding: .ascii) ?? ""
                         let paddedBinaryString = binaryString.padding(toLength: 64, withPad: "0", startingAt: 0)
-
-                        sharePromises.append(try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey).padLeft(padChar: "0", count: 64))
+                        var decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey)
+                        sharePkcs7.append(decryptedShare.addLeading0sForLength64())
+                        // temporary workaround on decrypt padding issue
+                        if ( decryptedShare.count < 64 ) {
+                            
+                            decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey, padding: .zeroPadding).addLeading0sForLength64()
+                            shareZeroPadding.append(decryptedShare)
+                        } else {
+                            shareZeroPadding.append(decryptedShare)
+                        }
+                        
                         
                     } else {
                         os_log("retrieveShare -  0 keys returned from nodes", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
@@ -456,54 +508,38 @@ extension TorusUtils {
                         sessionTokenData.append(SessionToken(token: token, signature: signature!, node_pubx: nodePubX, node_puby: nodePubY))
                     }
                 }
-                let decryptedShares = sharePromises.enumerated().reduce(into: [ Int : String ]()) { acc, current in
+                let decryptedSharesPkcs7 = sharePkcs7.enumerated().reduce(into: [ Int : String ]()) { acc, current in
                     let (index, curr) = current
                     acc[nodeIndexes[index]] = curr
                 }
                 
-                // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
-                let allCombis = kCombinations(s: decryptedShares.count, k: threshold)
-                var returnedKey: String? = nil
-
-                for j in 0..<allCombis.count {
-                    let currentCombi = allCombis[j]
-                    let currentCombiShares = decryptedShares.enumerated().reduce(into: [ Int : String ]()) { acc, current in
-                        let (index, curr) = current
-                        if (currentCombi.contains(index)) {
-                            acc[curr.key] = curr.value
-                        }
-                    }
-                    let derivedPrivateKey = try lagrangeInterpolation(shares: currentCombiShares, offset: 0)
-                    let derivedPrivateKeyHex = derivedPrivateKey
+               
                 
-                    guard Data(hexString: derivedPrivateKeyHex) != nil else {
-                        continue
+                
+                var returnedKey = try reconstructKey(decryptedShares: decryptedSharesPkcs7, thresholdPublicKey: thresholdPublicKey!)
+                
+                if (returnedKey == nil) {
+                    let decryptedSharesZeroPadding = shareZeroPadding.enumerated().reduce(into: [ Int : String ]()) { acc, current in
+                        let (index, curr) = current
+                        acc[nodeIndexes[index]] = curr
                     }
-                    let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKey) )?.toHexString()
-                    
-                    let decryptedPubKeyX = String(decryptedPubKey!.prefix(64))
-                    let decryptedPubKeyY = String(decryptedPubKey!.suffix(64))
-                    let decryptedPubKeyXBigInt = BigUInt(decryptedPubKeyX, radix: 16)!
-                    let decryptedPubKeyYBigInt = BigUInt(decryptedPubKeyY, radix: 16)!
-                    let thresholdPublicKeyXBigInt = BigUInt(thresholdPublicKey?.X ?? "0", radix: 16)!
-                    let thresholdPublicKeyYBigInt = BigUInt(thresholdPublicKey?.Y ?? "0", radix: 16)!
-                    returnedKey = derivedPrivateKey
-                    if decryptedPubKeyXBigInt == thresholdPublicKeyXBigInt && decryptedPubKeyYBigInt == thresholdPublicKeyYBigInt {
-                        returnedKey = derivedPrivateKey
-                        break
-                    }
+                    returnedKey = try reconstructKey(decryptedShares: decryptedSharesZeroPadding, thresholdPublicKey: thresholdPublicKey!)
+
                 }
+                
                 guard let oAuthKey = returnedKey else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
+//                let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: oAuthKey) )?.toHexString()
+              
                 let oAuthKeyBigInt = BigInt(oAuthKey , radix: 16)!
                 
                 guard let derivedPrivateKeyData = Data(hexString: oAuthKey) else {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
-                let oAuthPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData)?.toHexString()
+                let oAuthPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData.addLeading0sForLength64())?.toHexString()
                 let oauthPubKeyX = String(oAuthPubKey!.suffix(128).prefix(64))
                 let oauthPubKeyY = String(oAuthPubKey!.suffix(64))
                 
@@ -520,8 +556,8 @@ extension TorusUtils {
                     finalPubKey = String(finalPubKey.suffix(128))
                 } else if case .legacy(_) = self.network {
                     if (self.enableOneKey) {
-                        // get nonce
-                        let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey)
+                        // get or set nonce based on isNewKey variable
+                        let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey, getOnly: isNewKey == "false")
                         //                        BigInt( Data(hex: nonceResult.nonce ?? "0"))
                         metadataNonce = BigInt( nonceResult.nonce ?? "0", radix: 16)!
                         let usertype = nonceResult.typeOfUser
@@ -722,7 +758,7 @@ extension TorusUtils {
         return BigUInt(message, radix: 16)!
     }
     
-    internal func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String) throws -> String {
+    internal func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String, padding: Padding = .pkcs7) throws -> String {
 
         let eciesOpts = ECIES(
             iv: eciesData.iv,
@@ -731,7 +767,7 @@ extension TorusUtils {
             mac: eciesData.mac
         )
         
-        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts).toHexString()
+        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts, padding: padding).toHexString()
         return decryptedSigBuffer
     }
 
@@ -834,8 +870,8 @@ extension TorusUtils {
                 do {
                     // AES-CBCblock-256
                     let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-                    let decrypt = try aes.decrypt(share)
-                    result[nodeIndex] = decrypt.hexa
+                    let decryptData = try aes.decrypt(share)
+                    result[nodeIndex] = decryptData.hexa
                 } catch let err {
                     result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
                 }
@@ -884,8 +920,7 @@ extension TorusUtils {
 
         // Convert shares to BigInt(Shares)
         var shareList = [BigInt: BigInt]()
-        _ = shares.map { shareList[BigInt($0.key + offset)] = BigInt($0.value, radix: 16) }
-        os_log("lagrangeInterpolation: %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, shares, shareList)
+        _ = shares.map { shareList[BigInt($0.key + offset)] = BigInt($0.value.addLeading0sForLength64(), radix: 16) }
 
         var secret = BigUInt("0") // to support BigInt 4.0 dependency on cocoapods
         var sharesDecrypt = 0
@@ -1513,7 +1548,7 @@ extension TorusUtils {
         return tupleElements
     }
 
-    public func decrypt(privateKey: String, opts: ECIES) throws -> Data {
+    public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
         let ephermalPublicKey = opts.ephemPublicKey.strip04Prefix()
         let ephermalPublicKeyBytes = ephermalPublicKey.hexa
         var ephermOne = ephermalPublicKeyBytes.prefix(32)
@@ -1538,9 +1573,9 @@ extension TorusUtils {
         let aesEncryptionKey = hash.prefix(64)
         do {
             // AES-CBCblock-256
-            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
-            let decrypt = try aes.decrypt(opts.ciphertext.hexa)
-            let data = Data(decrypt)
+            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: padding)
+            let decryptData = try aes.decrypt(opts.ciphertext.hexa)
+            let data = Data(decryptData)
             return data
 
 

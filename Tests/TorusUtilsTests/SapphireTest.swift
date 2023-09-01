@@ -174,6 +174,54 @@ final class SapphireTest: XCTestCase {
         
     }
     
+    
+    func testNewUserLogin() async throws {
+        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
+
+        let fakeEmail = generateRandomEmail(of: 6)
+        let verifierId = fakeEmail //faker random address
+        let token = try generateIdToken(email: verifierId)
+
+        let verifierParams = VerifierParams(verifier_id: verifierId)
+        
+        do {
+            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: verifierId)
+
+            let data = try await torus.retrieveShares(
+                endpoints: nodeDetails.getTorusNodeEndpoints(),
+                torusNodePubs: nodeDetails.getTorusNodePub(),
+                indexes: nodeDetails.getTorusIndexes(),
+                verifier: TORUS_TEST_VERIFIER,
+                verifierParams: verifierParams,
+                idToken: token
+            )
+            
+            XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+            XCTAssertEqual(data.metadata?.upgraded, false)
+            XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
+            XCTAssertNotEqual(data.finalKeyData?.X, "")
+            XCTAssertNotEqual(data.finalKeyData?.Y, "")
+            XCTAssertNotEqual(data.finalKeyData?.privKey, "")
+            XCTAssertNotEqual(data.oAuthKeyData?.evmAddress, "")
+            XCTAssertNotEqual(data.oAuthKeyData?.X, "")
+            XCTAssertNotEqual(data.oAuthKeyData?.Y, "")
+            XCTAssertNotEqual(data.oAuthKeyData?.privKey, "")
+            XCTAssertNotEqual(data.sessionData?.sessionTokenData.count, 0)
+            XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
+            XCTAssertNotEqual(data.metadata?.pubNonce?.x, "")
+            XCTAssertNotEqual(data.metadata?.pubNonce?.y, "")
+            XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
+
+            exp1.fulfill()
+        } catch let error{
+            XCTFail(error.localizedDescription)
+            exp1.fulfill()
+        }
+
+        
+    }
+
+    
     func testNodeDownAbleToLogin () async throws {
         let exp1 = XCTestExpectation(description: "should be able to login even when node is down")
 
@@ -369,6 +417,7 @@ final class SapphireTest: XCTestCase {
         let exp1 = XCTestExpectation(description: "Should be able to aggregate login")
      
         let email = generateRandomEmail(of: 6)
+        print("email", email)
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = email
         let jwt = try! generateIdToken(email: email)
@@ -381,7 +430,7 @@ final class SapphireTest: XCTestCase {
         let verifierParams = VerifierParams(verifier_id: verifierID)
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
-            
+
             let data = try await torus.retrieveShares(endpoints: endpoint.torusNodeEndpoints, torusNodePubs: nodeDetails.getTorusNodePub(),indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
             
             XCTAssertNotNil(data.finalKeyData?.evmAddress)
@@ -390,6 +439,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(data.metadata?.typeOfUser, .v2)
             XCTAssertNotNil(data.metadata?.nonce)
             XCTAssertEqual(data.metadata?.upgraded, false)
+
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
