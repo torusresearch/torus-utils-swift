@@ -477,7 +477,7 @@ extension TorusUtils {
                 // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
                 let allCombis = kCombinations(s: decryptedShares.count, k: 3)
                 var returnedKey: String? = nil
-
+                print( decryptedShares )
                 for j in 0..<allCombis.count {
                     let currentCombi = allCombis[j]
                     let currentCombiShares = decryptedShares.enumerated().reduce(into: [ Int : String ]()) { acc, current in
