@@ -413,10 +413,9 @@ final class SapphireTest: XCTestCase {
         }
     }
     
-    func testAggregrateLogin() async throws {
+    func testAggregrateLoginWithEmail(email: String) async throws {
         let exp1 = XCTestExpectation(description: "Should be able to aggregate login")
-     
-        let email = generateRandomEmail(of: 6)
+        
         print("email", email)
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = email
@@ -445,6 +444,18 @@ final class SapphireTest: XCTestCase {
             XCTFail(err.localizedDescription)
             exp1.fulfill()
         }
+    }
+    
+    func testAggregateLoginWithFixedEmail() async throws {
+        // This fixed email was previously known to trigger an edge case that
+        // revealed a bug in our share decryption implementation.
+        let email = "hEJTRg@gmail.com"
+        try await testAggregrateLoginWithEmail(email: email)
+    }
+    
+    func testAggregateLoginWithRandomEmail() async throws {
+        let email = generateRandomEmail(of: 6)
+        try await testAggregrateLoginWithEmail(email: email)
     }
     
 }

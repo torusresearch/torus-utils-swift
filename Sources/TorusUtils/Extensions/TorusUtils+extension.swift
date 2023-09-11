@@ -404,8 +404,7 @@ extension TorusUtils {
             
             if thresholdPublicKey?.X != nil && (thresholdNonceData != nil && thresholdNonceData?.pubNonce?.x != "" || verifierParams.extended_verifier_id != nil || isLegacyNetwork()) {
                 // Code block to execute if all conditions are true
-                var sharePkcs7 = [String]()
-                var shareZeroPadding = [String]()
+                var shares = [String]()
                 var sessionTokenSigPromises = [String?]()
                 var sessionTokenPromises = [String?]()
                 var nodeIndexes = [Int]()
@@ -449,20 +448,11 @@ extension TorusUtils {
                         let latestKey = currentShareResponse.keys[0]
                         nodeIndexes.append(Int(latestKey.nodeIndex))
                         let data = Data(base64Encoded: latestKey.share, options: [] )!
-                        let binaryString = String(data: data, encoding: .ascii) ?? ""
-                        let paddedBinaryString = binaryString.padding(toLength: 64, withPad: "0", startingAt: 0)
-                        var decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey)
-                        sharePkcs7.append(decryptedShare.addLeading0sForLength64())
-                        // temporary workaround on decrypt padding issue
-                        if ( decryptedShare.count < 64 ) {
-                            
-                            decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: paddedBinaryString, privKey: sessionAuthKey, padding: .zeroPadding).addLeading0sForLength64()
-                            shareZeroPadding.append(decryptedShare)
-                        } else {
-                            shareZeroPadding.append(decryptedShare)
+                        guard let ciphertextHex = String(data: data, encoding: .ascii) else {
+                            throw TorusUtilError.decodingFailed()
                         }
-                        
-                        
+                        var decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: ciphertextHex, privKey: sessionAuthKey)
+                        shares.append(decryptedShare.addLeading0sForLength64())
                     } else {
                         os_log("retrieveShare -  0 keys returned from nodes", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
                         throw TorusUtilError.thresholdError
@@ -508,23 +498,15 @@ extension TorusUtils {
                         sessionTokenData.append(SessionToken(token: token, signature: signature!, node_pubx: nodePubX, node_puby: nodePubY))
                     }
                 }
-                let decryptedSharesPkcs7 = sharePkcs7.enumerated().reduce(into: [ Int : String ]()) { acc, current in
+                
+                let sharesWithIndex = shares.enumerated().reduce(into: [ Int : String ]()) { acc, current in
                     let (index, curr) = current
                     acc[nodeIndexes[index]] = curr
                 }
                 
-               
-                
-                
-                var returnedKey = try reconstructKey(decryptedShares: decryptedSharesPkcs7, thresholdPublicKey: thresholdPublicKey!)
-                
+                let returnedKey = try reconstructKey(decryptedShares: sharesWithIndex, thresholdPublicKey: thresholdPublicKey!)
                 if (returnedKey == nil) {
-                    let decryptedSharesZeroPadding = shareZeroPadding.enumerated().reduce(into: [ Int : String ]()) { acc, current in
-                        let (index, curr) = current
-                        acc[nodeIndexes[index]] = curr
-                    }
-                    returnedKey = try reconstructKey(decryptedShares: decryptedSharesZeroPadding, thresholdPublicKey: thresholdPublicKey!)
-
+                    throw TorusUtilError.privateKeyDeriveFailed
                 }
                 
                 guard let oAuthKey = returnedKey else {
