@@ -783,49 +783,24 @@ extension TorusUtils {
     }
     
     public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
-         guard let ephemPrivateKey = SECP256K1.generatePrivateKey(), let ephemPublicKey = SECP256K1.privateToPublic(privateKey: ephemPrivateKey)
-         else {
-             throw TorusUtilError.runtime("Private key generation failed")
-         }
-         let ephermalPublicKey = publicKey.strip04Prefix()
-         let ephermalPublicKeyBytes = ephermalPublicKey.hexa
-         var ephermOne = ephermalPublicKeyBytes.prefix(32)
-         var ephermTwo = ephermalPublicKeyBytes.suffix(32)
-         ephermOne.reverse(); ephermTwo.reverse()
-         ephermOne.append(contentsOf: ephermTwo)
-         let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
-         guard
-             // Calculate g^a^b, i.e., Shared Key
-             //  let data = inprivateKey
-             let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: ephemPrivateKey)
-         else {
-             throw TorusUtilError.runtime("ECDH error")
-         }
-
-         let sharedSecretData = sharedSecret.data
-         let sharedSecretPrefix = Array(tupleToArray(sharedSecretData).prefix(32))
-         let reversedSharedSecret = sharedSecretPrefix.uint8Reverse()
-         let hash = SHA2(variant: .sha512).calculate(for: Array(reversedSharedSecret))
-         let iv: [UInt8] = (opts?.iv ?? SECP256K1.randomBytes(length: 16)?.toHexString())?.hexa ?? []
-         let encryptionKey = Array(hash.prefix(32))
-         let macKey = Array(hash.suffix(32))
-         do {
-             // AES-CBCblock-256
-             let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
-             
-             let encrypt = try aes.encrypt(msg.customBytes())
-             let data = Data(encrypt)
-             let ciphertext = data
-             var dataToMac: [UInt8] = iv
-             dataToMac.append(contentsOf: [UInt8](ephemPublicKey.data))
-             dataToMac.append(contentsOf: [UInt8](ciphertext.data))
-             let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
-             return .init(iv: iv.toHexString(), ephemPublicKey: ephemPublicKey.toHexString(),
-             ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
-         } catch let err {
-             throw err
-         }
-     }
+        let ephemPrivateKey = try secp256k1.KeyAgreement.PrivateKey();
+        let ephemPublicKey = ephemPrivateKey.publicKey;
+        
+        let sharedSecret = try SECP256K1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
+        
+        let encryptionKey = sharedSecret[0..<32].bytes
+        let macKey = sharedSecret[32..<64].bytes
+        let iv: [UInt8] = (opts?.iv ?? SECP256K1.randomBytes(length: 16)?.toHexString())?.hexa ?? []
+        
+        let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
+        let ciphertext = try aes.encrypt(msg.customBytes())
+        var dataToMac: [UInt8] = iv
+        dataToMac.append(contentsOf: ephemPublicKey.dataRepresentation)
+        dataToMac.append(contentsOf: ciphertext)
+        let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
+        return .init(iv: iv.toHexString(), ephemPublicKey: ephemPublicKey.dataRepresentation.hexString,
+                     ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
+    }
 
 
     // MARK: - decrypt shares
@@ -836,40 +811,21 @@ extension TorusUtils {
             for (_, el) in shares.enumerated() {
                 let nodeIndex = el.key
 
-                let k = el.value.ephemPublicKey
-                let ephermalPublicKey = k.strip04Prefix()
-                let ephermalPublicKeyBytes = ephermalPublicKey.hexa
-                var ephermOne = ephermalPublicKeyBytes.prefix(32)
-                var ephermTwo = ephermalPublicKeyBytes.suffix(32)
-                // Reverse because of C endian array storage
-                ephermOne.reverse(); ephermTwo.reverse()
-                ephermOne.append(contentsOf: ephermTwo)
-                let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
-
-                guard
-                    // Calculate g^a^b, i.e., Shared Key
-                    let data = Data(hexString: privateKey),
-                    let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: data)
-                else {
-                    throw TorusUtilError.decryptionFailed
-                }
-                let sharedSecretData = sharedSecret.data
-                let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
-                let reversedSharedSecret = sharedSecretPrefix.reversed()
+                let publicKeyHex = el.value.ephemPublicKey
+                let sharedSecret = try SECP256K1.ecdhWithHex(pubKeyHex: publicKeyHex, privateKeyHex: privateKey)
 
                 guard
                     let share = el.value.share.fromBase64()?.hexa
                 else {
                     throw TorusUtilError.decryptionFailed
                 }
-                let iv = el.value.iv.hexa
-                let newXValue = reversedSharedSecret.hexa
-                let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
-                let AesEncryptionKey = hash.prefix(64)
-
+                
                 do {
                     // AES-CBCblock-256
-                    let aes = try AES(key: AesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: .pkcs7)
+                    let aesKey = sharedSecret[0..<32].bytes
+                    let _macKey = sharedSecret[32..<64].bytes // TODO check mac
+                    let iv = el.value.iv.hexa
+                    let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: .pkcs7)
                     let decryptData = try aes.decrypt(share)
                     result[nodeIndex] = decryptData.hexa
                 } catch let err {
@@ -1549,39 +1505,16 @@ extension TorusUtils {
     }
 
     public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
-        let ephermalPublicKey = opts.ephemPublicKey.strip04Prefix()
-        let ephermalPublicKeyBytes = ephermalPublicKey.hexa
-        var ephermOne = ephermalPublicKeyBytes.prefix(32)
-        var ephermTwo = ephermalPublicKeyBytes.suffix(32)
-        ephermOne.reverse(); ephermTwo.reverse()
-        ephermOne.append(contentsOf: ephermTwo)
-        let ephemPubKey = secp256k1_pubkey.init(data: array32toTuple(Array(ephermOne)))
-        guard
-            // Calculate g^a^b, i.e., Shared Key
-            let data = Data(hexString: privateKey),
-            let sharedSecret = SECP256K1.ecdh(pubKey: ephemPubKey, privateKey: data)
-        else {
-//            throw SessionManagerError.runtimeError("ECDH Error")
-            throw "ECDH Error"
-        }
-        let sharedSecretData = sharedSecret.data
-        let sharedSecretPrefix = tupleToArray(sharedSecretData).prefix(32)
-        let reversedSharedSecret = sharedSecretPrefix.reversed()
+        let sharedSecret = try SECP256K1.ecdhWithHex(pubKeyHex: opts.ephemPublicKey, privateKeyHex: privateKey)
+        
+        let aesKey = sharedSecret[0..<32].bytes
+        let _aesMac = sharedSecret[32..<64].bytes // TODO check mac
         let iv = opts.iv.hexa
-        let newXValue = reversedSharedSecret.hexa
-        let hash = SHA2(variant: .sha512).calculate(for: newXValue.hexa).hexa
-        let aesEncryptionKey = hash.prefix(64)
-        do {
-            // AES-CBCblock-256
-            let aes = try AES(key: aesEncryptionKey.hexa, blockMode: CBC(iv: iv), padding: padding)
-            let decryptData = try aes.decrypt(opts.ciphertext.hexa)
-            let data = Data(decryptData)
-            return data
 
-
-        } catch let err {
-            throw err
-        }
+        let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: padding)
+        let plaintext = try aes.decrypt(opts.ciphertext.hexa)
+        let data = Data(plaintext)
+        return data
     }
     
 }

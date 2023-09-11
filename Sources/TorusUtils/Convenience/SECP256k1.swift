@@ -1,6 +1,5 @@
 import Foundation
 
-import CryptoSwift
 #if canImport(secp256k1)
     import secp256k1
 #endif
@@ -22,25 +21,32 @@ public struct SECP256K1 {
 extension SECP256K1 {
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     
-    public static func ecdh(pubKey: secp256k1_pubkey, privateKey: Data) -> secp256k1_pubkey? {
-            var localPubkey = pubKey // Pointer takes a variable
-            if privateKey.count != 32 { return nil }
-            let result = privateKey.withUnsafeBytes { (a: UnsafeRawBufferPointer) -> Int32? in
-                if let pkRawPointer = a.baseAddress, let ctx = context, a.count > 0 {
-                    let privateKeyPointer = pkRawPointer.assumingMemoryBound(to: UInt8.self)
-                    let res = withUnsafeMutablePointer(to: &localPubkey) {
-                        secp256k1_ec_pubkey_tweak_mul(ctx, $0, privateKeyPointer)
-                    }
-                    return res
-                } else {
-                    return nil
-                }
+    public static func ecdh(publicKey: secp256k1.KeyAgreement.PublicKey, privateKey: secp256k1.KeyAgreement.PrivateKey) throws -> [UInt8] {
+        let copyx : secp256k1.KeyAgreement.PrivateKey.HashFunctionType = {
+            (out, x, y, data) -> Int32 in
+            guard let out = out, let x = x else {
+                return 0;
             }
-            guard let res = result, res != 0 else {
-                return nil
-            }
-            return localPubkey
+            out.initialize(from: x, count: 32)
+            return 1
         }
+        
+        let sharedSecret = try! privateKey.sharedSecretFromKeyAgreement(with: publicKey, handler: copyx)
+        let hash = sharedSecret.bytes.sha512()
+        
+        return hash
+    }
+    
+    public static func ecdhWithHex(pubKeyHex: String, privateKeyHex: String) throws -> [UInt8] {
+        let privateKeyBytes = try privateKeyHex.bytes
+        let privateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: privateKeyBytes)
+        
+        let publicKeyBytes = try pubKeyHex.bytes
+        let publicKey = try secp256k1.KeyAgreement.PublicKey(dataRepresentation: publicKeyBytes, format: .uncompressed)
+        
+        let sharedSecret = try ecdh(publicKey: publicKey, privateKey: privateKey)
+        return sharedSecret
+    }
 
     public static func signForRecovery(hash: Data, privateKey: Data, useExtraEntropy: Bool = false) -> (serializedSignature: Data?, rawSignature: Data?) {
         if hash.count != 32 || privateKey.count != 32 {
