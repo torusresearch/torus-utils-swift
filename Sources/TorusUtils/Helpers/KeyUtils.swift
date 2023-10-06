@@ -60,19 +60,11 @@ func keyFromPublic(x: String, y: String) -> BasePoint? {
 }
 
 func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) -> String {
-    let publicKeyHex = "04" + publicKeyX.addLeading0sForLength64()  + publicKeyY.addLeading0sForLength64()
+    let publicKeyHex = publicKeyX.addLeading0sForLength64()  + publicKeyY.addLeading0sForLength64()
     let publicKeyData = Data(hexString: publicKeyHex)!
-    
-    do {
-        let publicKey = try P256.KeyAgreement.PublicKey(x963Representation: publicKeyData)
-        let publicKeyBytes = publicKey.rawRepresentation//.dropFirst().dropLast() // Remove the first byte (0x04)
-        let ethAddressLower = "0x" + keccak256Hex(publicKeyBytes).suffix(40)
-        return ethAddressLower.toChecksumAddress()
-    } catch {
-        // Handle the error if necessary
-        print("Failed to derive public key: \(error)")
-        return ""
-    }
+    let ethAddrData = publicKeyData.sha3(.keccak256).suffix(20)
+    let ethAddrlower = "0x" + ethAddrData.toHexString()
+    return ethAddrlower.toChecksumAddress()
 }
 
 func getPostboxKeyFrom1OutOf1(privKey: String, nonce: String) -> String {

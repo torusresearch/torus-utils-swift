@@ -280,7 +280,8 @@ open class TorusUtils: AbstractTorusUtils {
                 if enableOneKey {
                     let nonceResult = try await getOrSetNonce(x: oAuthKeyX, y: oAuthKeyY, privateKey: oAuthKey, getOnly: true)
                     metadataNonce = BigUInt(nonceResult.nonce ?? "0", radix: 16) ?? 0
-                    typeOfUser = UserType(rawValue: nonceResult.typeOfUser!)!
+                    let nonceType = nonceResult.typeOfUser ?? "v1"
+                    typeOfUser = UserType(rawValue: nonceType ) ?? UserType.v1
                     if (typeOfUser == .v2) {
                         finalPubKey = "04" + oAuthKeyX.addLeading0sForLength64() + oAuthKeyY.addLeading0sForLength64()
                         let newkey = "04" + (nonceResult.pubNonce?.x.addLeading0sForLength64())! + (nonceResult.pubNonce?.y.addLeading0sForLength64())!

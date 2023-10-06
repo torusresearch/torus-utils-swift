@@ -60,7 +60,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(val.metadata?.nonce, BigUInt("376df8a62e2e72a2b3e87e97c85f86b3f2dac41082ddeb863838d80462deab5e", radix: 16))
             XCTAssertEqual(val.metadata?.upgraded, false)
             XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
-            XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
+            XCTAssertEqual(val.nodesData?.nodeIndexes.count, 3)
             exp1.fulfill()
         } catch let err {
             XCTFail(err.localizedDescription)
@@ -285,7 +285,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt("0"))
             XCTAssertEqual(pubAddress.metadata?.upgraded, false)
             XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-            XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
+            XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 3)
 
             exp1.fulfill()
         } catch let error{
@@ -368,7 +368,7 @@ final class SapphireTest: XCTestCase {
             XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt("51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d", radix: 16))
             XCTAssertEqual(pubAddress.metadata?.upgraded, false)
             XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-            XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 0)
+            XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 3)
 
             exp1.fulfill()
         } catch let error{
