@@ -6,11 +6,11 @@
 //
 
 import BigInt
+import CommonSources
 import FetchNodeDetails
 import JWTKit
 import secp256k1
 import XCTest
-import CommonSources
 
 import CoreMedia
 @testable import TorusUtils
@@ -38,94 +38,57 @@ class OneKeyTest: XCTestCase {
         }
     }
 
-    func test_fetch_public_address() async {
-        let exp1 = XCTestExpectation(description: "should still fetch v1 public address correctly")
+    func test_fetch_public_address() async throws {
         let verifier = "google-lrc"
         let verifierID = "himanshu@tor.us"
-        do {
-            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0xf1e76fcDD28b5AA06De01de508fF21589aB9017E")
-            // XCTAssertEqual(val["typeOfUser"], TypeOfUser.v1.rawValue)
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+        let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+        XCTAssertEqual(data.finalKeyData?.evmAddress, "0xf1e76fcDD28b5AA06De01de508fF21589aB9017E")
     }
 
-    func test_login() async {
-        let exp1 = XCTestExpectation(description: "should still login v1 account correctly")
+    func test_login() async throws {
         let verifier: String = TORUS_TEST_VERIFIER
         let email = TORUS_TEST_EMAIL
         let verifierID: String = email
         let jwt = try! generateIdToken(email: email)
         let verifierParams = VerifierParams(verifier_id: verifierID)
         let extraParams = ["verifier_id": email] as [String: Codable]
-        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-        do {
-            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(),  verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-            XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
-            exp1.fulfill()
-        } catch let err{
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+        let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+        XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
     }
 
-    func test_login_v2() async {
-        let exp1 = XCTestExpectation(description: "should still login v2 account correctly")
+    func test_login_v2() async throws {
         let verifier: String = TORUS_TEST_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: verifierID)
         let verifierParams = VerifierParams(verifier_id: verifierID)
         let extraParams = ["verifier_id": verifierID] as [String: Codable]
-        do {
-            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-            XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x53010055542cCc0f2b6715a5c53838eC4aC96EF7")
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+        let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+        XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
+        XCTAssertEqual(data.finalKeyData?.evmAddress, "0x53010055542cCc0f2b6715a5c53838eC4aC96EF7")
     }
 
-    func test_aggregate_login() async {
-        let exp1 = XCTestExpectation(description: "Should be able to aggregate login")
+    func test_aggregate_login() async throws {
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
         let verifierParams = VerifierParams(verifier_id: verifierID)
         let hashedIDToken = jwt.sha3(.keccak256)
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Codable]
-        do {
-            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B")
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+        let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
+        XCTAssertEqual(data.finalKeyData?.evmAddress, "0xE1155dB406dAD89DdeE9FB9EfC29C8EedC2A0C8B")
     }
 
-    func test_key_assign() async {
+    func test_key_assign() async throws {
         let fakeEmail = generateRandomEmail(of: 6)
-        let exp1 = XCTestExpectation(description: "Should be able to assign key")
         let verifier: String = "google-lrc"
         let verifierID: String = fakeEmail
-        do {
-            let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
-            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-            XCTAssertNotNil(data)
-            XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+        let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+        XCTAssertNotNil(data)
+        XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
     }
 }

@@ -259,7 +259,10 @@ open class TorusUtils: AbstractTorusUtils {
             var lookupPubkeyY: String = ""
             do {
                 let getPublicAddressData = try await getPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId)
-                let publicAddress = getPublicAddressData.finalKeyData!.evmAddress
+                guard (getPublicAddressData.finalKeyData?.evmAddress) != nil
+                else {
+                    throw TorusUtilError.runtime("Unable to provide evmAddress")
+                }
                 let localPubkeyX = getPublicAddressData.finalKeyData!.X.addLeading0sForLength64()
                 let localPubkeyY = getPublicAddressData.finalKeyData!.Y.addLeading0sForLength64()
                 lookupPubkeyX = localPubkeyX
@@ -389,7 +392,7 @@ open class TorusUtils: AbstractTorusUtils {
             }
             
             
-            var shareResponses : [PointHex] = []
+            var shareResponses : [PointHex?] = []
             var resultArray = [Int: RetrieveDecryptAndReconstuctResponseModel]()
             var errorStack = [Error]()
             var requestArr = [URLRequest]()
@@ -455,7 +458,7 @@ open class TorusUtils: AbstractTorusUtils {
                                     resultArray[i] = model
                                 }
                             } else {
-                                TorusUtilError.runtime("decode fail")
+                                throw TorusUtilError.runtime("decode fail")
                             }
                             
                             // Due to multiple keyAssign

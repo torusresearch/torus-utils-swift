@@ -102,29 +102,21 @@ class IntegrationTests: XCTestCase {
         }
     }
 
-    func test_keyLookup() async {
+    func test_keyLookup() async throws {
         let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
-        do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
             XCTAssertEqual(val.address, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
-
-        let exp2 = XCTestExpectation(description: "Should not be able to do keylookup")
+        
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL)
+            _ = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL)
           XCTFail()
         } catch let error {
             if let keylookupError = error as? KeyLookupError {
                 XCTAssertEqual(keylookupError, KeyLookupError.verifierNotSupported)
 
             }
-            exp2.fulfill()
         }
     }
 
