@@ -72,7 +72,23 @@ open class TorusUtils: AbstractTorusUtils {
         idToken: String,
         extraParams: [String:Codable] = [:]
     ) async throws -> TorusKey {
+        let session = createURLSession()
+        var allowHostRequest = try makeUrlRequest(url: allowHost, httpMethod: .get)
+        allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
+        allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
         
+        allowHostRequest.addValue(verifier, forHTTPHeaderField: "Verifier")
+        allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "VerifierId")
+        allowHostRequest.addValue(self.clientId, forHTTPHeaderField: "ClientId")
+        allowHostRequest.addValue(network.name, forHTTPHeaderField: "Network")
+        
+        do {
+            _ = try await session.data(for: allowHostRequest)
+        } catch {
+            os_log("retrieveShares: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+            throw error
+        }
+
         if (self.isLegacyNetwork()) {
             let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, indexes: indexes, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: extraParams)
             return result
