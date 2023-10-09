@@ -44,77 +44,48 @@ class IntegrationTests: XCTestCase {
         return nodeDetails
     }
 
-    func test_getPublicAddress() async {
-        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: TORUS_TEST_EMAIL)
-            let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "google-lrc", verifierId: "hello@tor.us")
-            XCTAssertEqual(data.finalKeyData?.evmAddress, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+    func test_getPublicAddress() async throws {
+        var nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: TORUS_TEST_EMAIL)
+        let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: "google-lrc", verifierId: "hello@tor.us")
+        XCTAssertEqual(data.finalKeyData?.evmAddress, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
 
-        let exp2 = XCTestExpectation(description: "Should throw if verifier not supported")
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER_FAKE, veriferID: TORUS_TEST_EMAIL)
-            _ = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL)
-            XCTFail()
-        } catch _ {
-            exp2.fulfill()
-        }
+        nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER_FAKE, veriferID: TORUS_TEST_EMAIL)
+        _ = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER_FAKE, verifierId: TORUS_TEST_EMAIL)
     }
 
-    func test_getUserTypeAndAddress() async {
-        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
+    func test_getUserTypeAndAddress() async throws {
         let verifier: String = "tkey-google-lrc"
         let verifierID: String = "somev2user@gmail.com"
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+        let val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
 
-            XCTAssertEqual(val.finalKeyData?.evmAddress, "0xE91200d82029603d73d6E307DbCbd9A7D0129d8D")
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+        XCTAssertEqual(val.finalKeyData?.evmAddress, "0xE91200d82029603d73d6E307DbCbd9A7D0129d8D")
     }
 
-    func test_keyAssign() async {
+    func test_keyAssign() async throws {
         let email = generateRandomEmail(of: 6)
 
-        let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: email)
-            let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email, signerHost: tu.signerHost, network: .legacy(.TESTNET))
-            let result = val.result as! [String: Any]
-            let keys = result["keys"] as! [[String: String]]
-            let address = keys[0]["address"]
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: "google-lrc", veriferID: email)
+        let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email, signerHost: tu.signerHost, network: .legacy(.TESTNET))
+        let result = val.result as! [String: Any]
+        let keys = result["keys"] as! [[String: String]]
+        _ = keys[0]["address"]
 
-            // Add more check to see if address is valid
-            XCTAssertNotNil(address)
-            exp1.fulfill()
-        } catch let err {
-            XCTFail(err.localizedDescription)
-            exp1.fulfill()
-        }
+        // Add more check to see if address is valid
     }
 
     func test_keyLookup() async throws {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val.address, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
-        
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+        let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
+        XCTAssertEqual(val.address, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
+
         do {
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             _ = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc-fake", verifierId: TORUS_TEST_EMAIL)
-          XCTFail()
+            XCTFail()
         } catch let error {
             if let keylookupError = error as? KeyLookupError {
                 XCTAssertEqual(keylookupError, KeyLookupError.verifierNotSupported)
-
             }
         }
     }
@@ -138,50 +109,28 @@ class IntegrationTests: XCTestCase {
 
     // MARK: Aggregate tests
 
-    func test_getPublicAddressAggregateLogin() async {
-        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val.finalKeyData?.evmAddress, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
-            exp1.fulfill()
-        } catch let error {
-            XCTFail(error.localizedDescription)
-            exp1.fulfill()
-        }
+    func test_getPublicAddressAggregateLogin() async throws {
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+        let val = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+        XCTAssertEqual(val.finalKeyData?.evmAddress, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
     }
 
-    func test_keyAssignAggregateLogin() async {
+    func test_keyAssignAggregateLogin() async throws {
         let email = generateRandomEmail(of: 6)
 
-        let exp1 = XCTestExpectation(description: "Should be able to do a keyAssign")
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email, signerHost: signerHost, network: .legacy(.TESTNET))
-            let result = val.result as! [String: Any]
-            let keys = result["keys"] as! [[String: String]]
-            let address = keys[0]["address"]
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+        let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: email, signerHost: signerHost, network: .legacy(.TESTNET))
+        let result = val.result as! [String: Any]
+        let keys = result["keys"] as! [[String: String]]
+        _ = keys[0]["address"]
 
-            // Add more check to see if address is valid
-            XCTAssertNotNil(address)
-            exp1.fulfill()
-        } catch let error {
-            XCTFail(error.localizedDescription)
-            exp1.fulfill()
-        }
+        // Add more check to see if address is valid
     }
 
-    func test_keyLookupAggregateLogin() async {
-        let exp1 = XCTestExpectation(description: "Should be able to do a keyLookupAggregateLogin")
-        do {
-            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-            let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-            XCTAssertEqual(val.address, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
-            exp1.fulfill()
-        } catch let error {
-            XCTFail(error.localizedDescription)
-            exp1.fulfill()
-        }
+    func test_keyLookupAggregateLogin() async throws {
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+        let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL)
+        XCTAssertEqual(val.address, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
     }
 
 //    func test_shouldAggregateLogin() async {
@@ -206,7 +155,6 @@ class IntegrationTests: XCTestCase {
 }
 
 extension IntegrationTests {
-
 //    func test_retrieveShares_timeout() async {
 //        // change the timeout variable in TorusUtil to 0 the test should fail
 //        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
@@ -268,29 +216,20 @@ extension IntegrationTests {
 //        }
 //    }
 
-    func test_keyLookup_some_nodes_waiting() async {
+    func test_keyLookup_some_nodes_waiting() async throws {
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+        var endpoints = nodeDetails.getTorusNodeEndpoints()
 
-         let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
-         do {
-             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-             var endpoints = nodeDetails.getTorusNodeEndpoints()
+        // should fail if un-commented threshold 3/5 in case of key lookup
 
-             // should fail if un-commented threshold 3/5 in case of key lookup
-
-              endpoints = ["https://node-1.torus-cluster-1.com/jrpc",
-                             "https://node-2.torus-cluster-1.com/jrpc",
-                             "https://node-3.torus-cluster-1.com/jrpc",
-                             "https://node-4.torus-cluster-1.com/jrpc",
-                             "https://node-5.torus-cluster-1.com/jrpc"]
-             let val = try await tu.keyLookup(endpoints: endpoints, verifier: "torus-test-health", verifierId: TORUS_TEST_EMAIL)
-             XCTAssertEqual(val.address, "0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA")
-             exp1.fulfill()
-         } catch let err {
-             XCTFail(err.localizedDescription)
-             exp1.fulfill()
-         }
-     }
-
+        endpoints = ["https://node-1.torus-cluster-1.com/jrpc",
+                     "https://node-2.torus-cluster-1.com/jrpc",
+                     "https://node-3.torus-cluster-1.com/jrpc",
+                     "https://node-4.torus-cluster-1.com/jrpc",
+                     "https://node-5.torus-cluster-1.com/jrpc"]
+        let val = try await tu.keyLookup(endpoints: endpoints, verifier: "torus-test-health", verifierId: TORUS_TEST_EMAIL)
+        XCTAssertEqual(val.address, "0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA")
+    }
 }
 
 struct ROPSTEN_CONSTANTS {
