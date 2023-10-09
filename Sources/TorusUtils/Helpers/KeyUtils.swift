@@ -7,7 +7,7 @@ func keccak256Data(_ data: Data) -> Data {
 }
 
 func keccak256Hex(_ data: Data) -> String {
-    let hash = data.sha3(.keccak256)
+    let hash = keccak256Data(data)
     return "0x" + hash.map { String(format: "%02x", $0) }.joined()
 }
 
@@ -19,7 +19,7 @@ struct BasePoint {
     let x: Data
     let y: Data
     
-    func add(_ other: BasePoint) -> BasePoint? {
+    public func add(_ other: BasePoint) -> BasePoint? {
         let x1 = self.x
         let y1 = self.y
         let x2 = other.x
@@ -35,33 +35,18 @@ struct BasePoint {
         
         return BasePoint(x: sumX, y: sumY)
     }
-}
-
-
-
-func keyFromPublic(x: String, y: String) -> BasePoint? {
-    let publicKeyHex = "04" + x.padding(toLength: 64, withPad: "0", startingAt: 0) + y.padding(toLength: 64, withPad: "0", startingAt: 0)
     
-    guard let publicKeyData = Data(hexString: publicKeyHex) else {
-        return nil
-    }
-    
-    do {
-        let publicKey = try P256.KeyAgreement.PublicKey(x963Representation: publicKeyData)
-        let publicKeyBytes = publicKey.rawRepresentation.dropFirst() // Remove the first byte (0x04)
-        
-        let xData = Data(publicKeyBytes[0..<32])
-        let yData = Data(publicKeyBytes[32..<64])
-        
-        return BasePoint(x: xData, y: yData)
-    } catch {
-        return nil
+    public func fromPublicKeyComponents(x: String, y: String) -> BasePoint {
+        return BasePoint(x: Data(hex: x.addLeading0sForLength64()), y: Data(hex: y.addLeading0sForLength64()))
     }
 }
 
-func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) -> String {
+func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) throws -> String {
     let publicKeyHex = publicKeyX.addLeading0sForLength64()  + publicKeyY.addLeading0sForLength64()
-    let publicKeyData = Data(hexString: publicKeyHex)!
+    guard let publicKeyData = Data(hexString: publicKeyHex)
+    else {
+        throw TorusUtilError.runtime("Invalid public key when deriving etherium address")
+    }
     let ethAddrData = publicKeyData.sha3(.keccak256).suffix(20)
     let ethAddrlower = "0x" + ethAddrData.toHexString()
     return ethAddrlower.toChecksumAddress()
@@ -77,60 +62,3 @@ func getPostboxKeyFrom1OutOf1(privKey: String, nonce: String) -> String {
     let result = (privKeyBigInt - nonceBigInt).modulus(modulus)
     return result.serialize().toHexString()
 }
-
-
-//import Foundation
-//import secp256k1
-//import CryptoKit
-//
-//func getPublicAddressFromCoordinates(x: String, y: String) -> String? {
-//    guard let xData = Data(hexString: x),
-//          let yData = Data(hexString: y) else {
-//        return nil
-//    }
-//
-//    // Combine the x and y coordinates into a single data object
-//    let publicKeyData = xData + yData
-//
-//    // Convert the combined data to a CryptoKit elliptic curve public key
-//    let publicKey = P256.Signing.PublicKey(rawRepresentation: publicKeyData)
-//
-//    // Compute the public address using the hash of the public key
-//    let addressData = Data(SHA256.hash(data: publicKey.rawRepresentation))
-//    let address = addressData.suffix(20).hexString  // Take the last 20 bytes as the address
-//
-//    return address
-//}
-//
-//// Extension to convert Data to hex string representation
-//extension Data {
-//    init?(hexString: String) {
-//        let string = hexString.trimmingCharacters(in: .whitespaces)
-//        var data = Data(capacity: string.count / 2)
-//
-//        var index = string.startIndex
-//        while index < string.endIndex {
-//            let byteString = string[index ..< string.index(index, offsetBy: 2)]
-//            guard let byte = UInt8(byteString, radix: 16) else {
-//                return nil
-//            }
-//            data.append(byte)
-//            index = string.index(index, offsetBy: 2)
-//        }
-//        self = data
-//    }
-//
-//    var hexString: String {
-//        return map { String(format: "%02hhx", $0) }.joined()
-//    }
-//}
-//
-//// Usage example
-//let xCoordinate = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f"
-//let yCoordinate = "fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2e"
-//
-//if let publicAddress = getPublicAddressFromCoordinates(x: xCoordinate, y: yCoordinate) {
-//    print("Public Address:", publicAddress)
-//} else {
-//    print("Invalid coordinates")
-//}

@@ -147,8 +147,8 @@ open class TorusUtils: AbstractTorusUtils {
             let (oAuthX, oAuthY) = try getPublicKeyPointFromPubkeyString(pubKey: oAuthPubKeyString)
             let (finalX, finalY) = try getPublicKeyPointFromPubkeyString(pubKey: modifiedPubKey)
             
-            let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
-            let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
+            let oAuthAddress = try generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
+            let finalAddress = try generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
             
             return .init(
                 finalKeyData: .init(
@@ -302,9 +302,9 @@ open class TorusUtils: AbstractTorusUtils {
 
                 }
                 
-                let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
+                let oAuthKeyAddress = try generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
                 let (finalPubX, finalPubY) = try getPublicKeyPointFromPubkeyString(pubKey: finalPubKey)
-                let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
+                let finalEvmAddress = try generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
                 
                 var finalPrivKey = ""
                 if typeOfUser == .v1 || (typeOfUser == .v2 && metadataNonce > BigInt(0)) {

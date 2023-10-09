@@ -157,11 +157,4 @@ extension String {
 
         return bytes
     }
-
-//    public var littleEndianHexToUInt: UInt {
-//        let data = Data.fromHex(self)!
-//        let revensed =
-//        return UInt(sel)
-//        return UInt(self.dataWithHexString().bytes.reversed().fullHexString,radix: 16)!
-//    }
 }

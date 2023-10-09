@@ -556,7 +556,7 @@ extension TorusUtils {
                 }
 
                 let (oAuthKeyX, oAuthKeyY) = try getPublicKeyPointFromPubkeyString(pubKey: oAuthPubKey!)
-                let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
+                let oAuthKeyAddress = try generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
 
                 var finalPrivKey = ""
 
@@ -568,7 +568,7 @@ extension TorusUtils {
                 let (finalPubX, finalPubY) = try getPublicKeyPointFromPubkeyString(pubKey: finalPubKey)
                 // deriving address from pub key coz pubkey is always available
                 // but finalPrivKey won't be available for  v2 user upgraded to 2/n
-                let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
+                let finalEvmAddress = try generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
 
                 var isUpgraded: Bool?
 
@@ -1405,8 +1405,8 @@ extension TorusUtils {
         let finalX = String(finalPubKey.prefix(64))
         let finalY = String(finalPubKey.suffix(64))
 
-        let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
-        let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
+        let oAuthAddress = try generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
+        let finalAddress = try generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
 
         var usertype = ""
         switch typeOfUser {

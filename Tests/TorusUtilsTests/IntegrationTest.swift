@@ -103,7 +103,6 @@ class IntegrationTests: XCTestCase {
     }
 
     func test_keyLookup() async throws {
-        let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
             let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
             let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
             XCTAssertEqual(val.address, "0x872eEfa7495599A6983d396fE8dcf542457CF33f")
