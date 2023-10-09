@@ -290,9 +290,13 @@ open class TorusUtils: AbstractTorusUtils {
                         let newkey = "04" + (nonceResult.pubNonce?.x.addLeading0sForLength64())! + (nonceResult.pubNonce?.y.addLeading0sForLength64())!
                         finalPubKey = combinePublicKeys(keys: [finalPubKey, newkey], compressed: false)
                         pubKeyNonceResult = .init(x: nonceResult.pubNonce!.x, y: nonceResult.pubNonce!.y)
+                    } else {
+                        // for imported keys in legacy networks
+                        metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
+                        var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
+                        privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
+                        finalPubKey = (SECP256K1.privateToPublic(privateKey: Data(hex: String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()))?.toHexString())!
                     }
-                    
-
                 } else {
                     // for imported keys in legacy networks
                     metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])

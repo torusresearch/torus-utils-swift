@@ -66,6 +66,8 @@ class OneKeyTest: XCTestCase {
         let extraParams = ["verifier_id": verifierID] as [String: Codable]
         let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
+        XCTAssertEqual(data.oAuthKeyData?.privKey, "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
+        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0xEfd7eDAebD0D99D1B7C8424b54835457dD005Dc4")
         XCTAssertEqual(data.finalKeyData?.privKey, "296045a5599afefda7afbdd1bf236358baff580a0fe2db62ae5c1bbe817fbae4")
         XCTAssertEqual(data.finalKeyData?.evmAddress, "0x53010055542cCc0f2b6715a5c53838eC4aC96EF7")
     }
