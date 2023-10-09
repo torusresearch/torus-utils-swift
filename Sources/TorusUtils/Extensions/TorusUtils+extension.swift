@@ -166,11 +166,6 @@ extension TorusUtils {
             throw error
         }
     }
-
-    internal func signRecoverable() -> (String, String)
-    {
-        
-    }
     
     // MARK: - getShareOrKeyAssign
 
