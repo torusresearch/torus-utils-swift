@@ -167,6 +167,11 @@ extension TorusUtils {
         }
     }
 
+    internal func signRecoverable() -> (String, String)
+    {
+        
+    }
+    
     // MARK: - getShareOrKeyAssign
 
     private func getShareOrKeyAssign(endpoints: [String], nodeSigs: [CommitmentRequestResponse], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Any] = [:]) async throws -> [URLRequest] {
