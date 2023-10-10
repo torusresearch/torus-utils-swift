@@ -46,7 +46,7 @@ class MainnetTests: XCTestCase {
         return nodeDetails
     }
 
-    func test_getPublicAddress() async throws {
+    func test_get_public_address() async throws {
         let nodeDetails = try await get_fnd_and_tu_data(verifer: "google", veriferID: TORUS_TEST_EMAIL)
         let val = try await tu.getPublicAddress(endpoints: nodeDetails.torusNodeEndpoints, torusNodePubs: nodeDetails.torusNodePub, verifier: "google", verifierId: TORUS_TEST_EMAIL)
         XCTAssertEqual(val.finalKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
@@ -62,10 +62,10 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_getUserTypeAndAddress() async throws {
+    func test_fetch_user_type_and_addresses() async throws {
         let verifier1: String = "google"
         let verifierID1: String = TORUS_TEST_EMAIL
-        var nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
         var val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier1, verifierId: verifierID1)
 
         XCTAssertEqual(val.finalKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
@@ -82,7 +82,6 @@ class MainnetTests: XCTestCase {
 
         let verifier2: String = "tkey-google"
         let verifierID2: String = "somev2user@gmail.com"
-        nodeDetails = try await get_fnd_and_tu_data(verifer: verifier2, veriferID: verifierID2)
         val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier2, verifierId: verifierID2)
 
         XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xA9c6829e4899b6D630130ebf59D046CA868D7f83")
@@ -100,7 +99,6 @@ class MainnetTests: XCTestCase {
 
         let verifier3: String = "tkey-google"
         let verifierID3: String = "caspertorus@gmail.com"
-        nodeDetails = try await get_fnd_and_tu_data(verifer: verifier3, veriferID: verifierID3)
         val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier3, verifierId: verifierID3)
 
         XCTAssertEqual(val.finalKeyData!.evmAddress, "0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53")
@@ -117,7 +115,7 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_keyAssign() async throws {
+    func test_key_assign() async throws {
         let email = generateRandomEmail(of: 6)
         let nodeDetails = try await get_fnd_and_tu_data(verifer: "google", veriferID: email)
         let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email, signerHost: tu.signerHost, network: .legacy(.MAINNET))
@@ -128,7 +126,7 @@ class MainnetTests: XCTestCase {
         // Add more check to see if address is valid
     }
 
-    func test_shouldLogin() async throws {
+    func test_login() async throws {
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
         let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
         let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Codable]
@@ -159,7 +157,7 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_shouldAggregateLogin() async throws {
+    func test_aggregate_login() async throws {
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
