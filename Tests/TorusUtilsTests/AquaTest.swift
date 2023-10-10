@@ -53,10 +53,10 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_should_fetch_type_and_address() async throws {
+    func test_should_fetch_user_type_and_public_addresses() async throws {
         var verifier: String = "tkey-google-aqua"
         var verifierID: String = TORUS_TEST_EMAIL
-        var nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         var val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
         XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
         XCTAssertEqual(val.oAuthKeyData!.X, "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d")
@@ -99,7 +99,7 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_key_assign_aqua() async throws {
+    func test_key_assign() async throws {
         let fakeEmail = generateRandomEmail(of: 6)
         let verifier: String = "tkey-google-aqua"
         let verifierID: String = fakeEmail
@@ -108,9 +108,10 @@ class AquaTest: XCTestCase {
         XCTAssertNotNil(data.finalKeyData)
         XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
+        XCTAssertEqual(data.metadata?.upgraded, false)
     }
 
-    func test_login_aqua() async throws {
+    func test_login() async throws {
         let verifier: String = TORUS_TEST_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let verifierParams = VerifierParams(verifier_id: verifierID)
@@ -136,7 +137,7 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_aggregate_login_aqua() async throws {
+    func test_aggregate_login() async throws {
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let verifierParams = VerifierParams(verifier_id: verifierID)
