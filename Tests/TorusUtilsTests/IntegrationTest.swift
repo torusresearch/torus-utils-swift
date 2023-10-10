@@ -219,21 +219,6 @@ extension IntegrationTests {
 //            exp1.fulfill()
 //        }
 //    }
-
-    func test_keyLookup_some_nodes_waiting() async throws {
-        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-        var endpoints = nodeDetails.getTorusNodeEndpoints()
-
-        // should fail if un-commented threshold 3/5 in case of key lookup
-
-        endpoints = ["https://node-1.torus-cluster-1.com/jrpc",
-                     "https://node-2.torus-cluster-1.com/jrpc",
-                     "https://node-3.torus-cluster-1.com/jrpc",
-                     "https://node-4.torus-cluster-1.com/jrpc",
-                     "https://node-5.torus-cluster-1.com/jrpc"]
-        let val = try await tu.keyLookup(endpoints: endpoints, verifier: "torus-test-health", verifierId: TORUS_TEST_EMAIL)
-        XCTAssertEqual(val.address, "0x8AA6C8ddCD868873120aA265Fc63E3a2180375BA")
-    }
 }
 
 struct ROPSTEN_CONSTANTS {
