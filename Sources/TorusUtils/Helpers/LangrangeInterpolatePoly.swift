@@ -1,6 +1,7 @@
 import Foundation
 import BigInt
 
+
 func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
     var (t, newT) = (BigInt(0), BigInt(1))
     var (r, newR) = (m, a)

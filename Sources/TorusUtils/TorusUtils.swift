@@ -1,5 +1,4 @@
 import BigInt
-import CryptoKit
 import FetchNodeDetails
 import CommonSources
 /**
@@ -356,7 +355,7 @@ open class TorusUtils: AbstractTorusUtils {
         }
     
         open func generatePrivateKeyData() -> Data? {
-            return Data.randomOfLength(32)
+            return SECP256K1.generatePrivateKey()
         }
     
         open func getTimestamp() -> TimeInterval {

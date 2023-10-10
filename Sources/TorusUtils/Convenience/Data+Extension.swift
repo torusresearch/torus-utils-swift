@@ -19,7 +19,7 @@ public extension Data {
                 let pointer = bodyAddress.assumingMemoryBound(to: T.self)
                 return [T](UnsafeBufferPointer(start: pointer, count: self.count / MemoryLayout<T>.stride))
             } else {
-                throw Web3Error.dataError
+                throw TorusUtilError.runtime("Failed to convert to array")
             }
         }
     }
