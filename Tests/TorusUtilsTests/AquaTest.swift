@@ -35,7 +35,7 @@ class AquaTest: XCTestCase {
         return nodeDetails
     }
 
-    func test_get_public_address() async throws {
+    func test_should_fetch_public_address() async throws {
         let verifier: String = "tkey-google-aqua"
         let verifierID: String = TORUS_TEST_EMAIL
         let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
@@ -53,7 +53,7 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_getUserTypeAndAddress_aqua() async throws {
+    func test_should_fetch_type_and_address() async throws {
         var verifier: String = "tkey-google-aqua"
         var verifierID: String = TORUS_TEST_EMAIL
         var nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
@@ -70,25 +70,22 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.metadata?.typeOfUser, .v1)
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
-        // exp2
         verifier = "tkey-google-aqua"
         verifierID = "somev2user@gmail.com"
-        nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-        XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x4ea5260fF85678A2a326D08DF9C44d1f559a5828")
-        XCTAssertEqual(val.oAuthKeyData!.X, "0e6febe33a9d4eeb680cc6b63ff6237ad1971f27adcd7f104a3b1de18eda9337")
-        XCTAssertEqual(val.oAuthKeyData!.Y, "a5a915561f3543688e71281a850b9ee10b9690f305d9e79028dfc8359192b82d")
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x4ea5260fF85678A2a326D08DF9C44d1f559a5828")
-        XCTAssertEqual(val.finalKeyData!.X, "0e6febe33a9d4eeb680cc6b63ff6237ad1971f27adcd7f104a3b1de18eda9337")
-        XCTAssertEqual(val.finalKeyData!.Y, "a5a915561f3543688e71281a850b9ee10b9690f305d9e79028dfc8359192b82d")
+        XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x5735dDC8d5125B23d77C3531aab3895A533584a3")
+        XCTAssertEqual(val.oAuthKeyData!.X, "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873")
+        XCTAssertEqual(val.oAuthKeyData!.Y, "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x5735dDC8d5125B23d77C3531aab3895A533584a3")
+        XCTAssertEqual(val.finalKeyData!.X, "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873")
+        XCTAssertEqual(val.finalKeyData!.Y, "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x5735dDC8d5125B23d77C3531aab3895A533584a3")
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, .v1)
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
-        // exp3
         verifierID = "caspertorus@gmail.com"
-        nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
         XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD")
         XCTAssertEqual(val.oAuthKeyData!.X, "e76d2f7fa2c0df324b4ab74629c3af47aa4609c35f1d2b6b90b77a47ab9a1281")
