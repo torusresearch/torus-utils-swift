@@ -154,8 +154,7 @@ extension TorusUtils {
             let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
-
-//            let hash = encodedData.web3.keccak256
+            
             let hash = keccak256Data(encodedData)
             guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature else {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
@@ -1311,15 +1310,12 @@ extension TorusUtils {
                 setData.data = String(nonce!, radix: 16).addLeading0sForLength64()
             }
             let encodedData = try JSONEncoder().encode(setData)
-//              let hash = encodedData.web3.keccak256
             let hash = keccak256Data(encodedData)
             guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature else {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
             }
-            let pubKeyX = String(publicKey.prefix(64))
-            let pubKeyY = String(publicKey.suffix(64))
-
-            return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, signature: sigData.base64EncodedString())
+            
+            return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
         }
