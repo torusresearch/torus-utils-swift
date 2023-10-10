@@ -36,7 +36,7 @@ class CyanTest: XCTestCase {
         return nodeDetails
     }
 
-    func test_get_public_address() async throws {
+    func test_should_fetch_public_address() async throws {
         let verifier: String = "tkey-google-cyan"
         let verifierID: String = TORUS_TEST_EMAIL
         let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
@@ -54,40 +54,69 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_getUserTypeAndAddress_polygon() async throws {
+    func test_get_user_type_and_addresses() async throws {
         var verifier: String = "tkey-google-cyan"
         var verifierID: String = TORUS_TEST_EMAIL
-        var nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
+        let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         var data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0xA3767911A84bE6907f26C572bc89426dDdDB2825")
+        XCTAssertEqual(data.oAuthKeyData?.X, "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a")
+        XCTAssertEqual(data.oAuthKeyData?.Y, "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1")
         XCTAssertEqual(data.finalKeyData?.evmAddress, "0xA3767911A84bE6907f26C572bc89426dDdDB2825")
-
-        // exp2
+        XCTAssertEqual(data.finalKeyData?.X, "2853f323437da98ce021d06854f4b292db433c0ad03b204ef223ac2583609a6a")
+        XCTAssertEqual(data.finalKeyData?.Y, "f026b4788e23523e0c8fcbf0bdcf1c1a62c9cde8f56170309607a7a52a19f7c1")
+        XCTAssertNil(data.metadata?.pubNonce)
+        XCTAssertEqual(data.metadata?.nonce, BigUInt.zero)
+        XCTAssertEqual(data.metadata?.upgraded, false)
+        XCTAssertEqual(data.metadata?.typeOfUser, .v1)
+        XCTAssertEqual(data.nodesData?.nodeIndexes, [])
+        
         verifier = "tkey-google-cyan"
         verifierID = "somev2user@gmail.com"
-        nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x29446f428293a4E6470AEaEDa6EAfA0F842EF54e")
+        XCTAssertEqual(data.oAuthKeyData?.X, "8b6f2048aba8c7833e3b02c5b6522bb18c484ad0025156e428f17fb8d8c34021")
+        XCTAssertEqual(data.oAuthKeyData?.Y, "cd9ba153ff89d665f655d1be4c6912f3ff93996e6fe580d89e78bf1476fef2aa")
         XCTAssertEqual(data.finalKeyData?.evmAddress, "0x8EA83Ace86EB414747F2b23f03C38A34E0217814")
-
-        // exp3
+        XCTAssertEqual(data.finalKeyData?.X, "cbe7b0f0332e5583c410fcacb6d4ff685bec053cfd943ac75f5e4aa3278a6fbb")
+        XCTAssertEqual(data.finalKeyData?.Y, "b525c463f438c7a3c4b018c8c5d16c9ef33b9ac6f319140a22b48b17bdf532dd")
+        XCTAssertEqual(data.metadata?.pubNonce?.x,"da0039dd481e140090bed9e777ce16c0c4a16f30f47e8b08b73ac77737dd2d4")
+        XCTAssertEqual(data.metadata?.pubNonce?.y,"7fecffd2910fa47dbdbc989f5c119a668fc922937175974953cbb51c49268265")
+        XCTAssertEqual(data.metadata?.nonce, BigUInt.zero)
+        XCTAssertEqual(data.metadata?.upgraded, false)
+        XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+        XCTAssertEqual(data.nodesData?.nodeIndexes, [])
+        
         verifier = "tkey-google-cyan"
         verifierID = "caspertorus@gmail.com"
-        nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
+        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0xe8a19482cbe5FaC896A5860Ca4156fb999DDc73b")
+        XCTAssertEqual(data.oAuthKeyData?.X, "c491ba39155594896b27cf71a804ccf493289d918f40e6ba4d590f1c76139e9e")
+        XCTAssertEqual(data.oAuthKeyData?.Y, "d4649ed9e46461e1af00399a4c65fabb1dc219b3f4af501a7d635c17f57ab553")
         XCTAssertEqual(data.finalKeyData?.evmAddress, "0xCC1f953f6972a9e3d685d260399D6B85E2117561")
+        XCTAssertEqual(data.finalKeyData?.X, "8d784434becaad9b23d9293d1f29c4429447315c4cac824cbf2eb21d3f7d79c8")
+        XCTAssertEqual(data.finalKeyData?.Y, "fe46a0ef5efe33d16f6cfa678a597be930fbec5432cbb7f3580189c18bd7e157")
+        XCTAssertEqual(data.metadata?.pubNonce?.x,"50e250cc6ac1d50d32d2b0f85f11c6625a917a115ced4ef24f4eac183e1525c7")
+        XCTAssertEqual(data.metadata?.pubNonce?.y,"8067a52d02b8214bf82e91b66ce5009f674f4c3998b103059c46c386d0c17f90")
+        XCTAssertEqual(data.metadata?.nonce, BigUInt.zero)
+        XCTAssertEqual(data.metadata?.upgraded, false)
+        XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+        XCTAssertEqual(data.nodesData?.nodeIndexes, [])
     }
 
-    func test_key_assign_polygon() async throws {
+    func test_key_assign() async throws {
         let fakeEmail = generateRandomEmail(of: 6)
         let verifier: String = "tkey-google-cyan"
         let verifierID: String = fakeEmail
         let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         let data = try await tu.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-        XCTAssertNotNil(data)
         XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
+        XCTAssertNotEqual(data.oAuthKeyData?.evmAddress, "")
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
+        XCTAssertEqual(data.metadata?.upgraded, false)
     }
 
-    func test_login_polygon() async throws {
+    func test_login() async throws {
         let verifier: String = TORUS_TEST_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: verifierID)
@@ -113,7 +142,7 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
-    func test_aggregate_login_polygon() async throws {
+    func test_aggregate_login() async throws {
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
