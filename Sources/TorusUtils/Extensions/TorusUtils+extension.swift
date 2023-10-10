@@ -146,7 +146,7 @@ extension TorusUtils {
         do {
             let privKeyData = Data(hex: privateKey)
             // this pubkey is not being padded in backend as well on web, so do not pad here.
-            guard let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString()
+            guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
             else {
                 throw TorusUtilError.runtime("invalid priv key")
             }
@@ -161,7 +161,7 @@ extension TorusUtils {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
             }
 
-            return .init(pub_key_X: String(publicKey.prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+            return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y:String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
         }
