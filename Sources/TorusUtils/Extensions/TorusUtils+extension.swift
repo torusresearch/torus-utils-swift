@@ -154,18 +154,29 @@ extension TorusUtils {
             let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encodedData = try JSONEncoder().encode(setData)
-            
+
             let hash = keccak256Data(encodedData)
-            guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature else {
+            guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature,
+                  var sig = SECP256K1.parseSignature(signature: sigData),
+                  var recoveredKey = SECP256K1.recoverPublicKey(hash: hash, recoverableSignature: &sig) else {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
             }
 
-            return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y:String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+            guard let recoveryKeySerialized = SECP256K1.serializePublicKey(publicKey: &recoveredKey, compressed: false)?.hexString
+            else {
+                throw TorusUtilError.runtime("invalid public key")
+            }
+
+            if recoveryKeySerialized != serializedPublicKey {
+                throw TorusUtilError.runtime("recover from signature failed")
+            }
+
+            return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
         }
     }
-    
+
     // MARK: - getShareOrKeyAssign
 
     private func getShareOrKeyAssign(endpoints: [String], nodeSigs: [CommitmentRequestResponse], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Any] = [:]) async throws -> [URLRequest] {
@@ -772,7 +783,7 @@ extension TorusUtils {
             do {
                 // AES-CBCblock-256
                 let aesKey = sharedSecret[0 ..< 32].bytes
-                let _ = sharedSecret[32 ..< 64].bytes // TODO: check mac
+                _ = sharedSecret[32 ..< 64].bytes // TODO: check mac
                 let iv = el.value.iv.hexa
                 let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: .pkcs7)
                 let decryptData = try aes.decrypt(share)
@@ -1299,7 +1310,7 @@ extension TorusUtils {
     internal func generateNonceMetadataParams(message: String, privateKey: BigInt, nonce: BigInt?) throws -> NonceMetadataParams {
         do {
             let privKeyData = Data(hex: privateKey.serialize().hexString.addLeading0sForLength64())
-            guard let publicKey = SECP256K1.privateToPublic(privateKey: privKeyData)?.subdata(in: 1 ..< 65).toHexString().padLeft(padChar: "0", count: 128)
+            guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
             else {
                 throw TorusUtilError.runtime("invalid priv key")
             }
@@ -1311,11 +1322,22 @@ extension TorusUtils {
             }
             let encodedData = try JSONEncoder().encode(setData)
             let hash = keccak256Data(encodedData)
-            guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature else {
+            guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature,
+                  var sig = SECP256K1.parseSignature(signature: sigData),
+                  var recoveredKey = SECP256K1.recoverPublicKey(hash: hash, recoverableSignature: &sig) else {
                 throw TorusUtilError.runtime("sign for recovery hash failed")
             }
-            
-            return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+
+            guard let recoveryKeySerialized = SECP256K1.serializePublicKey(publicKey: &recoveredKey, compressed: false)?.hexString
+            else {
+                throw TorusUtilError.runtime("invalid public key")
+            }
+
+            if recoveryKeySerialized != serializedPublicKey {
+                throw TorusUtilError.runtime("recover from signature failed")
+            }
+
+            return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
         } catch let error {
             throw error
         }
