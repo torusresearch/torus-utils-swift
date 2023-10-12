@@ -1,15 +1,10 @@
-//
-//  PolygonTest.swift
-//
-//
-//  Created by Dhruv Jaiswal on 01/06/22.
-//
-
 import BigInt
 import CommonSources
 import FetchNodeDetails
 import JWTKit
-import secp256k1
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 import XCTest
 
 import CoreMedia
@@ -26,7 +21,6 @@ class CyanTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-//        fnd = FetchNodeDetails(proxyAddress: "0x9f072ba19b3370e512aa1b4bfcdaf97283168005", network: .CYAN)
         fnd = NodeDetailManager(network: .legacy(.CYAN))
     }
 

@@ -1,14 +1,5 @@
-//
-//  TorusUtils+extension.swift
-//
-//
-//  Created by Shubham on 25/3/20.
-//
-
 import CryptoSwift
-// import FetchNodeDetails
 import Foundation
-
 #if canImport(secp256k1)
     import secp256k1
 #endif
@@ -93,93 +84,63 @@ extension TorusUtils {
     // MARK: - metadata API
 
     internal func getMetadata(dictionary: [String: String]) async throws -> BigUInt {
-        let encoded: Data?
-        do {
-            encoded = try JSONSerialization.data(withJSONObject: dictionary, options: [])
-        } catch {
-            throw error
-        }
+        let encoded = try JSONSerialization.data(withJSONObject: dictionary, options: [.sortedKeys])
 
-        guard let encodedUnwrapped = encoded else {
-            throw TorusUtilError.runtime("Unable to serialize dictionary into JSON. \(dictionary)")
-        }
         var request = try makeUrlRequest(url: "\(legacyMetadataHost)/get")
-        request.httpBody = encodedUnwrapped
-        do {
-            let val = try await urlSession.data(for: request)
-            let data = try JSONSerialization.jsonObject(with: val.0) as? [String: Any] ?? [:]
-            os_log("getMetadata: %@", log: getTorusLogger(log: TorusUtilsLogger.network, type: .info), type: .info, data)
-            guard
-                let msg: String = data["message"] as? String,
-                let ret = BigUInt(msg, radix: 16)
-            else {
-                throw TorusUtilError.decodingFailed("Message value not correct or nil in \(data)")
-            }
-            return ret
-        } catch {
-            return BigUInt("0", radix: 16)!
+        request.httpBody = encoded
+        let val = try await urlSession.data(for: request)
+        let data = try JSONSerialization.jsonObject(with: val.0) as? [String: Any] ?? [:]
+        os_log("getMetadata: %@", log: getTorusLogger(log: TorusUtilsLogger.network, type: .info), type: .info, data)
+        guard
+            let msg: String = data["message"] as? String,
+            let ret = BigUInt(msg, radix: 16)
+        else {
+            throw TorusUtilError.decodingFailed("Message value not correct or nil in \(data)")
         }
+        return ret
     }
 
     internal func getOrSetNonce(x: String, y: String, privateKey: String? = nil, getOnly: Bool = false) async throws -> GetOrSetNonceResult {
         var data: Data
         let msg = getOnly ? "getNonce" : "getOrSetNonce"
-        do {
-            if privateKey != nil {
-                let val = try generateParams(message: msg, privateKey: privateKey!)
-                let encoder = JSONEncoder();
-                encoder.outputFormatting = .sortedKeys
-                data = try encoder.encode(val)
-            } else {
-                let dict: [String: Any] = ["pub_key_X": x, "pub_key_Y": y, "set_data": ["data": msg]]
-                data = try JSONSerialization.data(withJSONObject: dict, options: .sortedKeys)
-            }
-            var request = try makeUrlRequest(url: "\(legacyMetadataHost)/get_or_set_nonce")
-            request.httpBody = data
-            let val = try await urlSession.data(for: request)
-            let decoded = try JSONDecoder().decode(GetOrSetNonceResult.self, from: val.0)
-            return decoded
-        } catch let error {
-            throw error
+        if privateKey != nil {
+            let val = try generateParams(message: msg, privateKey: privateKey!)
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .sortedKeys
+            data = try encoder.encode(val)
+        } else {
+            let dict: [String: Any] = ["pub_key_X": x, "pub_key_Y": y, "set_data": ["data": msg]]
+            data = try JSONSerialization.data(withJSONObject: dict, options: .sortedKeys)
         }
+        var request = try makeUrlRequest(url: "\(legacyMetadataHost)/get_or_set_nonce")
+        request.httpBody = data
+        let val = try await urlSession.data(for: request)
+        let decoded = try JSONDecoder().decode(GetOrSetNonceResult.self, from: val.0)
+        return decoded
     }
 
     internal func generateParams(message: String, privateKey: String) throws -> MetadataParams {
-        do {
-            let privKeyData = Data(hex: privateKey)
-            // this pubkey is not being padded in backend as well on web, so do not pad here.
-            guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
-            else {
-                throw TorusUtilError.runtime("invalid priv key")
-            }
-
-            let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
-            let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .sortedKeys
-            let encodedData = try encoder
-                .encode(setData)
-
-            let hash = keccak256Data(encodedData)
-            guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature,
-                  var sig = SECP256K1.parseSignature(signature: sigData),
-                  var recoveredKey = SECP256K1.recoverPublicKey(hash: hash, recoverableSignature: &sig) else {
-                throw TorusUtilError.runtime("sign for recovery hash failed")
-            }
-
-            guard let recoveryKeySerialized = SECP256K1.serializePublicKey(publicKey: &recoveredKey, compressed: false)?.hexString
-            else {
-                throw TorusUtilError.runtime("invalid public key")
-            }
-
-            if recoveryKeySerialized != serializedPublicKey {
-                throw TorusUtilError.runtime("recover from signature failed")
-            }
-
-            return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
-        } catch let error {
-            throw error
+        let privKeyData = Data(hex: privateKey)
+        // this pubkey is not being padded in backend as well on web, so do not pad here.
+        guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
+        else {
+            throw TorusUtilError.runtime("invalid priv key")
         }
+
+        let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
+        let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let encodedData = try encoder
+            .encode(setData)
+
+        let hash = keccak256Data(encodedData)
+        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature
+        else {
+            throw TorusUtilError.runtime("sign for recovery hash failed")
+        }
+
+        return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
     }
 
     // MARK: - getShareOrKeyAssign
@@ -212,25 +173,21 @@ extension TorusUtils {
                               "params": AnyCodable(params),
         ] as [String: AnyCodable]
 
-        do {
-            rpcdata = try JSONEncoder().encode(dataForRequest)
-        } catch {
-            os_log("get share or key assign - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
-        }
-//        print("rpcdata", String(data: rpcdata, encoding: .utf8)!)
+        // do {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        rpcdata = try encoder.encode(dataForRequest)
+        // } catch {
+        //    os_log("get share or key assign - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
+        // }
 
         // Create Array of URLRequest Promises
-
         var requestArray = [URLRequest]()
 
         for endpoint in endpoints {
-            do {
-                var request = try makeUrlRequest(url: endpoint, httpMethod: .post)
-                request.httpBody = rpcdata
-                requestArray.append(request)
-            } catch {
-                throw error
-            }
+            var request = try makeUrlRequest(url: endpoint, httpMethod: .post)
+            request.httpBody = rpcdata
+            requestArray.append(request)
         }
 
         return requestArray
@@ -255,10 +212,10 @@ extension TorusUtils {
             guard Data(hexString: derivedPrivateKeyHex) != nil else {
                 continue
             }
+
             guard let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: derivedPrivateKeyHex.addLeading0sForLength64()))?.toHexString() else {
                 throw TorusUtilError.runtime("Decrypted SECP256K1 private key is invalid")
             }
-            print("decryptedPubKey", decryptedPubKey, derivedPrivateKey)
             let decryptedPubKeyX = String(decryptedPubKey.suffix(128).prefix(64))
             let decryptedPubKeyY = String(decryptedPubKey.suffix(64))
             if decryptedPubKeyX == thresholdPublicKey.X.addLeading0sForLength64() && decryptedPubKeyY == thresholdPublicKey.Y.addLeading0sForLength64() {
@@ -296,12 +253,10 @@ extension TorusUtils {
         }
 
         // Split key in 2 parts, X and Y
-        // let publicKeyHex = publicKey.toHexString()
         let pubKeyX = String(serializedPublicKey.suffix(128).prefix(64))
         let pubKeyY = String(serializedPublicKey.suffix(64))
 
         // Hash the token from OAuth login
-
         let timestamp = String(Int(getTimestamp()))
         let hashedToken = idToken.sha3(.keccak256)
 
@@ -310,7 +265,6 @@ extension TorusUtils {
         var promiseArrRequest = [URLRequest]()
 
         // TODO: make sure we have only complete requests in promiseArrRequest?
-
         promiseArrRequest = try await getShareOrKeyAssign(endpoints: endpoints, nodeSigs: nodeSigs, verifier: verifier, verifierParams: verifierParams, idToken: idToken, extraParams: extraParams)
 
         var thresholdNonceData: GetOrSetNonceResult?
@@ -364,7 +318,6 @@ extension TorusUtils {
                                     thresholdNonceData = nonceData
                                 }
                             }
-                            //                            pubkeyArr.append(pubkey)
                             guard let result = thresholdSame(arr: pubkeyArr, threshold: threshold)
                             else {
                                 throw TorusUtilError.thresholdError
@@ -379,10 +332,8 @@ extension TorusUtils {
                             if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !isLegacyNetwork() {
                                 throw TorusUtilError.metadataNonceMissing
                             }
-
                             return
                         }
-
                     case let .failure(error):
                         throw error
                     }
@@ -507,8 +458,6 @@ extension TorusUtils {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
 
-//                let decryptedPubKey = SECP256K1.privateToPublic(privateKey: Data(hex: oAuthKey) )?.toHexString()
-
                 let oAuthKeyBigInt = BigInt(oAuthKey, radix: 16)!
 
                 guard let derivedPrivateKeyData = Data(hexString: oAuthKey) else {
@@ -543,7 +492,7 @@ extension TorusUtils {
                             let pubNonceY = nonceResult.pubNonce?.y
                             typeOfUser = .v2
                             let pubkey2 = "04" + pubNonceX!.addLeading0sForLength64() + pubNonceY!.addLeading0sForLength64()
-                            let combined = combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
+                            let combined = try combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
                             finalPubKey = combined
                             pubKeyNonceResult = .init(x: pubNonceX!, y: pubNonceY!)
                         } else {
@@ -566,7 +515,7 @@ extension TorusUtils {
                     let pubNonceX = thresholdNonceData!.pubNonce!.x
                     let pubNonceY = thresholdNonceData!.pubNonce!.y
                     let pubkey2 = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
-                    let combined = combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
+                    let combined = try combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
                     finalPubKey = combined
                     pubKeyNonceResult = .init(x: pubNonceX, y: pubNonceY)
                 }
@@ -652,13 +601,9 @@ extension TorusUtils {
         var nodeSignatures = [CommitmentRequestResponse]()
         var requestArr = [URLRequest]()
         for (_, el) in endpoints.enumerated() {
-            do {
-                var rq = try makeUrlRequest(url: el)
-                rq.httpBody = rpcdata
-                requestArr.append(rq)
-            } catch {
-                throw error
-            }
+            var rq = try makeUrlRequest(url: el)
+            rq.httpBody = rpcdata
+            requestArr.append(rq)
         }
         return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { group in
 
@@ -911,13 +856,9 @@ extension TorusUtils {
         var resultArray: [KeyLookupResponse] = []
         var requestArray = [URLRequest]()
         for endpoint in endpoints {
-            do {
-                var request = try makeUrlRequest(url: endpoint)
-                request.httpBody = rpcdata
-                requestArray.append(request)
-            } catch {
-                throw error
-            }
+            var request = try makeUrlRequest(url: endpoint)
+            request.httpBody = rpcdata
+            requestArray.append(request)
         }
 
         var nonceResult: GetOrSetNonceResult?
@@ -945,55 +886,51 @@ extension TorusUtils {
                     case let .success(model):
                         // print( try JSONSerialization.jsonObject(with: model.data) )
                         let data = model.data
-                        do {
-                            let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                            let result = decoded.result as? VerifierLookupResponse
+                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                        let result = decoded.result as? VerifierLookupResponse
 
-                            if let _ = decoded.error {
-                                let error = KeyLookupError.createErrorFromString(errorString: "")
-                                throw error
-                            } else {
-                                let decodedResult = result!
-                                keyArray.append(decodedResult)
-                                if let k = decodedResult.keys,
-                                   let key = k.first {
-                                    let model = KeyLookupResponse(pubKeyX: key.pub_key_X, pubKeyY: key.pub_key_Y, address: key.address, isNewKey: decodedResult.is_new_key)
+                        if let _ = decoded.error {
+                            let error = KeyLookupError.createErrorFromString(errorString: "")
+                            throw error
+                        } else {
+                            let decodedResult = result!
+                            keyArray.append(decodedResult)
+                            if let k = decodedResult.keys,
+                               let key = k.first {
+                                let model = KeyLookupResponse(pubKeyX: key.pub_key_X, pubKeyY: key.pub_key_Y, address: key.address, isNewKey: decodedResult.is_new_key)
 
-                                    resultArray.append(model)
-                                    if let nonceData = key.nonce_data {
-                                        let pubNonceX = nonceData.pubNonce?.x
-                                        if pubNonceX != nil && pubNonceX != "" && nonceResult == nil {
-                                            nonceResult = key.nonce_data
-                                        }
+                                resultArray.append(model)
+                                if let nonceData = key.nonce_data {
+                                    let pubNonceX = nonceData.pubNonce?.x
+                                    if pubNonceX != nil && pubNonceX != "" && nonceResult == nil {
+                                        nonceResult = key.nonce_data
                                     }
                                 }
                             }
-                            let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
-
-                            // proceed if we have key result and either of nonceResult, extendedVerifierId, isLegacyNetwork is
-                            // available
-                            if keyResult != nil && (nonceResult != nil || extendedVerifierId != nil || isLegacyNetwork()) {
-                                if let keyResult = keyResult {
-                                    os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
-                                    session.invalidateAndCancel()
-                                    keyArray.forEach({ result in
-
-                                        if result?.node_index == "1" {
-                                            isNodeOneVisited = true
-                                        }
-                                        if result != nil && result?.node_index != "0" {
-                                            nodeIndexesArray.append(Int(result!.node_index)!)
-                                        }
-
-                                    })
-
-                                    return KeyLookupResult(keyResult: keyResult, nodeIndexes: nodeIndexesArray, nonceResult: nonceResult)
-                                }
-                            }
-                            throw NSError(domain: "condition not meet", code: 1001)
-                        } catch let err {
-                            throw err
                         }
+                        let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
+
+                        // proceed if we have key result and either of nonceResult, extendedVerifierId, isLegacyNetwork is
+                        // available
+                        if keyResult != nil && (nonceResult != nil || extendedVerifierId != nil || isLegacyNetwork()) {
+                            if let keyResult = keyResult {
+                                os_log("%@: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, methodName, keyResult.description)
+                                session.invalidateAndCancel()
+                                keyArray.forEach({ result in
+
+                                    if result?.node_index == "1" {
+                                        isNodeOneVisited = true
+                                    }
+                                    if result != nil && result?.node_index != "0" {
+                                        nodeIndexesArray.append(Int(result!.node_index)!)
+                                    }
+
+                                })
+
+                                return KeyLookupResult(keyResult: keyResult, nodeIndexes: nodeIndexesArray, nonceResult: nonceResult)
+                            }
+                        }
+                        throw NSError(domain: "condition not meet", code: 1001)
                     case let .failure(error):
                         throw error
                     }
@@ -1018,21 +955,13 @@ extension TorusUtils {
     internal func awaitKeyLookup(endpoints: [String], verifier: String, verifierId: String, timeout: Int = 0) async throws -> KeyLookupResponse {
         let durationInNanoseconds = UInt64(timeout * 1000000000)
         try await Task.sleep(nanoseconds: durationInNanoseconds)
-        do {
-            return try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-        } catch {
-            throw error
-        }
+        return try await keyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
     }
 
     internal func awaitLegacyKeyLookup(endpoints: [String], verifier: String, verifierId: String, timeout: Int = 0) async throws -> LegacyKeyLookupResponse {
         let durationInNanoseconds = UInt64(timeout * 1000000000)
         try await Task.sleep(nanoseconds: durationInNanoseconds)
-        do {
-            return try await legacyKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
-        } catch {
-            throw error
-        }
+        return try await legacyKeyLookup(endpoints: endpoints, verifier: verifier, verifierId: verifierId)
     }
 
     internal func legacyKeyLookup(endpoints: [String], verifier: String, verifierId: String) async throws -> LegacyKeyLookupResponse {
@@ -1063,13 +992,9 @@ extension TorusUtils {
         var resultArray = [LegacyKeyLookupResponse]()
         var requestArray = [URLRequest]()
         for endpoint in endpoints {
-            do {
-                var request = try makeUrlRequest(url: endpoint)
-                request.httpBody = rpcdata
-                requestArray.append(request)
-            } catch {
-                throw error
-            }
+            var request = try makeUrlRequest(url: endpoint)
+            request.httpBody = rpcdata
+            requestArray.append(request)
         }
 
         return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { [unowned self] group in
@@ -1089,39 +1014,35 @@ extension TorusUtils {
                     switch val {
                     case let .success(model):
                         let data = model.data
-                        do {
-                            let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                            os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)")
+                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                        os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)")
 
-                            let result = decoded.result
-                            let error = decoded.error
-                            if let _ = error {
-                                let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
-                                throw error
-                            } else {
-                                guard
-                                    let decodedResult = result as? [String: [[String: String]]],
-                                    let k = decodedResult["keys"],
-                                    let keys = k.first,
-                                    let pubKeyX = keys["pub_key_X"],
-                                    let pubKeyY = keys["pub_key_Y"],
-                                    let keyIndex = keys["key_index"],
-                                    let address = keys["address"]
-                                else {
-                                    throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
-                                }
-                                let model = LegacyKeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
-                                resultArray.append(model)
+                        let result = decoded.result
+                        let error = decoded.error
+                        if let _ = error {
+                            let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
+                            throw error
+                        } else {
+                            guard
+                                let decodedResult = result as? [String: [[String: String]]],
+                                let k = decodedResult["keys"],
+                                let keys = k.first,
+                                let pubKeyX = keys["pub_key_X"],
+                                let pubKeyY = keys["pub_key_Y"],
+                                let keyIndex = keys["key_index"],
+                                let address = keys["address"]
+                            else {
+                                throw TorusUtilError.decodingFailed("keys not found in \(result ?? "")")
                             }
-                            let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
+                            let model = LegacyKeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, keyIndex: keyIndex, address: address)
+                            resultArray.append(model)
+                        }
+                        let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
 
-                            if let keyResult = keyResult {
-                                os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult.description)
-                                session.invalidateAndCancel()
-                                return keyResult
-                            }
-                        } catch let err {
-                            throw err
+                        if let keyResult = keyResult {
+                            os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult.description)
+                            session.invalidateAndCancel()
+                            return keyResult
                         }
                     case let .failure(error):
                         throw error
@@ -1168,13 +1089,9 @@ extension TorusUtils {
         var resultArray = [KeyLookupResponse]()
         var requestArray = [URLRequest]()
         for endpoint in endpoints {
-            do {
-                var request = try makeUrlRequest(url: endpoint)
-                request.httpBody = rpcdata
-                requestArray.append(request)
-            } catch {
-                throw error
-            }
+            var request = try makeUrlRequest(url: endpoint)
+            request.httpBody = rpcdata
+            requestArray.append(request)
         }
 
         return try await withThrowingTaskGroup(of: Result<TaskGroupResponse, Error>.self, body: { [unowned self] group in
@@ -1194,41 +1111,37 @@ extension TorusUtils {
                     switch val {
                     case let .success(model):
                         let data = model.data
-                        do {
-                            let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
-                            os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)")
+                        let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: data) // User decoder to covert to struct
+                        os_log("keyLookup: API response: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decoded)")
 
-                            // result of decoded data
-                            let result = decoded.result
-                            let error = decoded.error
-                            if let _ = error {
-                                let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
-                                throw error
-                            } else {
-                                guard
-                                    let decodedResult = result as? [String: [[String: Any]]],
+                        // result of decoded data
+                        let result = decoded.result
+                        let error = decoded.error
+                        if let _ = error {
+                            let error = KeyLookupError.createErrorFromString(errorString: decoded.error?.data ?? "")
+                            throw error
+                        } else {
+                            guard
+                                let decodedResult = result as? [String: [[String: Any]]],
 
-                                    let k = decodedResult["keys"],
-                                    let keys = k.first,
-                                    let pubKeyX = keys["pub_key_X"] as? String,
-                                    let pubKeyY = keys["pub_key_Y"] as? String,
-                                    let address = keys["address"] as? String
-                                else {
-                                    throw TorusUtilError.decodingFailed("key not found")
-                                }
-                                let isNewKey = keys["is_new_key"] as? Bool ?? false
-                                let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, address: address, isNewKey: isNewKey)
-                                resultArray.append(model)
+                                let k = decodedResult["keys"],
+                                let keys = k.first,
+                                let pubKeyX = keys["pub_key_X"] as? String,
+                                let pubKeyY = keys["pub_key_Y"] as? String,
+                                let address = keys["address"] as? String
+                            else {
+                                throw TorusUtilError.decodingFailed("key not found")
                             }
-                            let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
+                            let isNewKey = keys["is_new_key"] as? Bool ?? false
+                            let model = KeyLookupResponse(pubKeyX: pubKeyX, pubKeyY: pubKeyY, address: address, isNewKey: isNewKey)
+                            resultArray.append(model)
+                        }
+                        let keyResult = thresholdSame(arr: resultArray, threshold: threshold) // Check if threshold is satisfied
 
-                            if let keyResult = keyResult {
-                                os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult.description)
-                                session.invalidateAndCancel()
-                                return keyResult
-                            }
-                        } catch let err {
-                            throw err
+                        if let keyResult = keyResult {
+                            os_log("keyLookup: fulfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, keyResult.description)
+                            session.invalidateAndCancel()
+                            return keyResult
                         }
                     case let .failure(error):
                         throw error
@@ -1274,86 +1187,78 @@ extension TorusUtils {
         os_log("newEndpoints2 : %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, endpoints)
 
         let SignerObject = JSONRPCrequest(method: JRPC_METHODS.LEGACY_KEY_ASSIGN, params: ["verifier": verifier, "verifier_id": verifierId])
+        let rpcdata = try encoder.encode(SignerObject)
+        var request = try makeUrlRequest(url: signerHost)
+        request.addValue(torusNodePubs[nodeNum].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
+        request.addValue(torusNodePubs[nodeNum].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
+        switch network {
+        case let .legacy(network): request.addValue(network.path, forHTTPHeaderField: "network")
+        case let .sapphire(network): request.addValue(network.path, forHTTPHeaderField: "network")
+        }
+
+        request.httpBody = rpcdata
         do {
-            let rpcdata = try encoder.encode(SignerObject)
-            var request = try makeUrlRequest(url: signerHost)
-            request.addValue(torusNodePubs[nodeNum].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
-            request.addValue(torusNodePubs[nodeNum].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
-            switch network {
-            case let .legacy(network): request.addValue(network.path, forHTTPHeaderField: "network")
-            case let .sapphire(network): request.addValue(network.path, forHTTPHeaderField: "network")
-            }
-
-            request.httpBody = rpcdata
+            let responseFromSignerData: (Data, URLResponse) = try await urlSession.data(for: request)
+            let decodedSignerResponse = try JSONDecoder().decode(SignerResponse.self, from: responseFromSignerData.0)
+            os_log("KeyAssign: responseFromSigner: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedSignerResponse)")
+            let keyassignRequest = KeyAssignRequest(params: ["verifier": verifier, "verifier_id": verifierId], signerResponse: decodedSignerResponse)
+            // Combine signer respose and request data
+            encoder.outputFormatting = .sortedKeys
+            let newData = try encoder.encode(keyassignRequest)
+            var request2 = try makeUrlRequest(url: endpoints[nodeNum])
+            request2.httpBody = newData
+            let keyAssignRequestData: (Data, URLResponse) = try await urlSession.data(for: request2)
             do {
-                let responseFromSignerData: (Data, URLResponse) = try await urlSession.data(for: request)
-                let decodedSignerResponse = try JSONDecoder().decode(SignerResponse.self, from: responseFromSignerData.0)
-                os_log("KeyAssign: responseFromSigner: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedSignerResponse)")
-                let keyassignRequest = KeyAssignRequest(params: ["verifier": verifier, "verifier_id": verifierId], signerResponse: decodedSignerResponse)
-                // Combine signer respose and request data
-                encoder.outputFormatting = .sortedKeys
-                let newData = try encoder.encode(keyassignRequest)
-                var request2 = try makeUrlRequest(url: endpoints[nodeNum])
-                request2.httpBody = newData
-                let keyAssignRequestData: (Data, URLResponse) = try await urlSession.data(for: request2)
-                do {
-                    let decodedData = try JSONDecoder().decode(JSONRPCresponse.self, from: keyAssignRequestData.0) // User decoder to covert to struct
+                let decodedData = try JSONDecoder().decode(JSONRPCresponse.self, from: keyAssignRequestData.0) // User decoder to covert to struct
 
-                    os_log("keyAssign: fullfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedData)")
-                    return decodedData
-                } catch let err {
-                    throw TorusUtilError.decodingFailed(err.localizedDescription)
-                }
-            } catch {
-                os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(error)")
-                return try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
+                os_log("keyAssign: fullfill: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, "\(decodedData)")
+                return decodedData
+            } catch let err {
+                throw TorusUtilError.decodingFailed(err.localizedDescription)
             }
-        } catch let err {
-            throw err
+        } catch {
+            os_log("KeyAssign: err: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, "\(error)")
+            return try await keyAssign(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId, signerHost: signerHost, network: network, firstPoint: initialPoint, lastPoint: nodeNum + 1)
         }
     }
 
     internal func generateNonceMetadataParams(message: String, privateKey: BigInt, nonce: BigInt?) throws -> NonceMetadataParams {
-        do {
-            let privKeyData = Data(hex: privateKey.serialize().hexString.addLeading0sForLength64())
-            guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
-            else {
-                throw TorusUtilError.runtime("invalid priv key")
-            }
-
-            let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
-            var setData: NonceMetadataParams.SetNonceData = .init(data: message, timestamp: timeStamp)
-            if nonce != nil {
-                setData.data = String(nonce!, radix: 16).addLeading0sForLength64()
-            }
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .sortedKeys
-            let encodedData = try JSONEncoder()
-                .encode(setData)
-            let hash = keccak256Data(encodedData)
-            guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature,
-                  var sig = SECP256K1.parseSignature(signature: sigData),
-                  var recoveredKey = SECP256K1.recoverPublicKey(hash: hash, recoverableSignature: &sig) else {
-                throw TorusUtilError.runtime("sign for recovery hash failed")
-            }
-
-            guard let recoveryKeySerialized = SECP256K1.serializePublicKey(publicKey: &recoveredKey, compressed: false)?.hexString
-            else {
-                throw TorusUtilError.runtime("invalid public key")
-            }
-
-            if recoveryKeySerialized != serializedPublicKey {
-                throw TorusUtilError.runtime("recover from signature failed")
-            }
-
-            return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
-        } catch let error {
-            throw error
+        let privKeyData = Data(hex: privateKey.serialize().hexString.addLeading0sForLength64())
+        guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
+        else {
+            throw TorusUtilError.runtime("invalid priv key")
         }
+
+        let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
+        var setData: NonceMetadataParams.SetNonceData = .init(data: message, timestamp: timeStamp)
+        if nonce != nil {
+            setData.data = String(nonce!, radix: 16).addLeading0sForLength64()
+        }
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
+        let encodedData = try JSONEncoder()
+            .encode(setData)
+        let hash = keccak256Data(encodedData)
+        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature,
+              var sig = SECP256K1.parseSignature(signature: sigData),
+              var recoveredKey = SECP256K1.recoverPublicKey(hash: hash, recoverableSignature: &sig) else {
+            throw TorusUtilError.runtime("sign for recovery hash failed")
+        }
+
+        guard let recoveryKeySerialized = SECP256K1.serializePublicKey(publicKey: &recoveredKey, compressed: false)?.hexString
+        else {
+            throw TorusUtilError.runtime("invalid public key")
+        }
+
+        if recoveryKeySerialized != serializedPublicKey {
+            throw TorusUtilError.runtime("recover from signature failed")
+        }
+
+        return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
     }
 
     internal func getPublicKeyPointFromPubkeyString(pubKey: String) throws -> (String, String) {
-        let publicKeyHashData = Data.fromHex(pubKey.strip04Prefix())
+        let publicKeyHashData = Data(hexString: pubKey.strip04Prefix())
         guard publicKeyHashData?.count == 64 else {
             throw "Invalid address,"
         }
@@ -1368,10 +1273,18 @@ extension TorusUtils {
         }
     }
 
-    internal func combinePublicKeys(keys: [String], compressed: Bool) -> String {
-        let data = keys.map({ Data.fromHex($0)! })
+    internal func combinePublicKeys(keys: [String], compressed: Bool) throws -> String {
+        let data = try keys.map({ guard let key = Data(hexString: $0) else {
+            throw TorusUtilError.runtime("Invalid public key when combining")
+        }
+            return key
+        })
         let added = SECP256K1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
-        return (added?.toHexString())!
+        guard let result = added?.toHexString()
+        else {
+            throw TorusUtilError.runtime("Invalid public key after combining")
+        }
+        return result
     }
 
     internal func formatLegacyPublicData(finalKeyResult: KeyLookupResponse, enableOneKey: Bool, isNewKey: Bool) async throws -> TorusPublicKey {
@@ -1394,7 +1307,7 @@ extension TorusUtils {
                     guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce).serialize().addLeading0sForLength64()) else {
                         throw TorusUtilError.decryptionFailed
                     }
-                    finalPubKey = combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
+                    finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
                 } else {
                     finalPubKey = String(finalPubKey.suffix(128))
                 }
@@ -1406,7 +1319,7 @@ extension TorusUtils {
                     guard nonceResult?.pubNonce != nil else { throw TorusUtilError.decodingFailed("No pub nonce found") }
                     finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                     let ecpubKeys = "04" + (nonceResult?.pubNonce!.x.addLeading0sForLength64())! + (nonceResult?.pubNonce!.y.addLeading0sForLength64())!
-                    finalPubKey = combinePublicKeys(keys: [finalPubKey, ecpubKeys], compressed: false)
+                    finalPubKey = try combinePublicKeys(keys: [finalPubKey, ecpubKeys], compressed: false)
                 }
                 finalPubKey = String(finalPubKey.suffix(128))
             } else {
@@ -1424,7 +1337,7 @@ extension TorusUtils {
                 guard let noncePublicKey = SECP256K1.privateToPublic(privateKey: BigUInt(nonce2).serialize().addLeading0sForLength64()) else {
                     throw TorusUtilError.decryptionFailed
                 }
-                finalPubKey = combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
+                finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey.toHexString()], compressed: false)
             } else {
                 finalPubKey = String(finalPubKey.suffix(128))
             }
@@ -1466,7 +1379,6 @@ extension TorusUtils {
     }
 
     internal func tupleToArray(_ tuple: Any) -> [UInt8] {
-        // var result = [UInt8]()
         let tupleMirror = Mirror(reflecting: tuple)
         let tupleElements = tupleMirror.children.map({ $0.value as! UInt8 })
         return tupleElements

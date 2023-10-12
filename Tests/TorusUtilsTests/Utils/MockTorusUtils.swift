@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Shubham on 2/8/21.
-//
-
 import FetchNodeDetails
 import Foundation
 import TorusUtils

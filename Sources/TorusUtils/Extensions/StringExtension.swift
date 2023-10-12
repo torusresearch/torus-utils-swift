@@ -1,13 +1,5 @@
-//
-//  File.swift
-//
-//
-//  Created by Dhruv Jaiswal on 23/11/22.
-//
-
 import Foundation
 extension String {
-
     func padLeft(padChar: Character, count: Int) -> String {
         let str = self
         if str.count >= count {
@@ -61,7 +53,6 @@ extension String {
         } else {
             return self
         }
-        // String(format: "%064d", self)
     }
     
     

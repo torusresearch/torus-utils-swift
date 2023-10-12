@@ -1,15 +1,10 @@
-//
-//  PolygonTest.swift
-//
-//
-//  Created by Dhruv Jaiswal on 01/06/22.
-//
-
 import BigInt
 import CommonSources
 import FetchNodeDetails
 import JWTKit
-import secp256k1
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 import XCTest
 
 import CoreMedia

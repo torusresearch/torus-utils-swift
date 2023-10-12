@@ -17,10 +17,6 @@ public struct KeyIndex : Decodable {
         self.serviceGroupId = try container.decode(String.self, forKey: .service_group_id)
         self.tag = try container.decode(String.self, forKey: .tag)
     }
-    
-//    public func encode(to encoder: Encoder) throws {
-//
-//    }
 }
 
 enum keyIndexTag: String {

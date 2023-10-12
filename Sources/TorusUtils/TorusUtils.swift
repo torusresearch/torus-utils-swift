@@ -1,20 +1,16 @@
 import BigInt
 import CommonSources
 import FetchNodeDetails
-/**
- torus utils class
- Author: Shubham Rathi
- */
 import Foundation
 import OSLog
 
 import AnyCodable
-import secp256k1
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 
-@available(macOSApplicationExtension 10.15, *)
 var utilsLogType = OSLogType.default
 
-@available(iOS 13, macOS 10.15, *)
 open class TorusUtils: AbstractTorusUtils {
     static let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
     private var timeout: Int = 30
@@ -124,7 +120,7 @@ open class TorusUtils: AbstractTorusUtils {
                 let pubNonceX = (nonceResult?.pubNonce?.x ?? "0")
                 let pubNonceY = (nonceResult?.pubNonce?.y ?? "0")
                 let noncePub = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
-                modifiedPubKey = combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
+                modifiedPubKey = try combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
             }
 
@@ -271,7 +267,7 @@ open class TorusUtils: AbstractTorusUtils {
                 if typeOfUser == .v2 {
                     finalPubKey = "04" + oAuthKeyX.addLeading0sForLength64() + oAuthKeyY.addLeading0sForLength64()
                     let newkey = "04" + (nonceResult.pubNonce?.x.addLeading0sForLength64())! + (nonceResult.pubNonce?.y.addLeading0sForLength64())!
-                    finalPubKey = combinePublicKeys(keys: [finalPubKey, newkey], compressed: false)
+                    finalPubKey = try combinePublicKeys(keys: [finalPubKey, newkey], compressed: false)
                     pubKeyNonceResult = .init(x: nonceResult.pubNonce!.x, y: nonceResult.pubNonce!.y)
                 } else {
                     // for imported keys in legacy networks
@@ -408,7 +404,6 @@ open class TorusUtils: AbstractTorusUtils {
                     switch val {
                     case let .success(model):
                         let _data = model.data
-//                            let i = Int(indexes[model.index])
                         let i = Int(indexes[model.index]) - 1
 
                         let decoded = try JSONDecoder().decode(JSONRPCresponse.self, from: _data)

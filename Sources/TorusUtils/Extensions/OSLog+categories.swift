@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Shubham on 7/9/21.
-//
-
 import Foundation
 import os
 
@@ -17,7 +10,6 @@ public struct TorusUtilsLogger {
     static let core = OSLog(subsystem: subsystem, category: "core")
 }
 
-@available(macOS 10.15, iOS 13.0, *)
 func getTorusLogger(log: OSLog = .default, type: OSLogType = .default) -> OSLog {
     var logCheck: OSLog { utilsLogType.rawValue <= type.rawValue ? log : TorusUtilsLogger.inactiveLog }
     return logCheck

@@ -86,14 +86,6 @@ public struct LegacyLookupResponse :Decodable{
             self.verifier = try container.decode([String: [String]].self, forKey: .Verifiers)
             
         }
-//        public init(from decoder: Decoder) throws {
-//            let container = try decoder.container(keyedBy: CodingKeys.self)
-//            self.keys = try container.decode(.self, forKey: .keys)
-//        }
     }
-    
     public var keys : [KeyLookup]
-
-    
-
 }

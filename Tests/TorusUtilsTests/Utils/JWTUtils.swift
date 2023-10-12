@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Shubham on 3/8/21.
-//
-
 import Foundation
 import JWTKit
 
