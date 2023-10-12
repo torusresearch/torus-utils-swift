@@ -127,12 +127,14 @@ extension TorusUtils {
         do {
             if privateKey != nil {
                 let val = try generateParams(message: msg, privateKey: privateKey!)
-                data = try JSONEncoder().encode(val)
+                let encoder = JSONEncoder();
+                encoder.outputFormatting = .sortedKeys
+                data = try encoder.encode(val)
             } else {
                 let dict: [String: Any] = ["pub_key_X": x, "pub_key_Y": y, "set_data": ["data": msg]]
-                data = try JSONSerialization.data(withJSONObject: dict)
+                data = try JSONSerialization.data(withJSONObject: dict, options: .sortedKeys)
             }
-            var request = try! makeUrlRequest(url: "\(legacyMetadataHost)/get_or_set_nonce")
+            var request = try makeUrlRequest(url: "\(legacyMetadataHost)/get_or_set_nonce")
             request.httpBody = data
             let val = try await urlSession.data(for: request)
             let decoded = try JSONDecoder().decode(GetOrSetNonceResult.self, from: val.0)
