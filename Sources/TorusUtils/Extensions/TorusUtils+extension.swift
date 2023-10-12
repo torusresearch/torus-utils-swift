@@ -157,7 +157,7 @@ extension TorusUtils {
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encoder = JSONEncoder()
             encoder.outputFormatting = .sortedKeys
-            let encodedData = try encoder
+            let encodedData = try JSONEncoder()
                 .encode(setData)
 
             let hash = keccak256Data(encodedData)
@@ -1326,7 +1326,10 @@ extension TorusUtils {
             if nonce != nil {
                 setData.data = String(nonce!, radix: 16).addLeading0sForLength64()
             }
-            let encodedData = try JSONEncoder().encode(setData)
+            let encoder = JSONEncoder()
+            encoder.outputFormatting = .sortedKeys
+            let encodedData = try JSONEncoder()
+                .encode(setData)
             let hash = keccak256Data(encodedData)
             guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature,
                   var sig = SECP256K1.parseSignature(signature: sigData),
