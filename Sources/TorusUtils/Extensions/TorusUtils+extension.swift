@@ -103,7 +103,7 @@ extension TorusUtils {
         guard let encodedUnwrapped = encoded else {
             throw TorusUtilError.runtime("Unable to serialize dictionary into JSON. \(dictionary)")
         }
-        var request = try! makeUrlRequest(url: "\(legacyMetadataHost)/get")
+        var request = try makeUrlRequest(url: "\(legacyMetadataHost)/get")
         request.httpBody = encodedUnwrapped
         do {
             let val = try await urlSession.data(for: request)
@@ -1273,7 +1273,7 @@ extension TorusUtils {
         let SignerObject = JSONRPCrequest(method: JRPC_METHODS.LEGACY_KEY_ASSIGN, params: ["verifier": verifier, "verifier_id": verifierId])
         do {
             let rpcdata = try encoder.encode(SignerObject)
-            var request = try! makeUrlRequest(url: signerHost)
+            var request = try makeUrlRequest(url: signerHost)
             request.addValue(torusNodePubs[nodeNum].getX().lowercased(), forHTTPHeaderField: "pubKeyX")
             request.addValue(torusNodePubs[nodeNum].getY().lowercased(), forHTTPHeaderField: "pubKeyY")
             switch network {
