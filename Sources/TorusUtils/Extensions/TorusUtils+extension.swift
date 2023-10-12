@@ -157,7 +157,7 @@ extension TorusUtils {
             let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
             let encoder = JSONEncoder()
             encoder.outputFormatting = .sortedKeys
-            let encodedData = try JSONEncoder()
+            let encodedData = try encoder
                 .encode(setData)
 
             let hash = keccak256Data(encodedData)
