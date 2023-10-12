@@ -1,14 +1,15 @@
 import BigInt
 import FetchNodeDetails
 import JWTKit
-import secp256k1
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 import XCTest
 
 import CommonSources
 
 @testable import TorusUtils
 
-@available(iOS 13.0, *)
 class IntegrationTests: XCTestCase {
     static var fetchNodeDetails: AllNodeDetailsModel?
     // static var nodeDetails: NodeDetails?
@@ -30,7 +31,6 @@ class IntegrationTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-//        fnd = FetchNodeDetails(proxyAddress: FetchNodeDetails.proxyAddressTestnet, network: .TESTNET)
         fnd = NodeDetailManager(network: .legacy(.TESTNET))
     }
 
@@ -94,23 +94,6 @@ class IntegrationTests: XCTestCase {
         }
     }
 
-//    func test_shouldLogin() async {
-//        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
-//        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-//        let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
-//        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Codable]
-//        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-//        do {
-//            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-//            let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),  verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-//            XCTAssertEqual(data.privKey, "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
-//            exp1.fulfill()
-//        } catch let error {
-//            XCTFail(error.localizedDescription)
-//            exp1.fulfill()
-//        }
-//    }
-
     // MARK: Aggregate tests
 
     func test_getPublicAddressAggregateLogin() async throws {
@@ -136,90 +119,9 @@ class IntegrationTests: XCTestCase {
         let val = try await tu.keyLookup(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: TORUS_TEST_AGGREGATE_VERIFIER, verifierId: TORUS_TEST_EMAIL)
         XCTAssertEqual(val.address, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
     }
-
-//    func test_shouldAggregateLogin() async {
-//        let exp1 = XCTestExpectation(description: "Should be able to getPublicAddress")
-//        let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
-//        let verifierID: String = TORUS_TEST_EMAIL
-//        let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
-//        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-//        let hashedIDToken = jwt.sha3(.keccak256)
-//        let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Codable]
-//        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-//        do {
-//            let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
-//            let val = try await tu.retrieveShares( endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(),  verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
-//            XCTAssertEqual(val.ethAddress, "0x5a165d2Ed4976BD104caDE1b2948a93B72FA91D2")
-//            exp1.fulfill()
-//        } catch let err {
-//            XCTFail(err.localizedDescription)
-//            exp1.fulfill()
-//        }
-//    }
 }
 
-extension IntegrationTests {
-//    func test_retrieveShares_timeout() async {
-//        // change the timeout variable in TorusUtil to 0 the test should fail
-//        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
-//        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-//        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Any]
-//        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-//        do {
-//            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-//            var endpoints = nodeDetails.getTorusNodeEndpoints()
-//            endpoints[0] = "https://ndjnfjbfrj/random"
-//            // should fail if un-commented threshold 4/5
-//            // endpoints[1] = "https://ndjnfjbfrj/random"
-//            let data = try await tu.handleRetrieveShares(torusNodePubs: nodeDetails.getTorusNodePub(), endpoints: endpoints, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL, idToken: jwt, extraParams: buffer)
-//            XCTAssertEqual(data.privateKey, "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
-//            exp1.fulfill()
-//        } catch let error {
-//            XCTFail(error.localizedDescription)
-//            exp1.fulfill()
-//        }
-//    }
-//
-//    func test_retrieveShares_some_nodes_down() async {
-//        let exp1 = XCTestExpectation(description: "Should be able to do a Login")
-//        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-//        let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
-//        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER, "verifier_id": TORUS_TEST_EMAIL] as [String: Codable]
-//        let buffer: Data = try! NSKeyedArchiver.archivedData(withRootObject: extraParams, requiringSecureCoding: false)
-//        do {
-//            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-//            var endpoints = nodeDetails.getTorusNodeEndpoints()
-//            endpoints[0] = "https://ndjnfjbfrj/random"
-//            // should fail if un-commented threshold 4/5
-//          // endpoints[1] = "https://ndjnfjbfrj/random"
-//            let data = try await tu.retrieveShares(endpoints: endpoints, torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: jwt, extraParams: extraParams)
-//            XCTAssertEqual(data.privKey, "068ee4f97468ef1ae95d18554458d372e31968190ae38e377be59d8b3c9f7a25")
-//            exp1.fulfill()
-//        } catch let error {
-//            XCTFail(error.localizedDescription)
-//            exp1.fulfill()
-//        }
-//    }
-//
-//    func test_keyLookup_some_nodes_down() async {
-//
-//        let exp1 = XCTestExpectation(description: "Should be able to do a keyLookup")
-//        do {
-//            let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
-//            var endpoints = nodeDetails.getTorusNodeEndpoints()
-//            endpoints[0] = "https://ndjnfjbfrj/random"
-//            endpoints[1] = "https://ndjnfjbfrj/random"
-//            // should fail if un-commented threshold 3/5 in case of key lookup
-//           //  endpoints[2] = "https://ndjnfjbfrj/random"
-//            let val = try await tu.keyLookup(endpoints: endpoints, verifier: "google-lrc", verifierId: TORUS_TEST_EMAIL)
-//            XCTAssertEqual(val.address, "0xFf5aDad69F4e97AF4D4567e7C333C12df6836a70")
-//            exp1.fulfill()
-//        } catch let err {
-//            XCTFail(err.localizedDescription)
-//            exp1.fulfill()
-//        }
-//    }
-}
+extension IntegrationTests {}
 
 struct ROPSTEN_CONSTANTS {
     static let endpoints = ["https://teal-15-1.torusnode.com/jrpc", "https://teal-15-3.torusnode.com/jrpc", "https://teal-15-4.torusnode.com/jrpc", "https://teal-15-5.torusnode.com/jrpc", "https://teal-15-2.torusnode.com/jrpc"]

@@ -1,6 +1,4 @@
 import Foundation
-import CryptoKit
-
 
 func normalizeKeysResult(keyArr: [VerifierLookupResponse.Key]) -> VerifierLookupResponse {
     var finalResult: VerifierLookupResponse = VerifierLookupResponse(keys: [], is_new_key: false, node_index: "0")

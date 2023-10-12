@@ -53,12 +53,6 @@ struct ShareRequestResult : Decodable {
         }
         
     }
-    
-//    public func encode(to encoder: Encoder) throws {
-//        var container = encoder.container(keyedBy: ShareRequestResult.self)
-//        try? container.encode(sessionTokens , forKey: .session_tokens)
-//
-//    }
 }
 
 typealias ImportShareRequestResult = ShareRequestResult
@@ -113,10 +107,4 @@ struct LegacyShareRequestResult : Decodable {
             self.sessionTokenSigMetadata = []
         }
     }
-    
-//    public func encode(to encoder: Encoder) throws {
-//        var container = encoder.container(keyedBy: ShareRequestResult.self)
-//        try? container.encode(sessionTokens , forKey: .session_tokens)
-//
-//    }
 }

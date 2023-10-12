@@ -1,10 +1,3 @@
-//
-//  JSONRPCRequest.swift
-//
-//
-//  Created by Shubham on 26/3/20.
-//
-
 import BigInt
 import Foundation
 

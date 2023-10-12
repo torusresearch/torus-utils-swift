@@ -1,6 +1,5 @@
 import BigInt
 import FetchNodeDetails
-import CryptoSwift
 import CommonSources
 import Foundation
 

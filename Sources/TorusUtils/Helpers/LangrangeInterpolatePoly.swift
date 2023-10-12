@@ -1,7 +1,6 @@
 import Foundation
 import BigInt
 
-
 func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
     var (t, newT) = (BigInt(0), BigInt(1))
     var (r, newR) = (m, a)
@@ -134,9 +133,6 @@ func lagrangeInterpolationWithNodeIndex(shares: [BigInt], nodeIndex: [BigInt]) -
         
         return secret % modulus
 }
-
-
-
 
 func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicShares: [Share]? = nil) throws -> Polynomial {
     var actualS = secret

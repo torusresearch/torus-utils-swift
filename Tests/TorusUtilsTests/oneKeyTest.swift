@@ -1,15 +1,10 @@
-//
-//  oneKey.swift
-//
-//
-//  Created by Dhruv Jaiswal on 02/06/22.
-//
-
 import BigInt
 import CommonSources
 import FetchNodeDetails
 import JWTKit
-import secp256k1
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 import XCTest
 
 import CoreMedia
@@ -24,7 +19,6 @@ class OneKeyTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-//        fnd = FetchNodeDetails(proxyAddress: FetchNodeDetails.proxyAddressTestnet, network: .TESTNET)
         fnd = NodeDetailManager(network: .legacy(.TESTNET))
     }
 

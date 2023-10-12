@@ -22,16 +22,6 @@ extension String {
         return range.lowerBound
     }
 
-    func split(intoChunksOf chunkSize: Int) -> [String] {
-        var output = [String]()
-        let splittedString = map { $0 }
-            .split(intoChunksOf: chunkSize)
-        splittedString.forEach {
-            output.append($0.map { String($0) }.joined(separator: ""))
-        }
-        return output
-    }
-
     subscript(bounds: CountableClosedRange<Int>) -> String {
         let start = index(startIndex, offsetBy: bounds.lowerBound)
         let end = index(startIndex, offsetBy: bounds.upperBound)
@@ -59,12 +49,6 @@ extension String {
         }
     }
 
-    func interpretAsBinaryData() -> Data? {
-        let padded = padding(toLength: ((count + 7) / 8) * 8, withPad: "0", startingAt: 0)
-        let byteArray = padded.split(intoChunksOf: 8).map { UInt8(strtoul($0, nil, 2)) }
-        return Data(byteArray)
-    }
-
     func hasHexPrefix() -> Bool {
         return hasPrefix("0x")
     }
@@ -82,18 +66,6 @@ extension String {
             return "0x" + self
         }
         return self
-    }
-
-    func stripLeadingZeroes() -> String? {
-        let hex = addHexPrefix()
-        guard let matcher = try? NSRegularExpression(pattern: "^(?<prefix>0x)0*(?<end>[0-9a-fA-F]*)$", options: NSRegularExpression.Options.dotMatchesLineSeparators) else { return nil }
-        let match = matcher.captureGroups(string: hex, options: NSRegularExpression.MatchingOptions.anchored)
-        guard let prefix = match["prefix"] else { return nil }
-        guard let end = match["end"] else { return nil }
-        if end != "" {
-            return prefix + end
-        }
-        return "0x0"
     }
 
     func matchingStrings(regex: String) -> [[String]] {

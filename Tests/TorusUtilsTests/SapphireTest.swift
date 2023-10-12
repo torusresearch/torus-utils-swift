@@ -1,14 +1,15 @@
 import BigInt
 import FetchNodeDetails
 import JWTKit
-import secp256k1
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 import XCTest
 
 import CommonSources
 
 @testable import TorusUtils
 
-@available(iOS 13.0, *)
 final class SapphireTest: XCTestCase {
     static var fetchNodeDetails: AllNodeDetailsModel?
     // static var nodeDetails: NodeDetails?
