@@ -1,4 +1,40 @@
 import Foundation
+import BigInt
+
+func keccak256Data(_ data: Data) -> Data {
+    return data.sha3(.keccak256)
+}
+
+func keccak256Hex(_ data: Data) -> String {
+    let hash = keccak256Data(data)
+    return "0x" + hash.map { String(format: "%02x", $0) }.joined()
+}
+
+func stripHexPrefix(_ str: String) -> String {
+    return str.hasPrefix("0x") ? String(str.dropFirst(2)) : str
+}
+
+func generateAddressFromPubKey(publicKeyX: String, publicKeyY: String) throws -> String {
+    let publicKeyHex = publicKeyX.addLeading0sForLength64()  + publicKeyY.addLeading0sForLength64()
+    guard let publicKeyData = Data(hexString: publicKeyHex)
+    else {
+        throw TorusUtilError.runtime("Invalid public key when deriving etherium address")
+    }
+    let ethAddrData = publicKeyData.sha3(.keccak256).suffix(20)
+    let ethAddrlower = "0x" + ethAddrData.toHexString()
+    return ethAddrlower.toChecksumAddress()
+}
+
+func getPostboxKeyFrom1OutOf1(privKey: String, nonce: String) -> String {
+    guard let privKeyBigInt = BigInt(privKey, radix: 16),
+          let nonceBigInt = BigInt(nonce, radix: 16),
+          let modulus = BigInt(CURVE_N, radix: 16) else {
+        return ""
+    }
+    
+    let result = (privKeyBigInt - nonceBigInt).modulus(modulus)
+    return result.serialize().toHexString()
+}
 
 func normalizeKeysResult(keyArr: [VerifierLookupResponse.Key]) -> VerifierLookupResponse {
     var finalResult: VerifierLookupResponse = VerifierLookupResponse(keys: [], is_new_key: false, node_index: "0")
