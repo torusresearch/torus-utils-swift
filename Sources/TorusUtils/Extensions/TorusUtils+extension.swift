@@ -119,12 +119,8 @@ extension TorusUtils {
     }
 
     internal func generateParams(message: String, privateKey: String) throws -> MetadataParams {
-        let privKeyData = Data(hex: privateKey)
-        // this pubkey is not being padded in backend as well on web, so do not pad here.
-        guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
-        else {
-            throw TorusUtilError.runtime("invalid priv key")
-        }
+        let privKey = try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey), format: .uncompressed)
+        let publicKey = privKey.publicKey.dataRepresentation.hexString
 
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
@@ -134,12 +130,12 @@ extension TorusUtils {
             .encode(setData)
 
         let hash = keccak256Data(encodedData)
-        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature
+        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
         else {
             throw TorusUtilError.runtime("sign for recovery hash failed")
         }
 
-        return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
     }
 
     // MARK: - getShareOrKeyAssign
@@ -1211,11 +1207,8 @@ extension TorusUtils {
     }
 
     internal func generateNonceMetadataParams(message: String, privateKey: BigInt, nonce: BigInt?) throws -> NonceMetadataParams {
-        let privKeyData = Data(hex: privateKey.serialize().hexString.addLeading0sForLength64())
-        guard var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privKeyData), let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
-        else {
-            throw TorusUtilError.runtime("invalid priv key")
-        }
+        let privKey = try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey.magnitude.serialize().hexString.addLeading0sForLength64()), format: .uncompressed)
+        let publicKey = privKey.publicKey.dataRepresentation.hexString
 
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         var setData: NonceMetadataParams.SetNonceData = .init(data: message, timestamp: timeStamp)
@@ -1227,12 +1220,12 @@ extension TorusUtils {
         let encodedData = try JSONEncoder()
             .encode(setData)
         let hash = keccak256Data(encodedData)
-        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKeyData).serializedSignature
+        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
         else {
             throw TorusUtilError.runtime("sign for recovery hash failed")
         }
 
-        return .init(pub_key_X: String(serializedPublicKey.suffix(128).prefix(64)), pub_key_Y: String(serializedPublicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
     }
 
     internal func getPublicKeyPointFromPubkeyString(pubKey: String) throws -> (String, String) {
