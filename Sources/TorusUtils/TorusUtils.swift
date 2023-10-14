@@ -216,13 +216,8 @@ open class TorusUtils: AbstractTorusUtils {
     private func handleRetrieveShares(torusNodePubs: [TorusNodePubModel],
                                       indexes: [BigUInt],
                                       endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
-        guard
-            let privateKey = generatePrivateKeyData(),
-            var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: privateKey),
-            let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
-        else {
-            throw TorusUtilError.runtime("Unable to generate SECP256K1 keypair.")
-        }
+        let privateKey = try secp256k1.KeyAgreement.PrivateKey(format: .uncompressed)
+        let serializedPublicKey = privateKey.publicKey.dataRepresentation.hexString
 
         // Split key in 2 parts, X and Y
         // let publicKeyHex = publicKey.toHexString()
@@ -252,7 +247,7 @@ open class TorusUtils: AbstractTorusUtils {
             let (oAuthKeyX, oAuthKeyY, oAuthKey) = try await retrieveDecryptAndReconstruct(
                 endpoints: endpoints,
                 indexes: indexes,
-                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.toHexString())
+                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.rawRepresentation.hexString)
 
             var metadataNonce: BigUInt
             var typeOfUser: UserType = .v1
@@ -331,10 +326,6 @@ open class TorusUtils: AbstractTorusUtils {
             os_log("Error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error
         }
-    }
-
-    open func generatePrivateKeyData() -> Data? {
-        return SECP256K1.generatePrivateKey()
     }
 
     open func getTimestamp() -> TimeInterval {

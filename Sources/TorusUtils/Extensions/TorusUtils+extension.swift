@@ -244,13 +244,9 @@ extension TorusUtils {
     ) async throws -> TorusKey {
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
-        guard
-            let sessionAuthKey = generatePrivateKeyData(),
-            var publicKey = SECP256K1.privateKeyToPublicKey(privateKey: sessionAuthKey),
-            let serializedPublicKey = SECP256K1.serializePublicKey(publicKey: &publicKey, compressed: false)?.hexString
-        else {
-            throw TorusUtilError.runtime("Unable to generate SECP256K1 keypair.")
-        }
+        
+        let sessionAuthKey = try secp256k1.KeyAgreement.PrivateKey(format: .uncompressed)
+        let serializedPublicKey = sessionAuthKey.publicKey.dataRepresentation.hexString
 
         // Split key in 2 parts, X and Y
         let pubKeyX = String(serializedPublicKey.suffix(128).prefix(64))
@@ -374,7 +370,7 @@ extension TorusUtils {
                     if sessionTokenSigs.count > 0 {
                         // decrypt sessionSig if enc metadata is sent
                         if sessionTokenSigMetadata.first?.ephemPublicKey != nil {
-                            sessionTokenSigPromises.append(try? decryptNodeData(eciesData: sessionTokenSigMetadata[0], ciphertextHex: sessionTokenSigs[0], privKey: sessionAuthKey.hexString.addLeading0sForLength64()))
+                            sessionTokenSigPromises.append(try? decryptNodeData(eciesData: sessionTokenSigMetadata[0], ciphertextHex: sessionTokenSigs[0], privKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64()))
                         } else {
                             sessionTokenSigPromises.append(sessionTokenSigs[0])
                         }
@@ -384,7 +380,7 @@ extension TorusUtils {
 
                     if sessionTokens.count > 0 {
                         if sessionTokenMetadata.first?.ephemPublicKey != nil {
-                            sessionTokenPromises.append(try? decryptNodeData(eciesData: sessionTokenMetadata[0], ciphertextHex: sessionTokens[0], privKey: sessionAuthKey.hexString.addLeading0sForLength64()))
+                            sessionTokenPromises.append(try? decryptNodeData(eciesData: sessionTokenMetadata[0], ciphertextHex: sessionTokens[0], privKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64()))
                         } else {
                             sessionTokenPromises.append(sessionTokenSigs[0])
                         }
@@ -399,7 +395,7 @@ extension TorusUtils {
                         guard let ciphertextHex = String(data: data, encoding: .ascii) else {
                             throw TorusUtilError.decodingFailed()
                         }
-                        let decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: ciphertextHex, privKey: sessionAuthKey.hexString.addLeading0sForLength64())
+                        let decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: ciphertextHex, privKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64())
                         shares.append(decryptedShare.addLeading0sForLength64())
                     } else {
                         os_log("retrieveShare -  0 keys returned from nodes", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
@@ -559,7 +555,7 @@ extension TorusUtils {
                     ),
                     sessionData: .init(
                         sessionTokenData: sessionTokenData,
-                        sessionAuthKey: sessionAuthKey.hexString.addLeading0sForLength64()
+                        sessionAuthKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64()
                     ),
                     metadata: .init(
                         pubNonce: pubKeyNonceResult,
