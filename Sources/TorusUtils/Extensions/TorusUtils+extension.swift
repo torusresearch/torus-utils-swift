@@ -667,13 +667,21 @@ extension TorusUtils {
     }
 
     public func encryptData(privkeyHex: String, _ dataToEncrypt: String) throws -> String {
-        guard let pubKey = SECP256K1.privateToPublic(privateKey: privkeyHex.hexa.data)?.toHexString() else {
-            throw TorusUtilError.runtime("Invalid private key hex")
-        }
+        let privKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: privkeyHex), format: .uncompressed)
+        let pubKey = privKey.publicKey.dataRepresentation.hexString
         let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt, opts: nil)
         let data = try JSONEncoder().encode(encParams)
         guard let string = String(data: data, encoding: .utf8) else { throw TorusUtilError.runtime("Invalid String from enc Params") }
         return string
+    }
+
+    internal func randomBytes(ofLength length: Int) throws -> [UInt8] {
+        var bytes = [UInt8](repeating: 0, count: length)
+        let status = SecRandomCopyBytes(kSecRandomDefault, length, &bytes)
+        if status == errSecSuccess {
+            return bytes
+        }
+        throw TorusUtilError.runtime("Failed to generate secure random bytes")
     }
 
     public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
@@ -684,7 +692,8 @@ extension TorusUtils {
 
         let encryptionKey = sharedSecret[0 ..< 32].bytes
         let macKey = sharedSecret[32 ..< 64].bytes
-        let iv: [UInt8] = (opts?.iv ?? SECP256K1.randomBytes(length: 16)?.toHexString())?.hexa ?? []
+        let random = try randomBytes(ofLength: 16)
+        let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
 
         let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
         let ciphertext = try aes.encrypt(msg.customBytes())
