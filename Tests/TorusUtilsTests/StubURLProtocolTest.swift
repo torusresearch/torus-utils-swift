@@ -14,14 +14,6 @@ public class StubMockTorusUtils: TorusUtils {
         print("[StubMockTorusUtils] getTimeStamp(): ", ret)
         return ret
     }
-
-    override open func generatePrivateKeyData() -> Data? {
-        // empty bytes
-        let ret = Data(base64Encoded: "FBz7bssmbsV6jBWoOJpkVOu14+6/Xgyt1pxTycODG08=")
-
-        print("[StubMockTorusUtils] generatePrivateKeyData(): ", ret!.bytes.toBase64())
-        return ret
-    }
 }
 
 let endpoints = ["https://teal-15-1.torusnode.com/jrpc", "https://teal-15-3.torusnode.com/jrpc", "https://teal-15-4.torusnode.com/jrpc", "https://teal-15-5.torusnode.com/jrpc", "https://teal-15-2.torusnode.com/jrpc"]

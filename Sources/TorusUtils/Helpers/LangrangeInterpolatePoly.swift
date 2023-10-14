@@ -1,5 +1,8 @@
 import Foundation
 import BigInt
+#if canImport(secp256k1)
+    import secp256k1
+#endif
 
 func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
     var (t, newT) = (BigInt(0), BigInt(1))
@@ -21,10 +24,10 @@ func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
     return t
 }
 
-func generatePrivateExcludingIndexes(shareIndexes: [BigInt]) -> BigInt {
-    let key = BigInt(SECP256K1.generatePrivateKey()!)
+func generatePrivateExcludingIndexes(shareIndexes: [BigInt]) throws -> BigInt {
+    let key = BigInt(try secp256k1.KeyAgreement.PrivateKey().rawRepresentation)
     if shareIndexes.contains(where: { $0 == key }) {
-        return generatePrivateExcludingIndexes(shareIndexes: shareIndexes)
+        return try generatePrivateExcludingIndexes(shareIndexes: shareIndexes)
     }
     return key
 }
@@ -137,13 +140,13 @@ func lagrangeInterpolationWithNodeIndex(shares: [BigInt], nodeIndex: [BigInt]) -
 func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicShares: [Share]? = nil) throws -> Polynomial {
     var actualS = secret
     if secret == nil {
-        actualS = generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
+        actualS = try generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
     }
     
     if deterministicShares == nil {
         var poly = [actualS!]
         for _ in 0..<degree {
-            let share = generatePrivateExcludingIndexes(shareIndexes: poly)
+            let share = try generatePrivateExcludingIndexes(shareIndexes: poly)
             poly.append(share)
         }
         
@@ -166,11 +169,11 @@ func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicS
     
     let remainingDegree = degree - deterministicShares.count
     for _ in 0..<remainingDegree {
-        var shareIndex = generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
+        var shareIndex = try generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
         while points[shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] != nil {
-            shareIndex = generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
+            shareIndex = try generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
         }
-        points[String(shareIndex, radix: 16).leftPadding(toLength: 64, withPad: "0")] = Point(x: shareIndex, y: BigInt(SECP256K1.generatePrivateKey()!))
+        points[String(shareIndex, radix: 16).leftPadding(toLength: 64, withPad: "0")] = Point(x: shareIndex, y: BigInt(try secp256k1.KeyAgreement.PrivateKey().rawRepresentation))
     }
     
     points["0"] = Point(x: BigInt(0), y: actualS!)
