@@ -108,17 +108,17 @@ open class TorusUtils: AbstractTorusUtils {
             var pubNonce: PubNonce?
 
             if extendedVerifierId != nil {
-                modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
+                modifiedPubKey = (X.addLeading0sForLength64() + Y.addLeading0sForLength64()).add04Prefix()
                 oAuthPubKeyString = modifiedPubKey
             } else if isLegacyNetwork() {
                 return try await formatLegacyPublicData(finalKeyResult: result.keyResult, enableOneKey: enableOneKey, isNewKey: result.keyResult.isNewKey)
             } else {
-                modifiedPubKey = "04" + X.addLeading0sForLength64() + Y.addLeading0sForLength64()
+                modifiedPubKey = (X.addLeading0sForLength64() + Y.addLeading0sForLength64()).add04Prefix()
                 oAuthPubKeyString = modifiedPubKey
 
                 let pubNonceX = (nonceResult?.pubNonce?.x ?? "0")
                 let pubNonceY = (nonceResult?.pubNonce?.y ?? "0")
-                let noncePub = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
+                let noncePub = (pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()).add04Prefix()
                 modifiedPubKey = try combinePublicKeys(keys: [modifiedPubKey, noncePub], compressed: false)
                 pubNonce = nonceResult?.pubNonce
             }
@@ -259,8 +259,8 @@ open class TorusUtils: AbstractTorusUtils {
                 let nonceType = nonceResult.typeOfUser ?? "v1"
                 typeOfUser = UserType(rawValue: nonceType) ?? UserType.v1
                 if typeOfUser == .v2 {
-                    finalPubKey = "04" + oAuthKeyX.addLeading0sForLength64() + oAuthKeyY.addLeading0sForLength64()
-                    let newkey = "04" + (nonceResult.pubNonce?.x.addLeading0sForLength64())! + (nonceResult.pubNonce?.y.addLeading0sForLength64())!
+                    finalPubKey = (oAuthKeyX.addLeading0sForLength64() + oAuthKeyY.addLeading0sForLength64()).add04Prefix()
+                    let newkey = ((nonceResult.pubNonce?.x.addLeading0sForLength64())! + (nonceResult.pubNonce?.y.addLeading0sForLength64())!).add04Prefix()
                     finalPubKey = try combinePublicKeys(keys: [finalPubKey, newkey], compressed: false)
                     pubKeyNonceResult = .init(x: nonceResult.pubNonce!.x, y: nonceResult.pubNonce!.y)
                 } else {

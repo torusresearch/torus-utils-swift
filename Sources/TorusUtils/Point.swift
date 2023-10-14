@@ -33,7 +33,7 @@ public class Point: Decodable {
     func encode(enc: String) throws -> Data {
         switch enc {
         case "arr":
-            let prefix = Data(hex: "04")
+            let prefix = Data(hex: String().add04Prefix())
             let xData = Data(hex: x.description)
             let yData = Data(hex: y.description)
             return prefix + xData + yData

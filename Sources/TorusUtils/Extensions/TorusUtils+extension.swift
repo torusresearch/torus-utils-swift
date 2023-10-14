@@ -190,7 +190,7 @@ extension TorusUtils {
 
     private func reconstructKey(decryptedShares: [Int: String], thresholdPublicKey: KeyAssignment.PublicKey) throws -> String? {
         // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
-        let allCombis = combinations(elements: Array(0..<decryptedShares.count), k: 3)
+        let allCombis = combinations(elements: Array(0 ..< decryptedShares.count), k: 3)
         var returnedKey: String?
 
         for j in 0 ..< allCombis.count {
@@ -470,7 +470,7 @@ extension TorusUtils {
                             let pubNonceX = nonceResult.pubNonce?.x
                             let pubNonceY = nonceResult.pubNonce?.y
                             typeOfUser = .v2
-                            let pubkey2 = "04" + pubNonceX!.addLeading0sForLength64() + pubNonceY!.addLeading0sForLength64()
+                            let pubkey2 = (pubNonceX!.addLeading0sForLength64() + pubNonceY!.addLeading0sForLength64()).add04Prefix()
                             let combined = try combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
                             finalPubKey = combined
                             pubKeyNonceResult = .init(x: pubNonceX!, y: pubNonceY!)
@@ -493,7 +493,7 @@ extension TorusUtils {
 
                     let pubNonceX = thresholdNonceData!.pubNonce!.x
                     let pubNonceY = thresholdNonceData!.pubNonce!.y
-                    let pubkey2 = "04" + pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()
+                    let pubkey2 = (pubNonceX.addLeading0sForLength64() + pubNonceY.addLeading0sForLength64()).add04Prefix()
                     let combined = try combinePublicKeys(keys: [finalPubKey, pubkey2], compressed: false)
                     finalPubKey = combined
                     pubKeyNonceResult = .init(x: pubNonceX, y: pubNonceY)
@@ -1268,7 +1268,7 @@ extension TorusUtils {
             nonce = BigUInt(nonceResult?.nonce ?? "0") ?? 0
             typeOfUser = .init(rawValue: nonceResult?.typeOfUser ?? ".v1") ?? .v1
             if typeOfUser == .v1 {
-                finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                finalPubKey = (pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()).add04Prefix()
                 if nonce != BigInt(0) {
                     let noncePrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
                     let noncePublicKey = noncePrivateKey.publicKey.dataRepresentation
@@ -1279,11 +1279,11 @@ extension TorusUtils {
             } else if typeOfUser == .v2 {
                 pubNonce = nonceResult?.pubNonce
                 if nonceResult?.upgraded ?? false {
-                    finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
+                    finalPubKey = (pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()).add04Prefix()
                 } else {
                     guard nonceResult?.pubNonce != nil else { throw TorusUtilError.decodingFailed("No pub nonce found") }
-                    finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
-                    let ecpubKeys = "04" + (nonceResult?.pubNonce!.x.addLeading0sForLength64())! + (nonceResult?.pubNonce!.y.addLeading0sForLength64())!
+                    finalPubKey = (pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()).add04Prefix()
+                    let ecpubKeys = ((nonceResult?.pubNonce!.x.addLeading0sForLength64())! + (nonceResult?.pubNonce!.y.addLeading0sForLength64())!).add04Prefix()
                     finalPubKey = try combinePublicKeys(keys: [finalPubKey, ecpubKeys], compressed: false)
                 }
                 finalPubKey = String(finalPubKey.suffix(128))
@@ -1296,7 +1296,7 @@ extension TorusUtils {
             nonce = localNonce
             let localPubkeyX = finalKeyResult.pubKeyX
             let localPubkeyY = finalKeyResult.pubKeyY
-            finalPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
+            finalPubKey = (localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()).add04Prefix()
             if localNonce != BigInt(0) {
                 let nonce2 = BigInt(localNonce)
                 let noncePrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce2).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)

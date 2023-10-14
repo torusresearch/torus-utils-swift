@@ -162,7 +162,7 @@ func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicS
 
     var points = [String: Point]()
     for share in deterministicShares {
-        points[String(share.shareIndex, radix: 16).leftPadding(toLength: 64, withPad: "0")] =
+        points[String(share.shareIndex, radix: 16).addLeading0sForLength64()] =
             Point(x: share.shareIndex, y: share.share)
     }
 
@@ -172,7 +172,7 @@ func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicS
         while points[shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] != nil {
             shareIndex = try generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
         }
-        points[String(shareIndex, radix: 16).leftPadding(toLength: 64, withPad: "0")] = Point(x: shareIndex, y: BigInt(try secp256k1.KeyAgreement.PrivateKey().rawRepresentation))
+        points[String(shareIndex, radix: 16).addLeading0sForLength64()] = Point(x: shareIndex, y: BigInt(try secp256k1.KeyAgreement.PrivateKey().rawRepresentation))
     }
 
     points["0"] = Point(x: BigInt(0), y: actualS!)
