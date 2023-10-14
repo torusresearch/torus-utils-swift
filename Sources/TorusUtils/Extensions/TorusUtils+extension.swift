@@ -190,7 +190,7 @@ extension TorusUtils {
 
     private func reconstructKey(decryptedShares: [Int: String], thresholdPublicKey: KeyAssignment.PublicKey) throws -> String? {
         // run lagrange interpolation on all subsets, faster in the optimistic scenario than berlekamp-welch due to early exit
-        let allCombis = kCombinations(s: decryptedShares.count, k: 3)
+        let allCombis = combinations(elements: Array(0..<decryptedShares.count), k: 3)
         var returnedKey: String?
 
         for j in 0 ..< allCombis.count {
