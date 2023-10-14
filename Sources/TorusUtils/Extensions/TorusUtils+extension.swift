@@ -446,23 +446,18 @@ extension TorusUtils {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
 
-                let oAuthKeyBigInt = BigInt(oAuthKey, radix: 16)!
-
-                guard let derivedPrivateKeyData = Data(hexString: oAuthKey) else {
-                    throw TorusUtilError.privateKeyDeriveFailed
-                }
-
-                let oAuthPubKey = SECP256K1.privateToPublic(privateKey: derivedPrivateKeyData.addLeading0sForLength64())?.toHexString()
-                let oauthPubKeyX = String(oAuthPubKey!.suffix(128).prefix(64))
-                let oauthPubKeyY = String(oAuthPubKey!.suffix(64))
+                let derivedPrivateKey = try  secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: oAuthKey), format: .uncompressed)
+                
+                let oAuthPubKey = derivedPrivateKey.publicKey.dataRepresentation.hexString
+                let oAuthPubKeyX = String(oAuthPubKey.suffix(128).prefix(64))
+                let oAuthPubKeyY = String(oAuthPubKey.suffix(64))
 
                 var metadataNonce = BigInt(thresholdNonceData?.nonce ?? "0", radix: 16) ?? BigInt(0)
-                _ = (oAuthKeyBigInt + metadataNonce).modulus(modulusValue)
 
                 var pubKeyNonceResult: PubNonce?
                 var typeOfUser: UserType = .v1
 
-                var finalPubKey = "04" + oauthPubKeyX.addLeading0sForLength64() + oauthPubKeyY.addLeading0sForLength64()
+                var finalPubKey = oAuthPubKey
                 if verifierParams.extended_verifier_id != nil {
                     typeOfUser = .v2
                     // For TSS key, no need to add pub nonce
@@ -470,7 +465,7 @@ extension TorusUtils {
                 } else if case .legacy = self.network {
                     if self.enableOneKey {
                         // get or set nonce based on isNewKey variable
-                        let nonceResult = try await getOrSetNonce(x: oauthPubKeyX, y: oauthPubKeyY, privateKey: oAuthKey, getOnly: isNewKey == "false")
+                        let nonceResult = try await getOrSetNonce(x: oAuthPubKeyX, y: oAuthPubKeyY, privateKey: oAuthKey, getOnly: isNewKey == "false")
                         //                        BigInt( Data(hex: nonceResult.nonce ?? "0"))
                         metadataNonce = BigInt(nonceResult.nonce ?? "0", radix: 16)!
                         let usertype = nonceResult.typeOfUser
@@ -486,14 +481,14 @@ extension TorusUtils {
                         } else {
                             typeOfUser = .v1
                             // for imported keys in legacy networks
-                            metadataNonce = BigInt(try await getMetadata(dictionary: ["pub_key_X": oauthPubKeyX, "pub_key_Y": oauthPubKeyY]))
+                            metadataNonce = BigInt(try await getMetadata(dictionary: ["pub_key_X": oAuthPubKeyX, "pub_key_Y": oAuthPubKeyY]))
                             let privateKeyWithNonce = (BigInt(oAuthKey, radix: 16)! + BigInt(metadataNonce)).modulus(modulusValue)
                             finalPubKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                         }
                     } else {
                         typeOfUser = .v1
                         // for imported keys in legacy networks
-                        metadataNonce = BigInt(try await getMetadata(dictionary: ["pub_key_X": oauthPubKeyX, "pub_key_Y": oauthPubKeyY]))
+                        metadataNonce = BigInt(try await getMetadata(dictionary: ["pub_key_X": oAuthPubKeyX, "pub_key_Y": oAuthPubKeyY]))
                         let privateKeyWithNonce = (BigInt(oAuthKey, radix: 16)! + BigInt(metadataNonce)).modulus(modulusValue)
                         finalPubKey = String(privateKeyWithNonce, radix: 16).addLeading0sForLength64()
                     }
@@ -507,9 +502,8 @@ extension TorusUtils {
                     finalPubKey = combined
                     pubKeyNonceResult = .init(x: pubNonceX, y: pubNonceY)
                 }
-
-                let (oAuthKeyX, oAuthKeyY) = try getPublicKeyPointFromPubkeyString(pubKey: oAuthPubKey!)
-                let oAuthKeyAddress = try generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
+                
+                let oAuthKeyAddress = try generateAddressFromPubKey(publicKeyX: oAuthPubKeyX, publicKeyY: oAuthPubKeyY)
 
                 var finalPrivKey = ""
 
@@ -541,8 +535,8 @@ extension TorusUtils {
                     ),
                     oAuthKeyData: .init(
                         evmAddress: oAuthKeyAddress,
-                        X: oAuthKeyX,
-                        Y: oAuthKeyY,
+                        X: oAuthPubKeyX,
+                        Y: oAuthPubKeyY,
                         privKey: oAuthKey
                     ),
                     sessionData: .init(
