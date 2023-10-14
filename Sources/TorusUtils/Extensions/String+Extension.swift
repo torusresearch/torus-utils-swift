@@ -11,7 +11,7 @@ extension String {
         }
         return self
     }
-    
+
     func stripHexPrefix() -> String {
         if hasPrefix("0x") {
             let indexStart = index(startIndex, offsetBy: 2)
@@ -23,14 +23,14 @@ extension String {
     func has04Prefix() -> Bool {
         return hasPrefix("04")
     }
-    
+
     func add04Prefix() -> String {
         if !hasPrefix("04") {
             return "04" + self
         }
         return self
     }
-    
+
     func strip04Prefix() -> String {
         if hasPrefix("04") {
             let indexStart = index(startIndex, offsetBy: 2)
@@ -58,7 +58,7 @@ extension String {
         let lowerCaseAddress = stripHexPrefix().lowercased()
         let arr = Array(lowerCaseAddress)
         let hash = Array(lowerCaseAddress.sha3(.keccak256))
-        var result = "0x"
+        var result = String()
         for i in 0 ... lowerCaseAddress.count - 1 {
             if let val = Int(String(hash[i]), radix: 16), val >= 8 {
                 result.append(arr[i].uppercased())
@@ -66,7 +66,7 @@ extension String {
                 result.append(arr[i])
             }
         }
-        return result
+        return result.addHexPrefix()
     }
 }
 
