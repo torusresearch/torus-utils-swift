@@ -162,13 +162,6 @@ public struct JSONRPCresponse: Decodable {
         case errorMessage
     }
 
-//    public func encode(to encoder: Encoder) throws {
-//        var container = encoder.container(keyedBy: JSONRPCresponseKeys.self)
-//        try? container.encode(result as? MixedValue, forKey: .result)
-////        try? container.encode(result as? [String: String], forKey: .result)
-//        try container.encode(error, forKey: .error)
-//    }
-
     public init(id: Int, jsonrpc: String, result: Decodable?, error: ErrorMessage?) {
         self.id = id
         self.jsonrpc = jsonrpc

@@ -1,35 +1,5 @@
 import Foundation
 extension String {
-    func padLeft(padChar: Character, count: Int) -> String {
-        let str = self
-        if str.count >= count {
-            return str
-        }
-        var resultStr = ""
-        while str.count < count - str.count {
-            resultStr.append(padChar)
-        }
-        resultStr.append(str)
-        return resultStr
-    }
-
-    mutating func stripPaddingLeft(padChar: Character) {
-        while self.count > 1 && self.first == padChar {
-            self.removeFirst()
-        }
-    }
-
-    func fromBase64() -> String? {
-        guard let data = Data(base64Encoded: self) else {
-            return nil
-        }
-        return String(data: data, encoding: .utf8)
-    }
-
-    func toBase64() -> String {
-        return Data(utf8).base64EncodedString()
-    }
-
     func strip04Prefix() -> String {
         if hasPrefix("04") {
             let indexStart = index(startIndex, offsetBy: 2)
@@ -54,7 +24,6 @@ extension String {
             return self
         }
     }
-    
     
     func customBytes() -> Array<UInt8> {
       data(using: String.Encoding.utf8, allowLossyConversion: true)?.bytes ?? Array(utf8)

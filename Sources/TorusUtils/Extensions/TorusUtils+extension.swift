@@ -420,7 +420,7 @@ extension TorusUtils {
                         sessionTokenData.append(nil)
                     } else {
                         let token = x!
-                        let signature = sessionTokenSigPromises[index] // .toHexString()
+                        let signature = sessionTokenSigPromises[index]
                         let nodePubX = completeShareRequestResponseArr[index].nodePubX
                         let nodePubY = completeShareRequestResponseArr[index].nodePubY
 
@@ -499,7 +499,7 @@ extension TorusUtils {
                     pubKeyNonceResult = .init(x: pubNonceX, y: pubNonceY)
                 }
 
-                let oAuthKeyAddress = try generateAddressFromPubKey(publicKeyX: oAuthPubKeyX, publicKeyY: oAuthPubKeyY)
+                let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthPubKeyX, publicKeyY: oAuthPubKeyY)
 
                 var finalPrivKey = ""
 
@@ -511,7 +511,7 @@ extension TorusUtils {
                 let (finalPubX, finalPubY) = try getPublicKeyPointFromPubkeyString(pubKey: finalPubKey)
                 // deriving address from pub key coz pubkey is always available
                 // but finalPrivKey won't be available for  v2 user upgraded to 2/n
-                let finalEvmAddress = try generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
+                let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)
 
                 var isUpgraded: Bool?
 
@@ -658,7 +658,7 @@ extension TorusUtils {
             mac: eciesData.mac
         )
 
-        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts, padding: padding).toHexString()
+        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts, padding: padding).hexString
         return decryptedSigBuffer
     }
 
@@ -713,7 +713,8 @@ extension TorusUtils {
             let sharedSecret = try secp256k1.ecdhWithHex(pubKeyHex: publicKeyHex, privateKeyHex: privateKey)
 
             guard
-                let share = el.value.share.fromBase64()?.hexa
+                let data = Data(base64Encoded: el.value.share),
+                let share = String(data: data, encoding: .utf8)?.hexa
             else {
                 throw TorusUtilError.decryptionFailed
             }
@@ -1229,25 +1230,19 @@ extension TorusUtils {
     }
 
     internal func getPublicKeyPointFromPubkeyString(pubKey: String) throws -> (String, String) {
-        let publicKeyHashData = Data(hexString: pubKey.strip04Prefix())
-        guard publicKeyHashData?.count == 64 else {
+        let publicKeyHashData = Data(hex: pubKey.strip04Prefix())
+        if !(publicKeyHashData.count == 64) {
             throw "Invalid address,"
         }
 
-        let xCoordinateData = publicKeyHashData?.prefix(32).toHexString()
-        let yCoordinateData = publicKeyHashData?.suffix(32).toHexString()
-
-        if let x = xCoordinateData, let y = yCoordinateData {
-            return (x, y)
-        } else {
-            throw "invalid address"
-        }
+        let xCoordinateData = publicKeyHashData.prefix(32).toHexString()
+        let yCoordinateData = publicKeyHashData.suffix(32).toHexString()
+        
+        return (xCoordinateData, yCoordinateData)
     }
 
     internal func combinePublicKeys(keys: [String], compressed: Bool) throws -> String {
-        let data = try keys.map({ guard let key = Data(hexString: $0) else {
-            throw TorusUtilError.runtime("Invalid public key when combining")
-        }
+        let data = keys.map({ let key = Data(hex: $0)
         return key
         })
         let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
@@ -1314,8 +1309,8 @@ extension TorusUtils {
         let finalX = String(finalPubKey.suffix(128).prefix(64))
         let finalY = String(finalPubKey.suffix(64))
 
-        let oAuthAddress = try generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
-        let finalAddress = try generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
+        let oAuthAddress = generateAddressFromPubKey(publicKeyX: oAuthX, publicKeyY: oAuthY)
+        let finalAddress = generateAddressFromPubKey(publicKeyX: finalX, publicKeyY: finalY)
 
         var usertype = ""
         switch typeOfUser {
