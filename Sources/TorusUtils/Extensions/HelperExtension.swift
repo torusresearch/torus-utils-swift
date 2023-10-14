@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 extension Sequence where Element == UInt8 {
     var data: Data { .init(self) }

@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 public struct TorusKey {
     public struct FinalKeyData {
@@ -31,12 +31,12 @@ public struct TorusKey {
     public struct NodesData {
         public let nodeIndexes: [Int]
     }
-    
+
     public init(finalKeyData: FinalKeyData?,
-         oAuthKeyData: OAuthKeyData?,
-         sessionData: SessionData?,
-         metadata: Metadata?,
-         nodesData: NodesData?) {
+                oAuthKeyData: OAuthKeyData?,
+                sessionData: SessionData?,
+                metadata: Metadata?,
+                nodesData: NodesData?) {
         self.finalKeyData = finalKeyData
         self.oAuthKeyData = oAuthKeyData
         self.sessionData = sessionData

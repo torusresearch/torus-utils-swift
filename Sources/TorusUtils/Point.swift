@@ -1,8 +1,8 @@
-import Foundation
 import BigInt
+import Foundation
 import Security
 
-public class Point : Decodable  {
+public class Point: Decodable {
     let x: BigInt
     let y: BigInt
 
@@ -10,13 +10,12 @@ public class Point : Decodable  {
         self.x = BigInt(x, radix: 16)!
         self.y = BigInt(y, radix: 16)!
     }
-    
+
     init(x: BigInt, y: BigInt) {
         self.x = x
         self.y = y
     }
-    
-    
+
     public enum CodingKeys: CodingKey {
         case X
         case Y
@@ -26,11 +25,11 @@ public class Point : Decodable  {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let hexX = try container.decode(String.self, forKey: .X)
         let hexY = try container.decode(String.self, forKey: .Y)
-        
-        self.x = BigInt(hexX, radix: 16)!
-        self.y = BigInt(hexY, radix: 16)!
+
+        x = BigInt(hexX, radix: 16)!
+        y = BigInt(hexY, radix: 16)!
     }
-    
+
     func encode(enc: String) throws -> Data {
         switch enc {
         case "arr":
@@ -47,10 +46,10 @@ public class Point : Decodable  {
     }
 }
 
-public struct PointHex : Decodable, Hashable, Equatable {
+public struct PointHex: Decodable, Hashable, Equatable {
     let x: String
     let y: String
-    
+
     init(from: Point) {
         x = String(from.x, radix: 16)
         y = String(from.y, radix: 16)

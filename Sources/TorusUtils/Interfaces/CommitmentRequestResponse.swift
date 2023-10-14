@@ -5,7 +5,7 @@ public struct CommitmentRequestResponse: Codable {
     public var nodepubx: String
     public var nodepuby: String
     public var signature: String
-    
+
     public init(data: String, nodepubx: String, nodepuby: String, signature: String) {
         self.data = data
         self.nodepubx = nodepubx

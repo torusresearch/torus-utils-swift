@@ -117,7 +117,6 @@ extension TorusUtilError: LocalizedError {
             return "Could not encode data \(msg ?? "")"
         default:
             return "default Error msg"
-            
         }
     }
 }

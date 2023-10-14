@@ -64,7 +64,7 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(data.metadata?.upgraded, false)
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.nodesData?.nodeIndexes, [])
-        
+
         verifier = "tkey-google-cyan"
         verifierID = "somev2user@gmail.com"
         data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
@@ -74,13 +74,13 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(data.finalKeyData?.evmAddress, "0x8EA83Ace86EB414747F2b23f03C38A34E0217814")
         XCTAssertEqual(data.finalKeyData?.X, "cbe7b0f0332e5583c410fcacb6d4ff685bec053cfd943ac75f5e4aa3278a6fbb")
         XCTAssertEqual(data.finalKeyData?.Y, "b525c463f438c7a3c4b018c8c5d16c9ef33b9ac6f319140a22b48b17bdf532dd")
-        XCTAssertEqual(data.metadata?.pubNonce?.x,"da0039dd481e140090bed9e777ce16c0c4a16f30f47e8b08b73ac77737dd2d4")
-        XCTAssertEqual(data.metadata?.pubNonce?.y,"7fecffd2910fa47dbdbc989f5c119a668fc922937175974953cbb51c49268265")
+        XCTAssertEqual(data.metadata?.pubNonce?.x, "da0039dd481e140090bed9e777ce16c0c4a16f30f47e8b08b73ac77737dd2d4")
+        XCTAssertEqual(data.metadata?.pubNonce?.y, "7fecffd2910fa47dbdbc989f5c119a668fc922937175974953cbb51c49268265")
         XCTAssertEqual(data.metadata?.nonce, BigUInt.zero)
         XCTAssertEqual(data.metadata?.upgraded, false)
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)
         XCTAssertEqual(data.nodesData?.nodeIndexes, [])
-        
+
         verifier = "tkey-google-cyan"
         verifierID = "caspertorus@gmail.com"
         data = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
@@ -90,8 +90,8 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(data.finalKeyData?.evmAddress, "0xCC1f953f6972a9e3d685d260399D6B85E2117561")
         XCTAssertEqual(data.finalKeyData?.X, "8d784434becaad9b23d9293d1f29c4429447315c4cac824cbf2eb21d3f7d79c8")
         XCTAssertEqual(data.finalKeyData?.Y, "fe46a0ef5efe33d16f6cfa678a597be930fbec5432cbb7f3580189c18bd7e157")
-        XCTAssertEqual(data.metadata?.pubNonce?.x,"50e250cc6ac1d50d32d2b0f85f11c6625a917a115ced4ef24f4eac183e1525c7")
-        XCTAssertEqual(data.metadata?.pubNonce?.y,"8067a52d02b8214bf82e91b66ce5009f674f4c3998b103059c46c386d0c17f90")
+        XCTAssertEqual(data.metadata?.pubNonce?.x, "50e250cc6ac1d50d32d2b0f85f11c6625a917a115ced4ef24f4eac183e1525c7")
+        XCTAssertEqual(data.metadata?.pubNonce?.y, "8067a52d02b8214bf82e91b66ce5009f674f4c3998b103059c46c386d0c17f90")
         XCTAssertEqual(data.metadata?.nonce, BigUInt.zero)
         XCTAssertEqual(data.metadata?.upgraded, false)
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)

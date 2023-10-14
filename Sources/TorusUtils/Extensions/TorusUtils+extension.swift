@@ -1237,13 +1237,13 @@ extension TorusUtils {
 
         let xCoordinateData = publicKeyHashData.prefix(32).toHexString()
         let yCoordinateData = publicKeyHashData.suffix(32).toHexString()
-        
+
         return (xCoordinateData, yCoordinateData)
     }
 
     internal func combinePublicKeys(keys: [String], compressed: Bool) throws -> String {
         let data = keys.map({ let key = Data(hex: $0)
-        return key
+            return key
         })
         let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
         guard let result = added?.toHexString()

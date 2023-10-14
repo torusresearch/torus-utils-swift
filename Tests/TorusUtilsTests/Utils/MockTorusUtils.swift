@@ -1,21 +1,18 @@
+import BigInt
+import CommonSources
 import FetchNodeDetails
 import Foundation
 import TorusUtils
-import BigInt
-import CommonSources
-
 
 class MockTorusUtils: AbstractTorusUtils {
-
-    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel], indexes: [BigUInt], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String:Codable]) async throws -> TorusKey {
+    func retrieveShares(endpoints: [String], torusNodePubs: [TorusNodePubModel], indexes: [BigUInt], verifier: String, verifierParams: VerifierParams, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
         return TorusKey(finalKeyData: nil, oAuthKeyData: nil, sessionData: nil, metadata: nil, nodesData: nil)
     }
-    
+
     func getPublicAddress(endpoints: [String], torusNodePubs: [TorusNodePubModel], verifier: String, verifierId: String, extendedVerifierId: String?) async throws -> TorusPublicKey {
 //        GetPublicAddressResult(address: "")
         return TorusPublicKey(finalKeyData: nil, oAuthKeyData: nil, metadata: nil, nodesData: nil)
     }
-    
 
     var nodePubKeys: [TorusNodePubModel]
 
@@ -40,6 +37,6 @@ class MockTorusUtils: AbstractTorusUtils {
     }
 
     func getOrSetNonce(x: String, y: String, privateKey: String?, getOnly: Bool) async throws -> GetOrSetNonceResult {
-        return GetOrSetNonceResult.init(typeOfUser: "v1")
+        return GetOrSetNonceResult(typeOfUser: "v1")
     }
 }

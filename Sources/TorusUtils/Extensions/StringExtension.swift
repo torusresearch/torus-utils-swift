@@ -24,9 +24,9 @@ extension String {
             return self
         }
     }
-    
+
     func customBytes() -> Array<UInt8> {
-      data(using: String.Encoding.utf8, allowLossyConversion: true)?.bytes ?? Array(utf8)
+        data(using: String.Encoding.utf8, allowLossyConversion: true)?.bytes ?? Array(utf8)
     }
 }
 
