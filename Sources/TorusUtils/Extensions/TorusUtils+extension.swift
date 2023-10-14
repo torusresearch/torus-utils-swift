@@ -130,7 +130,7 @@ extension TorusUtils {
             .encode(setData)
 
         let hash = keccak256Data(encodedData)
-        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
+        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
         else {
             throw TorusUtilError.runtime("sign for recovery hash failed")
         }
@@ -1220,7 +1220,7 @@ extension TorusUtils {
         let encodedData = try JSONEncoder()
             .encode(setData)
         let hash = keccak256Data(encodedData)
-        guard let sigData = SECP256K1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
+        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
         else {
             throw TorusUtilError.runtime("sign for recovery hash failed")
         }
@@ -1250,7 +1250,7 @@ extension TorusUtils {
         }
             return key
         })
-        let added = SECP256K1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
+        let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
         guard let result = added?.toHexString()
         else {
             throw TorusUtilError.runtime("Invalid public key after combining")
