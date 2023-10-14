@@ -51,9 +51,7 @@ extension String {
     func customBytes() -> Array<UInt8> {
         data(using: String.Encoding.utf8, allowLossyConversion: true)?.bytes ?? Array(utf8)
     }
-}
 
-extension String {
     func toChecksumAddress() -> String {
         let lowerCaseAddress = stripHexPrefix().lowercased()
         let arr = Array(lowerCaseAddress)
