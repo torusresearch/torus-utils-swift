@@ -14,7 +14,7 @@ extension secp256k1 {
             return 1
         }
 
-        let sharedSecret = try! privateKey.sharedSecretFromKeyAgreement(with: publicKey, handler: copyx)
+        let sharedSecret = try privateKey.sharedSecretFromKeyAgreement(with: publicKey, handler: copyx)
         let hash = sharedSecret.bytes.sha512()
 
         return hash
