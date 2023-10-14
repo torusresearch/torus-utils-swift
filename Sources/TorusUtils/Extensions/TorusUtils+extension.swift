@@ -3,12 +3,12 @@ import Foundation
 #if canImport(secp256k1)
     import secp256k1
 #endif
-import BigInt
-import CryptoKit
-import OSLog
 import AnyCodable
+import BigInt
 import CommonSources
+import CryptoKit
 import FetchNodeDetails
+import OSLog
 
 extension TorusUtils {
     // MARK: - utils
@@ -232,7 +232,7 @@ extension TorusUtils {
     ) async throws -> TorusKey {
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
-        
+
         let sessionAuthKey = try secp256k1.KeyAgreement.PrivateKey(format: .uncompressed)
         let serializedPublicKey = sessionAuthKey.publicKey.dataRepresentation.hexString
 
@@ -442,8 +442,8 @@ extension TorusUtils {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
 
-                let derivedPrivateKey = try  secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: oAuthKey), format: .uncompressed)
-                
+                let derivedPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: oAuthKey), format: .uncompressed)
+
                 let oAuthPubKey = derivedPrivateKey.publicKey.dataRepresentation.hexString
                 let oAuthPubKeyX = String(oAuthPubKey.suffix(128).prefix(64))
                 let oAuthPubKeyY = String(oAuthPubKey.suffix(64))
@@ -498,7 +498,7 @@ extension TorusUtils {
                     finalPubKey = combined
                     pubKeyNonceResult = .init(x: pubNonceX, y: pubNonceY)
                 }
-                
+
                 let oAuthKeyAddress = try generateAddressFromPubKey(publicKeyX: oAuthPubKeyX, publicKeyY: oAuthPubKeyY)
 
                 var finalPrivKey = ""
@@ -1248,7 +1248,7 @@ extension TorusUtils {
         let data = try keys.map({ guard let key = Data(hexString: $0) else {
             throw TorusUtilError.runtime("Invalid public key when combining")
         }
-            return key
+        return key
         })
         let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
         guard let result = added?.toHexString()
@@ -1275,7 +1275,7 @@ extension TorusUtils {
             if typeOfUser == .v1 {
                 finalPubKey = "04" + pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()
                 if nonce != BigInt(0) {
-                    let noncePrivateKey = try  secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
+                    let noncePrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
                     let noncePublicKey = noncePrivateKey.publicKey.dataRepresentation
                     finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey.hexString], compressed: false)
                 } else {
@@ -1304,9 +1304,9 @@ extension TorusUtils {
             finalPubKey = "04" + localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()
             if localNonce != BigInt(0) {
                 let nonce2 = BigInt(localNonce)
-                let noncePrivateKey = try  secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce2).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
+                let noncePrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce2).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
                 let noncePublicKey = noncePrivateKey.publicKey.dataRepresentation
-                        finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey.hexString], compressed: false)
+                finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey.hexString], compressed: false)
             } else {
                 finalPubKey = String(finalPubKey)
             }

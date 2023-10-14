@@ -13,24 +13,24 @@ extension secp256k1 {
             out.initialize(from: x, count: 32)
             return 1
         }
-        
+
         let sharedSecret = try! privateKey.sharedSecretFromKeyAgreement(with: publicKey, handler: copyx)
         let hash = sharedSecret.bytes.sha512()
-        
+
         return hash
     }
-    
+
     public static func ecdhWithHex(pubKeyHex: String, privateKeyHex: String) throws -> [UInt8] {
         let privateKeyBytes = try privateKeyHex.bytes
         let privateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: privateKeyBytes)
-        
+
         let publicKeyBytes = try pubKeyHex.bytes
         let publicKey = try secp256k1.KeyAgreement.PublicKey(dataRepresentation: publicKeyBytes, format: .uncompressed)
-        
+
         let sharedSecret = try ecdh(publicKey: publicKey, privateKey: privateKey)
         return sharedSecret
     }
-    
+
     private static func privateKeyToPublicKey(privateKey: Data) -> secp256k1_pubkey? {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         if privateKey.count != 32 { return nil }
@@ -51,9 +51,9 @@ extension secp256k1 {
         }
         return publicKey
     }
-    
+
     // TODO: Translate below functions to secp256k1 objects and methods.
-    
+
     private static func constantTimeComparison(_ lhs: Data, _ rhs: Data) -> Bool {
         guard lhs.count == rhs.count else { return false }
         var difference = UInt8(0x00)
@@ -62,12 +62,12 @@ extension secp256k1 {
         }
         return difference == UInt8(0x00)
     }
-    
+
     private static func toByteArray<T>(_ value: T) -> [UInt8] {
         var value = value
         return withUnsafeBytes(of: &value) { Array($0) }
     }
-    
+
     public static func verifyPrivateKey(privateKey: Data) -> Bool {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         if privateKey.count != 32 { return false }
@@ -85,7 +85,7 @@ extension secp256k1 {
         }
         return true
     }
-    
+
     private static func recoverPublicKey(hash: Data, recoverableSignature: inout secp256k1_ecdsa_recoverable_signature) -> secp256k1_pubkey? {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         guard hash.count == 32 else { return nil }
@@ -109,7 +109,7 @@ extension secp256k1 {
         }
         return publicKey
     }
-    
+
     public static func parseSignature(signature: Data) -> secp256k1_ecdsa_recoverable_signature? {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         guard signature.count == 65 else { return nil }
@@ -169,7 +169,7 @@ extension secp256k1 {
         }
         return Data(serializedSignature)
     }
-    
+
     public static func recoverPublicKey(hash: Data, signature: Data, compressed: Bool = false) -> Data? {
         guard hash.count == 32, signature.count == 65 else { return nil }
         guard var recoverableSignature = parseSignature(signature: signature) else { return nil }
@@ -177,7 +177,7 @@ extension secp256k1 {
         guard let serializedKey = serializePublicKey(publicKey: &publicKey, compressed: compressed) else { return nil }
         return serializedKey
     }
-    
+
     private static func randomBytes(length: Int) -> Data? {
         for _ in 0 ... 1024 {
             var data = Data(repeating: 0, count: length)
@@ -197,7 +197,7 @@ extension secp256k1 {
         }
         return nil
     }
-    
+
     private static func recoverableSign(hash: Data, privateKey: Data, useExtraEntropy: Bool = false) -> secp256k1_ecdsa_recoverable_signature? {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         if hash.count != 32 || privateKey.count != 32 {
@@ -239,7 +239,7 @@ extension secp256k1 {
         }
         return recoverableSignature
     }
-    
+
     public static func signForRecovery(hash: Data, privateKey: Data, useExtraEntropy: Bool = false) -> (serializedSignature: Data?, rawSignature: Data?) {
         if hash.count != 32 || privateKey.count != 32 {
             return (nil, nil)
@@ -262,7 +262,7 @@ extension secp256k1 {
         }
         return (nil, nil)
     }
-    
+
     private static func parsePublicKey(serializedKey: Data) -> secp256k1_pubkey? {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         guard serializedKey.count == 33 || serializedKey.count == 65 else {
@@ -288,7 +288,7 @@ extension secp256k1 {
         }
         return publicKey
     }
-    
+
     public static func serializePublicKey(publicKey: inout secp256k1_pubkey, compressed: Bool = false) -> Data? {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         var keyLength = compressed ? 33 : 65
@@ -315,7 +315,7 @@ extension secp256k1 {
         }
         return Data(serializedPubkey)
     }
-    
+
     public static func combineSerializedPublicKeys(keys: [Data], outputCompressed: Bool = false) -> Data? {
         let context = secp256k1_context_create(UInt32(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY))
         let numToCombine = keys.count
