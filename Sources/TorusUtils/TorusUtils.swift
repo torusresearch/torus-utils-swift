@@ -66,12 +66,12 @@ open class TorusUtils: AbstractTorusUtils {
         let session = createURLSession()
         var allowHostRequest = try makeUrlRequest(url: allowHost, httpMethod: .get)
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
-        allowHostRequest.addValue(verifier, forHTTPHeaderField: "Origin")
-        
-        allowHostRequest.addValue(verifier, forHTTPHeaderField: "Verifier")
-        allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "VerifierId")
-        allowHostRequest.addValue(self.clientId, forHTTPHeaderField: "ClientId")
-        allowHostRequest.addValue(network.name, forHTTPHeaderField: "Network")
+        allowHostRequest.addValue(verifier, forHTTPHeaderField: "origin")
+        allowHostRequest.addValue(verifier, forHTTPHeaderField: "verifier")
+        allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifier_id")
+        allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifierId")
+        allowHostRequest.addValue(clientId, forHTTPHeaderField: "clientId")
+        allowHostRequest.addValue(network.name, forHTTPHeaderField: "network")
         
         do {
             _ = try await session.data(for: allowHostRequest)
