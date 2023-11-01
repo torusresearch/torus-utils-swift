@@ -2,9 +2,9 @@ import BigInt
 import Foundation
 
 public struct TaskGroupResponse {
-   public var data: Data
-   public var urlResponse: URLResponse
-   public var index: Int
+    public var data: Data
+    public var urlResponse: URLResponse
+    public var index: Int
 
     public init(data: Data, urlResponse: URLResponse, index: Int) {
         self.data = data
@@ -44,9 +44,9 @@ public struct GetPublicAddressResult {
     public var metadataNonce: BigUInt?
     public var pubNonce: PubNonce?
     public var nodeIndexes: [Int]?
-    public var upgarded : Bool?
+    public var upgarded: Bool?
 
-    public init(address: String, typeOfUser: TypeOfUser? = nil, x: String? = nil, y: String? = nil, metadataNonce: BigUInt? = nil, pubNonce: PubNonce? = nil, nodeIndexes:[Int]? = [] , upgraded : Bool? = false) {
+    public init(address: String, typeOfUser: TypeOfUser? = nil, x: String? = nil, y: String? = nil, metadataNonce: BigUInt? = nil, pubNonce: PubNonce? = nil, nodeIndexes: [Int]? = [], upgraded: Bool? = false) {
         self.typeOfUser = typeOfUser
         self.address = address
         self.x = x
@@ -54,7 +54,7 @@ public struct GetPublicAddressResult {
         self.metadataNonce = metadataNonce
         self.pubNonce = pubNonce
         self.nodeIndexes = nodeIndexes
-        self.upgarded = upgraded
+        upgarded = upgraded
     }
 }
 
@@ -72,10 +72,10 @@ public struct GetOrSetNonceResult: Codable {
         self.ifps = ifps
         self.upgraded = upgraded
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         typeOfUser = try container.decodeIfPresent(String.self, forKey: .typeOfUser)
         nonce = try container.decodeIfPresent(String.self, forKey: .nonce)
         pubNonce = try container.decodeIfPresent(PubNonce.self, forKey: .pubNonce)
@@ -92,11 +92,11 @@ public struct PubNonce: Codable, Equatable {
         self.x = x
         self.y = y
     }
-    
+
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.x = try container.decode(String.self, forKey: .x)
-        self.y = try container.decode(String.self, forKey: .y)
+        x = try container.decode(String.self, forKey: .x)
+        y = try container.decode(String.self, forKey: .y)
     }
 }
 
@@ -117,37 +117,34 @@ public struct UserTypeAndAddress {
 }
 
 public struct NonceMetadataParams: Codable {
-     public struct SetNonceData: Codable {
-         public var operation: String?
-         public var data: String?
-         public var timestamp: String?
+    public struct SetNonceData: Codable {
+        public var operation: String?
+        public var data: String?
+        public var timestamp: String?
 
-         public init(operation: String? = nil, data: String? = nil, timestamp: String? = nil) {
-             self.operation = operation
-             self.data = data
-             self.timestamp = timestamp
-         }
-     }
+        public init(operation: String? = nil, data: String? = nil, timestamp: String? = nil) {
+            self.operation = operation
+            self.data = data
+            self.timestamp = timestamp
+        }
+    }
 
-     public var namespace: String?
-     public var pub_key_X: String
-     public var pub_key_Y: String
-     public var set_data: SetNonceData
-     public var signature: String
+    public var namespace: String?
+    public var pub_key_X: String
+    public var pub_key_Y: String
+    public var set_data: SetNonceData
+    public var signature: String
 
-     public init(pub_key_X: String, pub_key_Y: String, setData: SetNonceData, signature: String, namespace: String? = nil) {
-         self.namespace = namespace
-         self.pub_key_X = pub_key_X
-         self.pub_key_Y = pub_key_Y
-         set_data = setData
-         self.signature = signature
-     }
- }
-
-
+    public init(pub_key_X: String, pub_key_Y: String, setData: SetNonceData, signature: String, namespace: String? = nil) {
+        self.namespace = namespace
+        self.pub_key_X = pub_key_X
+        self.pub_key_Y = pub_key_Y
+        set_data = setData
+        self.signature = signature
+    }
+}
 
 typealias StringifiedType = [String: Codable]
-
 
 public struct MetadataParams: Codable {
     public struct SetData: Codable {
