@@ -7,15 +7,14 @@ protocol EciesProtocol {
     var mac: Data { get }
 }
 
-
-public struct ECIES : Codable {
+public struct ECIES: Codable {
     let iv: String
     let ephemPublicKey: String
     let ciphertext: String
     let mac: String
     let mode: String?
-    
-    init(iv: String, ephemPublicKey: String, ciphertext: String, mac: String, mode: String?=nil) {
+
+    init(iv: String, ephemPublicKey: String, ciphertext: String, mac: String, mode: String? = nil) {
         self.iv = iv
         self.ephemPublicKey = ephemPublicKey
         self.ciphertext = ciphertext
@@ -24,13 +23,13 @@ public struct ECIES : Codable {
     }
 }
 
-public struct EciesHex : Codable {
+public struct EciesHex: Codable {
     let iv: String
     let ephemPublicKey: String
     let ciphertext: String?
     let mac: String
     let mode: String?
-    
+
     init(iv: String, ephemPublicKey: String, ciphertext: String?, mac: String, mode: String?) {
         self.iv = iv
         self.ephemPublicKey = ephemPublicKey
@@ -38,31 +37,30 @@ public struct EciesHex : Codable {
         self.mac = mac
         self.mode = mode
     }
-    
+
     func omitCiphertext() -> EciesHexOmitCiphertext {
-        return EciesHexOmitCiphertext(iv: self.iv, ephemPublicKey: self.ephemPublicKey, mac: self.mac, mode: self.mode)
+        return EciesHexOmitCiphertext(iv: iv, ephemPublicKey: ephemPublicKey, mac: mac, mode: mode)
     }
-    
 }
 
-public struct EciesHexOmitCiphertext :Decodable {
+public struct EciesHexOmitCiphertext: Decodable {
     var iv: String
     var ephemPublicKey: String
     var mac: String
     var mode: String?
-    
+
     init(iv: String, ephemPublicKey: String, mac: String, mode: String? = nil) {
         self.iv = iv
         self.ephemPublicKey = ephemPublicKey
         self.mac = mac
         self.mode = mode
     }
-    
+
     init(from: ECIES) {
-        self.iv = from.iv
-        self.ephemPublicKey = from.ephemPublicKey
-        self.mac = from.mac
-        self.mode = from.mode
+        iv = from.iv
+        ephemPublicKey = from.ephemPublicKey
+        mac = from.mac
+        mode = from.mode
     }
 }
 
@@ -71,7 +69,7 @@ public struct Ecies: Codable {
     var ephemPublicKey: String
     var ciphertext: String
     var mac: String
-    
+
     init(iv: String, ephemPublicKey: String, ciphertext: String, mac: String) {
         self.iv = iv
         self.ephemPublicKey = ephemPublicKey
