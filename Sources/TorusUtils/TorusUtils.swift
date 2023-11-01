@@ -72,7 +72,7 @@ open class TorusUtils: AbstractTorusUtils {
         allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifierId")
         allowHostRequest.addValue(clientId, forHTTPHeaderField: "clientId")
         allowHostRequest.addValue(network.name, forHTTPHeaderField: "network")
-        
+        allowHostRequest.addValue("true", forHTTPHeaderField: "enable_gating")
         do {
             _ = try await session.data(for: allowHostRequest)
         } catch {
