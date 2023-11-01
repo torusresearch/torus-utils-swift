@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 public enum UserType: String {
     case v1
@@ -29,8 +29,8 @@ public struct TorusPublicKey {
     public struct NodesData {
         public let nodeIndexes: [Int]
     }
-    
-    public init (finalKeyData: FinalKeyData?, oAuthKeyData: OAuthKeyData?, metadata: Metadata?, nodesData: NodesData?) {
+
+    public init(finalKeyData: FinalKeyData?, oAuthKeyData: OAuthKeyData?, metadata: Metadata?, nodesData: NodesData?) {
         self.finalKeyData = finalKeyData
         self.oAuthKeyData = oAuthKeyData
         self.metadata = metadata
@@ -40,7 +40,7 @@ public struct TorusPublicKey {
     public let finalKeyData: FinalKeyData?
     public let oAuthKeyData: OAuthKeyData?
     public let metadata: Metadata?
-    public let nodesData: NodesData? 
+    public let nodesData: NodesData?
 }
 
 public typealias V2NonceResultType = GetOrSetNonceResult

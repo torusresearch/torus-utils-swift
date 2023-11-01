@@ -1,22 +1,14 @@
-//
-//  JSONRPCRequest.swift
-//
-//
-//  Created by Shubham on 26/3/20.
-//
-
 import BigInt
 import Foundation
 
 import AnyCodable
-public struct GetPublicAddressOrKeyAssignParams : Encodable {
-    public var verifier : String
-    public var verifier_id : String
-    public var extended_verifier_id :String?
-    public var one_key_flow : Bool
-    public var fetch_node_index : Bool
+public struct GetPublicAddressOrKeyAssignParams: Encodable {
+    public var verifier: String
+    public var verifier_id: String
+    public var extended_verifier_id: String?
+    public var one_key_flow: Bool
+    public var fetch_node_index: Bool
 }
-
 
 public struct SignerResponse: Codable {
     public var torusNonce: String
@@ -97,50 +89,49 @@ public struct KeyAssignRequest: Encodable {
     }
 }
 
-
 public indirect enum MixedValue: Codable {
     case integer(Int)
     case boolean(Bool)
     case string(String)
-    case mixValue([String : MixedValue])
+    case mixValue([String: MixedValue])
     case array([MixedValue])
 
     public init(from decoder: Decoder) throws {
-            let container = try decoder.singleValueContainer()
-            if let value = try? container.decode(Bool.self) {
-                self = .boolean(value)
-            }else if let value = try? container.decode(Int.self) {
-                self = .integer(value)
-            } else if let value = try? container.decode(String.self) {
-                self = .string(value)
-            } else if let value = try? container.decode([String: MixedValue].self) {
-                self = .mixValue(value)
-            } else if let value = try? container.decode([MixedValue].self) {
-                self = .array(value)
-            } else {
-                throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid mixed value")
-            }
+        let container = try decoder.singleValueContainer()
+        if let value = try? container.decode(Bool.self) {
+            self = .boolean(value)
+        } else if let value = try? container.decode(Int.self) {
+            self = .integer(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode([String: MixedValue].self) {
+            self = .mixValue(value)
+        } else if let value = try? container.decode([MixedValue].self) {
+            self = .array(value)
+        } else {
+            throw DecodingError.dataCorruptedError(in: container, debugDescription: "Invalid mixed value")
         }
-    
+    }
+
     public func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         switch self {
-        case .integer(let value) :
+        case let .integer(value):
             try container.encode(value)
-        case .boolean(let value):
+        case let .boolean(value):
             try container.encode(value)
-        case .string(let value):
+        case let .string(value):
             try container.encode(value)
-        case .mixValue(let value):
+        case let .mixValue(value):
             try container.encode(value)
-        case .array(let value):
+        case let .array(value):
             try container.encode(value)
         }
     }
 }
 
 /// JSON RPC request structure for serialization and deserialization purposes.
-public struct JSONRPCrequest <T:Encodable>: Encodable {
+public struct JSONRPCrequest<T: Encodable>: Encodable {
     public var jsonrpc: String = "2.0"
     public var method: String
     public var params: T
@@ -169,13 +160,6 @@ public struct JSONRPCresponse: Decodable {
         case errorMessage
     }
 
-//    public func encode(to encoder: Encoder) throws {
-//        var container = encoder.container(keyedBy: JSONRPCresponseKeys.self)
-//        try? container.encode(result as? MixedValue, forKey: .result)
-////        try? container.encode(result as? [String: String], forKey: .result)
-//        try container.encode(error, forKey: .error)
-//    }
-
     public init(id: Int, jsonrpc: String, result: Decodable?, error: ErrorMessage?) {
         self.id = id
         self.jsonrpc = jsonrpc
@@ -192,19 +176,19 @@ public struct JSONRPCresponse: Decodable {
             self.init(id: id, jsonrpc: jsonrpc, result: nil, error: errorMessage)
             return
         }
-        
+
         var result: Decodable?
-        if let rawValue = try? container.decodeIfPresent(VerifierLookupResponse.self, forKey: .result){
+        if let rawValue = try? container.decodeIfPresent(VerifierLookupResponse.self, forKey: .result) {
             result = rawValue
-        }else if let rawValue = try? container.decodeIfPresent(ShareRequestResult.self, forKey: .result){
+        } else if let rawValue = try? container.decodeIfPresent(ShareRequestResult.self, forKey: .result) {
             result = rawValue
-        }else if let rawValue = try? container.decodeIfPresent(LegacyShareRequestResult.self, forKey: .result){
+        } else if let rawValue = try? container.decodeIfPresent(LegacyShareRequestResult.self, forKey: .result) {
             result = rawValue
-        }else if let rawValue = try? container.decodeIfPresent(CommitmentRequestResponse.self, forKey: .result){
+        } else if let rawValue = try? container.decodeIfPresent(CommitmentRequestResponse.self, forKey: .result) {
             result = rawValue
-        }else if let rawValue = try? container.decodeIfPresent(LegacyLookupResponse.self, forKey: .result){
+        } else if let rawValue = try? container.decodeIfPresent(LegacyLookupResponse.self, forKey: .result) {
             result = rawValue
-        }else if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
+        } else if let rawValue = try? container.decodeIfPresent(String.self, forKey: .result) {
             result = rawValue
         } else if let rawValue = try? container.decodeIfPresent(Int.self, forKey: .result) {
             result = rawValue
@@ -229,7 +213,7 @@ public struct JSONRPCresponse: Decodable {
         } else {
             result = nil
         }
-        
+
         self.init(id: id, jsonrpc: jsonrpc, result: result, error: nil)
     }
 }

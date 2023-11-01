@@ -1,5 +1,5 @@
-import Foundation
 import BigInt
+import Foundation
 
 struct ImportedShare {
     let pubKeyX: String
@@ -10,5 +10,4 @@ struct ImportedShare {
     let keyType: String
     let nonceData: String
     let nonceSignature: String
-
 }

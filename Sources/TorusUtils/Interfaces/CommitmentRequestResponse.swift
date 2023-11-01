@@ -5,7 +5,6 @@ public struct CommitmentRequestResponse: Codable {
     public var nodepubx: String
     public var nodepuby: String
     public var signature: String
-//    public var nodeindex: Int
 
     public init(data: String, nodepubx: String, nodepuby: String, signature: String) {
         self.data = data
@@ -16,7 +15,6 @@ public struct CommitmentRequestResponse: Codable {
 }
 
 extension Array where Element == CommitmentRequestResponse {
-
     public func tostringDict() -> [[String: String]] {
         var dictArr = [[String: String]]()
         for val in self {

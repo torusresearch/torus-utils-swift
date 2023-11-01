@@ -1,10 +1,3 @@
-//
-//  File.swift
-//
-//
-//  Created by Shubham on 2/4/20.
-//
-
 import Foundation
 
 public enum TorusUtilError: Error, Equatable {
@@ -124,7 +117,6 @@ extension TorusUtilError: LocalizedError {
             return "Could not encode data \(msg ?? "")"
         default:
             return "default Error msg"
-            
         }
     }
 }

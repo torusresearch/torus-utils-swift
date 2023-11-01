@@ -1,7 +1,6 @@
 import Foundation
 
 public struct LegacyKeyLookupResponse: CustomStringConvertible, Hashable {
-
     public let pubKeyX: String
     public let pubKeyY: String
     public let keyIndex: String
@@ -16,11 +15,9 @@ public struct LegacyKeyLookupResponse: CustomStringConvertible, Hashable {
         self.keyIndex = keyIndex
         self.address = address
     }
-
 }
 
 public struct KeyLookupResponse: CustomStringConvertible, Hashable {
-
     public let pubKeyX: String
     public let pubKeyY: String
     public let address: String
@@ -36,7 +33,6 @@ public struct KeyLookupResponse: CustomStringConvertible, Hashable {
         self.address = address
         self.isNewKey = isNewKey
     }
-
 }
 
 public enum KeyLookupError: Error {
@@ -56,7 +52,6 @@ public enum KeyLookupError: Error {
 }
 
 extension KeyLookupError: LocalizedError {
-
     public var errorDescription: String? {
         switch self {
         case .verifierNotSupported:
