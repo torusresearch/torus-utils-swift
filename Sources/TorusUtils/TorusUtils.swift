@@ -5,9 +5,8 @@ import Foundation
 import OSLog
 
 import AnyCodable
-#if canImport(secp256k1)
-    import secp256k1
-#endif
+
+import curvelib
 
 var utilsLogType = OSLogType.default
 
@@ -232,8 +231,8 @@ open class TorusUtils: AbstractTorusUtils {
     private func handleRetrieveShares(torusNodePubs: [TorusNodePubModel],
                                       indexes: [BigUInt],
                                       endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
-        let privateKey = try secp256k1.KeyAgreement.PrivateKey(format: .uncompressed)
-        let serializedPublicKey = privateKey.publicKey.dataRepresentation.hexString
+        let privateKey = try curvelib.Secp256k1.PrivateKey()
+        let serializedPublicKey = try curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: privateKey.rawData).getRaw();
 
         // Split key in 2 parts, X and Y
         // let publicKeyHex = publicKey.toHexString()
@@ -263,7 +262,7 @@ open class TorusUtils: AbstractTorusUtils {
             let (oAuthKeyX, oAuthKeyY, oAuthKey) = try await retrieveDecryptAndReconstruct(
                 endpoints: endpoints,
                 indexes: indexes,
-                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.rawRepresentation.hexString)
+                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.rawData.hexString)
 
             var metadataNonce: BigUInt
             var typeOfUser: UserType = .v1
@@ -286,18 +285,22 @@ open class TorusUtils: AbstractTorusUtils {
                     var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                     privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
                     let serializedKey = Data(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64())
-                    let finalPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: serializedKey, format: .uncompressed)
-                    finalPubKey = finalPrivateKey.publicKey.dataRepresentation.hexString
+                    let finalPrivateKey = try curvelib.Secp256k1.PrivateKey(input :  serializedKey)
+                    
+                    finalPubKey = try curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: finalPrivateKey.rawData ).getRaw()
+//                    finalPrivateKey.publicKey.dataRepresentation.hexString
                 }
             } else {
                 // for imported keys in legacy networks
                 metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
                 var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                 privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
-                let finalPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()), format: .uncompressed)
-                finalPubKey = finalPrivateKey.publicKey.dataRepresentation.hexString
-            }
+                let finalPrivateKey = try curvelib.Secp256k1.PrivateKey(input: privateKeyWithNonce.magnitude.serialize())
 
+                finalPubKey = try  curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: finalPrivateKey.rawData).getRaw()
+            }
+            print("pubkey data" , finalPubKey)
+            print("pubkey length", finalPubKey.count )
             let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
             let (finalPubX, finalPubY) = try getPublicKeyPointFromPubkeyString(pubKey: finalPubKey)
             let finalEvmAddress = generateAddressFromPubKey(publicKeyX: finalPubX, publicKeyY: finalPubY)

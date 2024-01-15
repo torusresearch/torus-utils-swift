@@ -20,11 +20,12 @@ let package = Package(
             url: "https://github.com/Flight-School/AnyCodable",
             from: "0.6.0"
         ),
+        .package(url: "https://github.com/tkey/curvelib.swift", .branchItem("main"))
     ],
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", "secp256k1"]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", "secp256k1", .product(name: "curvelib", package: "curvelib.swift")]),
         .testTarget(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit")]

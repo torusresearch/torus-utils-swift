@@ -9,6 +9,7 @@ import CommonSources
 import CryptoKit
 import FetchNodeDetails
 import OSLog
+import curvelib
 
 extension TorusUtils {
     // MARK: - utils
@@ -119,8 +120,13 @@ extension TorusUtils {
     }
 
     internal func generateParams(message: String, privateKey: String) throws -> MetadataParams {
-        let privKey = try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey), format: .uncompressed)
-        let publicKey = privKey.publicKey.dataRepresentation.hexString
+        let privKey = try curvelib.Secp256k1.PrivateKey(input: Data(hexString: privateKey))
+                                 
+//        try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey), format: .uncompressed)
+                                 
+        let publicKey = try curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: privKey.rawData).getRaw()
+        
+//        privKey.publicKey.dataRepresentation.hexString
 
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
@@ -130,7 +136,7 @@ extension TorusUtils {
             .encode(setData)
 
         let hash = keccak256Data(encodedData)
-        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
+        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.rawData).serializedSignature
         else {
             throw TorusUtilError.runtime("sign for recovery hash failed")
         }
@@ -651,21 +657,33 @@ extension TorusUtils {
     }
 
     internal func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String, padding: Padding = .pkcs7) throws -> String {
-        let eciesOpts = ECIES(
+        let eciesOpts = curvelib.ECIES.init(
             iv: eciesData.iv,
             ephemPublicKey: eciesData.ephemPublicKey,
             ciphertext: ciphertextHex,
             mac: eciesData.mac
         )
 
-        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts, padding: padding).hexString
+
+        let privateKey = try curvelib.Secp256k1.PrivateKey(input: Data(hexString: privKey))
+        let decryptedSigBuffer = try curvelib.Secp256k1.decrypt(privateKey: privateKey, data: eciesOpts).hexString
+//        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts, padding: padding).hexString
         return decryptedSigBuffer
     }
 
     public func encryptData(privkeyHex: String, _ dataToEncrypt: String) throws -> String {
-        let privKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: privkeyHex), format: .uncompressed)
-        let pubKey = privKey.publicKey.dataRepresentation.hexString
-        let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt, opts: nil)
+//        let privKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: privkeyHex), format: .uncompressed)
+//        let pubKey = privKey.publicKey.dataRepresentation.hexString
+//        let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt, opts: nil)
+        
+        let privKey = try curvelib.Secp256k1.PrivateKey(input: Data(hexString: privkeyHex))
+        let pubKey = try privKey.getPublicKey()
+        
+        guard let message = dataToEncrypt.data(using: .utf8) else {
+            throw RuntimeError("invalid data to encrypt")
+        }
+        let encParams = try curvelib.Secp256k1.encrypt(publicKey: pubKey, data: message)
+        
         let data = try JSONEncoder().encode(encParams)
         guard let string = String(data: data, encoding: .utf8) else { throw TorusUtilError.runtime("Invalid String from enc Params") }
         return string
@@ -679,27 +697,27 @@ extension TorusUtils {
         }
         throw TorusUtilError.runtime("Failed to generate secure random bytes")
     }
-
-    public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
-        let ephemPrivateKey = try secp256k1.KeyAgreement.PrivateKey()
-        let ephemPublicKey = ephemPrivateKey.publicKey
-
-        let sharedSecret = try secp256k1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
-
-        let encryptionKey = sharedSecret[0 ..< 32].bytes
-        let macKey = sharedSecret[32 ..< 64].bytes
-        let random = try randomBytes(ofLength: 16)
-        let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
-
-        let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
-        let ciphertext = try aes.encrypt(msg.customBytes())
-        var dataToMac: [UInt8] = iv
-        dataToMac.append(contentsOf: ephemPublicKey.dataRepresentation)
-        dataToMac.append(contentsOf: ciphertext)
-        let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
-        return .init(iv: iv.toHexString(), ephemPublicKey: ephemPublicKey.dataRepresentation.hexString,
-                     ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
-    }
+//
+//    public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
+//        let ephemPrivateKey = try secp256k1.KeyAgreement.PrivateKey()
+//        let ephemPublicKey = ephemPrivateKey.publicKey
+//
+//        let sharedSecret = try secp256k1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
+//
+//        let encryptionKey = sharedSecret[0 ..< 32].bytes
+//        let macKey = sharedSecret[32 ..< 64].bytes
+//        let random = try randomBytes(ofLength: 16)
+//        let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
+//
+//        let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
+//        let ciphertext = try aes.encrypt(msg.customBytes())
+//        var dataToMac: [UInt8] = iv
+//        dataToMac.append(contentsOf: ephemPublicKey.dataRepresentation)
+//        dataToMac.append(contentsOf: ciphertext)
+//        let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
+//        return .init(iv: iv.toHexString(), ephemPublicKey: ephemPublicKey.dataRepresentation.hexString,
+//                     ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
+//    }
 
     // MARK: - decrypt shares
 
@@ -1225,7 +1243,6 @@ extension TorusUtils {
         else {
             throw TorusUtilError.runtime("sign for recovery hash failed")
         }
-
         return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
     }
 
@@ -1242,15 +1259,23 @@ extension TorusUtils {
     }
 
     internal func combinePublicKeys(keys: [String], compressed: Bool) throws -> String {
-        let data = keys.map({ let key = Data(hex: $0)
-            return key
+        let data = try keys.map({ let key = Data(hex: $0)
+            let pkey = try curvelib.Secp256k1.PublicKey(input: key)
+            return pkey
         })
-        let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
-        guard let result = added?.toHexString()
-        else {
-            throw TorusUtilError.runtime("Invalid public key after combining")
+        
+        let combined = try curvelib.Secp256k1.PublicKey.combine(publicKeys: data)
+        
+        if compressed {
+            return try combined.getSec1Compress()
         }
-        return result
+        return try combined.getSec1Full()
+//        let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
+//        guard let result = added?.toHexString()
+//        else {
+//            throw TorusUtilError.runtime("Invalid public key after combining")
+//        }
+//        return result
     }
 
     internal func formatLegacyPublicData(finalKeyResult: KeyLookupResponse, enableOneKey: Bool, isNewKey: Bool) async throws -> TorusPublicKey {
