@@ -1,8 +1,6 @@
 import CryptoSwift
 import Foundation
-#if canImport(secp256k1)
-    import secp256k1
-#endif
+
 import AnyCodable
 import BigInt
 import CommonSources
@@ -135,13 +133,10 @@ extension TorusUtils {
         let encodedData = try encoder
             .encode(setData)
 
-        let hash = keccak256Data(encodedData)
-        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.rawData).serializedSignature
-        else {
-            throw TorusUtilError.runtime("sign for recovery hash failed")
-        }
+        let hash = keccak256Data(encodedData).data
+        let sigData = try curvelib.Secp256k1.recoverableSign(privateKey: privKey, hash: hash).signature
 
-        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
 
     // MARK: - getShareOrKeyAssign
@@ -728,9 +723,13 @@ extension TorusUtils {
 
         for (_, el) in shares.enumerated() {
             let nodeIndex = el.key
-
-            let publicKeyHex = el.value.ephemPublicKey
-            let sharedSecret = try secp256k1.ecdhWithHex(pubKeyHex: publicKeyHex, privateKeyHex: privateKey)
+            
+            let pkey = try curvelib.Secp256k1.PrivateKey(input: Data(hex: privateKey))
+            let pubkey = try curvelib.Secp256k1.PublicKey(input: Data(hex: el.value.ephemPublicKey))
+            
+            let share2 = try curvelib.Secp256k1.ecdh(privateKey: pkey, publicKey: pubkey)
+            let sharedSecret = share2.sha512()
+            
 
             guard
                 let data = Data(base64Encoded: el.value.share),
@@ -741,8 +740,8 @@ extension TorusUtils {
 
             do {
                 // AES-CBCblock-256
-                let aesKey = sharedSecret[0 ..< 32].bytes
-                _ = sharedSecret[32 ..< 64].bytes // TODO: check mac
+                let aesKey = Array(sharedSecret.prefix(32))
+                _ = Array(sharedSecret.suffix(32)) // TODO: check mac
                 let iv = el.value.iv.hexa
                 let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: .pkcs7)
                 let decryptData = try aes.decrypt(share)
@@ -1242,12 +1241,14 @@ extension TorusUtils {
         encoder.outputFormatting = .sortedKeys
         let encodedData = try JSONEncoder()
             .encode(setData)
-        let hash = keccak256Data(encodedData)
-        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.rawData).serializedSignature
-        else {
-            throw TorusUtilError.runtime("sign for recovery hash failed")
-        }
-        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+        let hash = keccak256Data(encodedData).data
+        let sigData = try curvelib.Secp256k1.recoverableSign(privateKey: privKey, hash: hash).signature
+        
+//        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.rawData).serializedSignature
+//        else {
+//            throw TorusUtilError.runtime("sign for recovery hash failed")
+//        }
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
 
     internal func getPublicKeyPointFromPubkeyString(pubKey: String) throws -> (String, String) {
@@ -1379,10 +1380,16 @@ extension TorusUtils {
     }
 
     public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
-        let sharedSecret = try secp256k1.ecdhWithHex(pubKeyHex: opts.ephemPublicKey, privateKeyHex: privateKey)
-
-        let aesKey = sharedSecret[0 ..< 32].bytes
-        _ = sharedSecret[32 ..< 64].bytes // TODO: check mac
+//        let sharedSecret = try secp256k1.ecdhWithHex(pubKeyHex: opts.ephemPublicKey, privateKeyHex: privateKey)
+        
+        let pkey = try curvelib.Secp256k1.PrivateKey(input: Data(hex: privateKey))
+        let pubkey = try curvelib.Secp256k1.PublicKey(input: Data(hex: opts.ephemPublicKey))
+        
+        let share2 = try curvelib.Secp256k1.ecdh(privateKey: pkey, publicKey: pubkey)
+        let sharedSecret = share2.sha512()
+        
+        let aesKey = Array(sharedSecret.prefix(32))
+        _ = Array(sharedSecret.suffix(32)) // TODO: check mac
         let iv = opts.iv.hexa
 
         let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: padding)

@@ -11,7 +11,6 @@ let package = Package(
             targets: ["TorusUtils"])
     ],
     dependencies: [
-        .package(name:"secp256k1", url: "https://github.com/GigaBitcoin/secp256k1.swift", .exact("0.12.2")),
         .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", from: "5.1.0"),
         .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift",from: "1.5.1"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit", from: "4.0.0"),
@@ -25,7 +24,7 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", "secp256k1", .product(name: "curvelib", package: "curvelib.swift")]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", .product(name: "curvelib", package: "curvelib.swift")]),
         .testTarget(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit")]

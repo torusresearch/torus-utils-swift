@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/tkey/curvelib.swift",
         "state": {
           "branch": "main",
-          "revision": "e07ec2a4d7522d019cd2b208531b70c0c95422a1",
+          "revision": "69ba51b6176322d35b1e79d7928eddbc9468973f",
           "version": null
         }
       },
@@ -53,15 +53,6 @@
           "branch": null,
           "revision": "cd0fe3af36764e876182137c3132a6d8459e1867",
           "version": "4.13.1"
-        }
-      },
-      {
-        "package": "secp256k1",
-        "repositoryURL": "https://github.com/GigaBitcoin/secp256k1.swift.git",
-        "state": {
-          "branch": null,
-          "revision": "1a14e189def5eaa92f839afdd2faad8e43b61a6e",
-          "version": "0.12.2"
         }
       },
       {

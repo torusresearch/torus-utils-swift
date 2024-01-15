@@ -2,9 +2,7 @@ import BigInt
 import CommonSources
 import FetchNodeDetails
 import JWTKit
-#if canImport(secp256k1)
-    import secp256k1
-#endif
+
 import XCTest
 
 import CoreMedia
