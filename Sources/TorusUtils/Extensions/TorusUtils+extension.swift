@@ -136,7 +136,7 @@ extension TorusUtils {
         let hash = keccak256Data(encodedData).data
         let sigData = try curvelib.Secp256k1.recoverableSign(privateKey: privKey, hash: hash).signature
 
-        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
     }
 
     // MARK: - getShareOrKeyAssign
@@ -1248,7 +1248,7 @@ extension TorusUtils {
 //        else {
 //            throw TorusUtilError.runtime("sign for recovery hash failed")
 //        }
-        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
     }
 
     internal func getPublicKeyPointFromPubkeyString(pubKey: String) throws -> (String, String) {
