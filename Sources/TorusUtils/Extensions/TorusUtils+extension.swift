@@ -122,7 +122,7 @@ extension TorusUtils {
                                  
 //        try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey), format: .uncompressed)
                                  
-        let publicKey = try curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: privKey.rawData).getRaw()
+        let publicKey = try privKey.getPublicKey().getSec1Full().hexString
         
 //        privKey.publicKey.dataRepresentation.hexString
 
@@ -205,7 +205,7 @@ extension TorusUtils {
             let derivedPrivateKey = try curvelib.Secp256k1.PrivateKey(input: Data(hex: try lagrangeInterpolation(shares: currentCombiShares, offset: 0)))
 //            try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: try lagrangeInterpolation(shares: currentCombiShares, offset: 0).addLeading0sForLength64()), format: .uncompressed)
 
-            let decryptedPubKey = try derivedPrivateKey.getPublicKey().getRaw()
+            let decryptedPubKey = try derivedPrivateKey.getPublicKey().getSec1Full().hexString
             let decryptedPubKeyX = String(decryptedPubKey.suffix(128).prefix(64))
             let decryptedPubKeyY = String(decryptedPubKey.suffix(64))
             if decryptedPubKeyX == thresholdPublicKey.X.addLeading0sForLength64() && decryptedPubKeyY == thresholdPublicKey.Y.addLeading0sForLength64() {
@@ -236,7 +236,7 @@ extension TorusUtils {
         let threshold = (endpoints.count / 2) + 1
 
         let sessionAuthKey = try curvelib.Secp256k1.PrivateKey()
-        let serializedPublicKey = try sessionAuthKey.getPublicKey().getRaw()
+        let serializedPublicKey = try sessionAuthKey.getPublicKey().getSec1Full().hexString
 
         // Split key in 2 parts, X and Y
         let pubKeyX = String(serializedPublicKey.suffix(128).prefix(64))
@@ -447,7 +447,7 @@ extension TorusUtils {
                 let derivedPrivateKey = try curvelib.Secp256k1.PrivateKey(input: Data(hex: oAuthKey))
 //                try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: oAuthKey), format: .uncompressed)
 
-                let oAuthPubKey = try derivedPrivateKey.getPublicKey().getRaw()
+                let oAuthPubKey = try derivedPrivateKey.getPublicKey().getSec1Full().hexString
                 let oAuthPubKeyX = String(oAuthPubKey.suffix(128).prefix(64))
                 let oAuthPubKeyY = String(oAuthPubKey.suffix(64))
 
@@ -768,7 +768,7 @@ extension TorusUtils {
                 let data = try lagrangeInterpolation(shares: sharesToInterpolate)
                 let finalPrivateKey = try curvelib.Secp256k1.PrivateKey(input: Data(hex: data))
 //                try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: data), format: .uncompressed)
-                let finalPublicKey = try finalPrivateKey.getPublicKey().getRaw()
+                let finalPublicKey = try finalPrivateKey.getPublicKey().getSec1Full().hexString
                 // Split key in 2 parts, X and Y
                 let pubKeyX = String(finalPublicKey.suffix(128).prefix(64))
                 let pubKeyY = String(finalPublicKey.suffix(64))
@@ -1230,7 +1230,7 @@ extension TorusUtils {
     internal func generateNonceMetadataParams(message: String, privateKey: BigInt, nonce: BigInt?) throws -> NonceMetadataParams {
         let privKey = try curvelib.Secp256k1.PrivateKey(input: privateKey.magnitude.serialize())
 //        try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey.magnitude.serialize().hexString.addLeading0sForLength64()), format: .uncompressed)
-        let publicKey = try privKey.getPublicKey().getRaw()
+        let publicKey = try privKey.getPublicKey().getSec1Full().hexString
         
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         var setData: NonceMetadataParams.SetNonceData = .init(data: message, timestamp: timeStamp)
@@ -1272,9 +1272,9 @@ extension TorusUtils {
         let combined = try curvelib.Secp256k1.PublicKey.combine(publicKeys: data)
         
         if compressed {
-            return try combined.getSec1Compress()
+            return try combined.getSec1Compress().hexString
         }
-        return try combined.getSec1Full()
+        return try combined.getSec1Full().hexString
 //        let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
 //        guard let result = added?.toHexString()
 //        else {
@@ -1301,7 +1301,7 @@ extension TorusUtils {
                 finalPubKey = (pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()).add04Prefix()
                 if nonce != BigInt(0) {
                     let noncePrivateKey = try curvelib.Secp256k1.PrivateKey(input: BigUInt(nonce).magnitude.serialize())
-                    let noncePublicKey = try noncePrivateKey.getPublicKey().getRaw()
+                    let noncePublicKey = try noncePrivateKey.getPublicKey().getSec1Full().hexString
                     finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey], compressed: false)
                 } else {
                     finalPubKey = String(finalPubKey)
@@ -1331,7 +1331,7 @@ extension TorusUtils {
                 let nonce2 = BigInt(localNonce)
                 let noncePrivateKey = try curvelib.Secp256k1.PrivateKey(input: BigUInt(nonce2).magnitude.serialize())
 //                try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce2).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
-                let noncePublicKey = try noncePrivateKey.getPublicKey().getRaw()
+                let noncePublicKey = try noncePrivateKey.getPublicKey().getSec1Full().hexString
                 finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey], compressed: false)
             } else {
                 finalPubKey = String(finalPubKey)

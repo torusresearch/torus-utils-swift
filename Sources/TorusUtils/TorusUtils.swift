@@ -232,8 +232,8 @@ open class TorusUtils: AbstractTorusUtils {
                                       indexes: [BigUInt],
                                       endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
         let privateKey = try curvelib.Secp256k1.PrivateKey()
-        let serializedPublicKey = try curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: privateKey.rawData).getRaw();
-
+        let serializedPublicKey = try privateKey.getPublicKey().getSec1Full().hexString
+        
         // Split key in 2 parts, X and Y
         // let publicKeyHex = publicKey.toHexString()
         let pubKeyX = String(serializedPublicKey.suffix(128).prefix(64))
@@ -287,8 +287,7 @@ open class TorusUtils: AbstractTorusUtils {
                     let serializedKey = Data(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64())
                     let finalPrivateKey = try curvelib.Secp256k1.PrivateKey(input :  serializedKey)
                     
-                    finalPubKey = try curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: finalPrivateKey.rawData ).getRaw()
-//                    finalPrivateKey.publicKey.dataRepresentation.hexString
+                    finalPubKey = try finalPrivateKey.getPublicKey().getSec1Full().hexString
                 }
             } else {
                 // for imported keys in legacy networks
@@ -296,8 +295,8 @@ open class TorusUtils: AbstractTorusUtils {
                 var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                 privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
                 let finalPrivateKey = try curvelib.Secp256k1.PrivateKey(input: privateKeyWithNonce.magnitude.serialize())
-
-                finalPubKey = try  curvelib.Secp256k1.PublicKey.fromPrivateKey(privateKey: finalPrivateKey.rawData).getRaw()
+                
+                finalPubKey = try finalPrivateKey.getPublicKey().getSec1Full().hexString
             }
             print("pubkey data" , finalPubKey)
             print("pubkey length", finalPubKey.count )
