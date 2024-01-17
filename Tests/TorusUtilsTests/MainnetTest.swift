@@ -1,9 +1,6 @@
 import BigInt
 import FetchNodeDetails
 import JWTKit
-#if canImport(secp256k1)
-    import secp256k1
-#endif
 import XCTest
 
 import CommonSources
@@ -113,7 +110,9 @@ class MainnetTests: XCTestCase {
         let email = generateRandomEmail(of: 6)
         let nodeDetails = try await get_fnd_and_tu_data(verifer: "google", veriferID: email)
         let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email, signerHost: tu.signerHost, network: .legacy(.MAINNET))
-        let result = val.result as! [String: Any]
+        guard let result = val.result as? [String: Any] else {
+            throw TorusUtilError.empty
+        }
         let keys = result["keys"] as! [[String: String]]
         _ = keys[0]["address"]
 

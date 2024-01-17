@@ -3,10 +3,9 @@ import CommonSources
 import FetchNodeDetails
 import Foundation
 import OSLog
-
 import AnyCodable
-#if canImport(secp256k1)
-    import secp256k1
+#if canImport(curvelib_swift)
+    import curvelib_swift
 #endif
 
 var utilsLogType = OSLogType.default
@@ -232,8 +231,8 @@ open class TorusUtils: AbstractTorusUtils {
     private func handleRetrieveShares(torusNodePubs: [TorusNodePubModel],
                                       indexes: [BigUInt],
                                       endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
-        let privateKey = try secp256k1.KeyAgreement.PrivateKey(format: .uncompressed)
-        let serializedPublicKey = privateKey.publicKey.dataRepresentation.hexString
+        let privateKey = SecretKey()
+        let serializedPublicKey = try privateKey.to_public().serialize(compressed: false)
 
         // Split key in 2 parts, X and Y
         // let publicKeyHex = publicKey.toHexString()
@@ -263,7 +262,7 @@ open class TorusUtils: AbstractTorusUtils {
             let (oAuthKeyX, oAuthKeyY, oAuthKey) = try await retrieveDecryptAndReconstruct(
                 endpoints: endpoints,
                 indexes: indexes,
-                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.rawRepresentation.hexString)
+                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.serialize().addLeading0sForLength64())
 
             var metadataNonce: BigUInt
             var typeOfUser: UserType = .v1
@@ -285,17 +284,18 @@ open class TorusUtils: AbstractTorusUtils {
                     metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
                     var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                     privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
-                    let serializedKey = Data(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64())
-                    let finalPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: serializedKey, format: .uncompressed)
-                    finalPubKey = finalPrivateKey.publicKey.dataRepresentation.hexString
+                    let serializedKey =  privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
+                    let finalPrivateKey = try
+                    SecretKey(hex: serializedKey)
+                    finalPubKey = try finalPrivateKey.to_public().serialize(compressed: false)
                 }
             } else {
                 // for imported keys in legacy networks
                 metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
                 var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                 privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
-                let finalPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()), format: .uncompressed)
-                finalPubKey = finalPrivateKey.publicKey.dataRepresentation.hexString
+                let finalPrivateKey = try SecretKey(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64())
+                finalPubKey = try finalPrivateKey.to_public().serialize(compressed: false)
             }
 
             let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)

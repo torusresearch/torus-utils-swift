@@ -1,7 +1,7 @@
 import CryptoSwift
 import Foundation
-#if canImport(secp256k1)
-    import secp256k1
+#if canImport(curvelib_swift)
+    import curvelib_swift
 #endif
 import AnyCodable
 import BigInt
@@ -119,8 +119,8 @@ extension TorusUtils {
     }
 
     internal func generateParams(message: String, privateKey: String) throws -> MetadataParams {
-        let privKey = try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey), format: .uncompressed)
-        let publicKey = privKey.publicKey.dataRepresentation.hexString
+        let privKey = try SecretKey(hex: privateKey)
+        let publicKey = try privKey.to_public().serialize(compressed: false)
 
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
@@ -129,13 +129,10 @@ extension TorusUtils {
         let encodedData = try encoder
             .encode(setData)
 
-        let hash = keccak256Data(encodedData)
-        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
-        else {
-            throw TorusUtilError.runtime("sign for recovery hash failed")
-        }
+        let hash = keccak256Data(encodedData).hexString
+        let sigData = try secp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
 
-        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
 
     // MARK: - getShareOrKeyAssign
@@ -201,13 +198,13 @@ extension TorusUtils {
                     acc[curr.key] = curr.value
                 }
             }
-            let derivedPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: try lagrangeInterpolation(shares: currentCombiShares, offset: 0).addLeading0sForLength64()), format: .uncompressed)
+            let derivedPrivateKey = try SecretKey(hex: try lagrangeInterpolation(shares: currentCombiShares, offset: 0).addLeading0sForLength64())
 
-            let decryptedPubKey = derivedPrivateKey.publicKey.dataRepresentation.hexString
+            let decryptedPubKey = try derivedPrivateKey.to_public().serialize(compressed: false)
             let decryptedPubKeyX = String(decryptedPubKey.suffix(128).prefix(64))
             let decryptedPubKeyY = String(decryptedPubKey.suffix(64))
             if decryptedPubKeyX == thresholdPublicKey.X.addLeading0sForLength64() && decryptedPubKeyY == thresholdPublicKey.Y.addLeading0sForLength64() {
-                returnedKey = derivedPrivateKey.rawRepresentation.hexString
+                returnedKey = try derivedPrivateKey.serialize().addLeading0sForLength64()
                 break
             }
         }
@@ -233,8 +230,8 @@ extension TorusUtils {
         let session = createURLSession()
         let threshold = (endpoints.count / 2) + 1
 
-        let sessionAuthKey = try secp256k1.KeyAgreement.PrivateKey(format: .uncompressed)
-        let serializedPublicKey = sessionAuthKey.publicKey.dataRepresentation.hexString
+        let sessionAuthKey = SecretKey()
+        let serializedPublicKey = try sessionAuthKey.to_public().serialize(compressed: false)
 
         // Split key in 2 parts, X and Y
         let pubKeyX = String(serializedPublicKey.suffix(128).prefix(64))
@@ -358,7 +355,7 @@ extension TorusUtils {
                     if sessionTokenSigs.count > 0 {
                         // decrypt sessionSig if enc metadata is sent
                         if sessionTokenSigMetadata.first?.ephemPublicKey != nil {
-                            sessionTokenSigPromises.append(try? decryptNodeData(eciesData: sessionTokenSigMetadata[0], ciphertextHex: sessionTokenSigs[0], privKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64()))
+                            sessionTokenSigPromises.append(try? decryptNodeData(eciesData: sessionTokenSigMetadata[0], ciphertextHex: sessionTokenSigs[0], privKey: sessionAuthKey.serialize().addLeading0sForLength64()))
                         } else {
                             sessionTokenSigPromises.append(sessionTokenSigs[0])
                         }
@@ -368,7 +365,7 @@ extension TorusUtils {
 
                     if sessionTokens.count > 0 {
                         if sessionTokenMetadata.first?.ephemPublicKey != nil {
-                            sessionTokenPromises.append(try? decryptNodeData(eciesData: sessionTokenMetadata[0], ciphertextHex: sessionTokens[0], privKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64()))
+                            sessionTokenPromises.append(try? decryptNodeData(eciesData: sessionTokenMetadata[0], ciphertextHex: sessionTokens[0], privKey: sessionAuthKey.serialize().addLeading0sForLength64()))
                         } else {
                             sessionTokenPromises.append(sessionTokenSigs[0])
                         }
@@ -383,7 +380,7 @@ extension TorusUtils {
                         guard let ciphertextHex = String(data: data, encoding: .ascii) else {
                             throw TorusUtilError.decodingFailed()
                         }
-                        let decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: ciphertextHex, privKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64())
+                        let decryptedShare = try decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: ciphertextHex, privKey: sessionAuthKey.serialize().addLeading0sForLength64())
                         shares.append(decryptedShare.addLeading0sForLength64())
                     } else {
                         os_log("retrieveShare -  0 keys returned from nodes", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)
@@ -442,9 +439,9 @@ extension TorusUtils {
                     throw TorusUtilError.privateKeyDeriveFailed
                 }
 
-                let derivedPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: oAuthKey), format: .uncompressed)
+                let derivedPrivateKey = try SecretKey(hex: oAuthKey)
 
-                let oAuthPubKey = derivedPrivateKey.publicKey.dataRepresentation.hexString
+                let oAuthPubKey = try derivedPrivateKey.to_public().serialize(compressed: false)
                 let oAuthPubKeyX = String(oAuthPubKey.suffix(128).prefix(64))
                 let oAuthPubKeyY = String(oAuthPubKey.suffix(64))
 
@@ -537,7 +534,7 @@ extension TorusUtils {
                     ),
                     sessionData: .init(
                         sessionTokenData: sessionTokenData,
-                        sessionAuthKey: sessionAuthKey.rawRepresentation.hexString.addLeading0sForLength64()
+                        sessionAuthKey: try sessionAuthKey.serialize().addLeading0sForLength64()
                     ),
                     metadata: .init(
                         pubNonce: pubKeyNonceResult,
@@ -663,8 +660,8 @@ extension TorusUtils {
     }
 
     public func encryptData(privkeyHex: String, _ dataToEncrypt: String) throws -> String {
-        let privKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: privkeyHex), format: .uncompressed)
-        let pubKey = privKey.publicKey.dataRepresentation.hexString
+        let privKey = try SecretKey(hex: privkeyHex)
+        let pubKey = try privKey.to_public().serialize(compressed: false)
         let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt, opts: nil)
         let data = try JSONEncoder().encode(encParams)
         guard let string = String(data: data, encoding: .utf8) else { throw TorusUtilError.runtime("Invalid String from enc Params") }
@@ -681,23 +678,23 @@ extension TorusUtils {
     }
 
     public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
-        let ephemPrivateKey = try secp256k1.KeyAgreement.PrivateKey()
-        let ephemPublicKey = ephemPrivateKey.publicKey
+        let ephemPrivateKey = SecretKey()
+        let ephemPublicKey = try ephemPrivateKey.to_public()
 
         let sharedSecret = try secp256k1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
 
-        let encryptionKey = sharedSecret[0 ..< 32].bytes
-        let macKey = sharedSecret[32 ..< 64].bytes
+        let encryptionKey = Array(sharedSecret[0 ..< 32])
+        let macKey = Array(sharedSecret[32 ..< 64])
         let random = try randomBytes(ofLength: 16)
         let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
 
         let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
         let ciphertext = try aes.encrypt(msg.customBytes())
         var dataToMac: [UInt8] = iv
-        dataToMac.append(contentsOf: ephemPublicKey.dataRepresentation)
+        dataToMac.append(contentsOf: Data(hex: try ephemPublicKey.serialize(compressed: false)))
         dataToMac.append(contentsOf: ciphertext)
         let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
-        return .init(iv: iv.toHexString(), ephemPublicKey: ephemPublicKey.dataRepresentation.hexString,
+        return .init(iv: iv.toHexString(), ephemPublicKey: try ephemPublicKey.serialize(compressed: false),
                      ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
     }
 
@@ -721,8 +718,8 @@ extension TorusUtils {
 
             do {
                 // AES-CBCblock-256
-                let aesKey = sharedSecret[0 ..< 32].bytes
-                _ = sharedSecret[32 ..< 64].bytes // TODO: check mac
+                let aesKey = Array(sharedSecret[0 ..< 32])
+                _ = Array(sharedSecret[32 ..< 64]) // TODO: check mac
                 let iv = el.value.iv.hexa
                 let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: .pkcs7)
                 let decryptData = try aes.decrypt(share)
@@ -747,8 +744,8 @@ extension TorusUtils {
             shareIndexSet.forEach { sharesToInterpolate[$0] = filteredData[$0] }
             do {
                 let data = try lagrangeInterpolation(shares: sharesToInterpolate)
-                let finalPrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: Data(hex: data), format: .uncompressed)
-                let finalPublicKey = finalPrivateKey.publicKey.dataRepresentation.hexString
+                let finalPrivateKey = try SecretKey(hex: data)
+                let finalPublicKey = try finalPrivateKey.to_public().serialize(compressed: false)
                 // Split key in 2 parts, X and Y
                 let pubKeyX = String(finalPublicKey.suffix(128).prefix(64))
                 let pubKeyY = String(finalPublicKey.suffix(64))
@@ -1208,8 +1205,8 @@ extension TorusUtils {
     }
 
     internal func generateNonceMetadataParams(message: String, privateKey: BigInt, nonce: BigInt?) throws -> NonceMetadataParams {
-        let privKey = try secp256k1.Signing.PrivateKey(dataRepresentation: Data(hex: privateKey.magnitude.serialize().hexString.addLeading0sForLength64()), format: .uncompressed)
-        let publicKey = privKey.publicKey.dataRepresentation.hexString
+        let privKey = try SecretKey(hex: privateKey.magnitude.serialize().hexString.addLeading0sForLength64())
+        let publicKey = try privKey.to_public().serialize(compressed: false)
 
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         var setData: NonceMetadataParams.SetNonceData = .init(data: message, timestamp: timeStamp)
@@ -1220,13 +1217,10 @@ extension TorusUtils {
         encoder.outputFormatting = .sortedKeys
         let encodedData = try JSONEncoder()
             .encode(setData)
-        let hash = keccak256Data(encodedData)
-        guard let sigData = secp256k1.signForRecovery(hash: hash, privateKey: privKey.dataRepresentation).serializedSignature
-        else {
-            throw TorusUtilError.runtime("sign for recovery hash failed")
-        }
+        let hash = keccak256Data(encodedData).hexString
+        let sigData = try secp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
 
-        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: sigData.base64EncodedString())
+        return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
 
     internal func getPublicKeyPointFromPubkeyString(pubKey: String) throws -> (String, String) {
@@ -1242,15 +1236,14 @@ extension TorusUtils {
     }
 
     internal func combinePublicKeys(keys: [String], compressed: Bool) throws -> String {
-        let data = keys.map({ let key = Data(hex: $0)
-            return key
-        })
-        let added = secp256k1.combineSerializedPublicKeys(keys: data, outputCompressed: compressed)
-        guard let result = added?.toHexString()
-        else {
-            throw TorusUtilError.runtime("Invalid public key after combining")
+        let collection = PublicKeyCollection();
+        for item in keys {
+            let pk = try PublicKey(hex: item)
+            try collection.insert(key: pk)
         }
-        return result
+        
+        let added = try secp256k1.combineSerializedPublicKeys(keys: collection, outputCompressed: compressed)
+        return added
     }
 
     internal func formatLegacyPublicData(finalKeyResult: KeyLookupResponse, enableOneKey: Bool, isNewKey: Bool) async throws -> TorusPublicKey {
@@ -1270,9 +1263,9 @@ extension TorusUtils {
             if typeOfUser == .v1 {
                 finalPubKey = (pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()).add04Prefix()
                 if nonce != BigInt(0) {
-                    let noncePrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
-                    let noncePublicKey = noncePrivateKey.publicKey.dataRepresentation
-                    finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey.hexString], compressed: false)
+                    let noncePrivateKey = try SecretKey(hex: BigUInt(nonce).magnitude.serialize().addLeading0sForLength64().hexString)
+                    let noncePublicKey = try noncePrivateKey.to_public().serialize(compressed: false)
+                    finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey], compressed: false)
                 } else {
                     finalPubKey = String(finalPubKey)
                 }
@@ -1299,9 +1292,9 @@ extension TorusUtils {
             finalPubKey = (localPubkeyX.addLeading0sForLength64() + localPubkeyY.addLeading0sForLength64()).add04Prefix()
             if localNonce != BigInt(0) {
                 let nonce2 = BigInt(localNonce)
-                let noncePrivateKey = try secp256k1.KeyAgreement.PrivateKey(dataRepresentation: BigUInt(nonce2).magnitude.serialize().addLeading0sForLength64(), format: .uncompressed)
-                let noncePublicKey = noncePrivateKey.publicKey.dataRepresentation
-                finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey.hexString], compressed: false)
+                let noncePrivateKey = try SecretKey(hex: BigUInt(nonce2).magnitude.serialize().addLeading0sForLength64().hexString)
+                let noncePublicKey = try noncePrivateKey.to_public().serialize(compressed: false)
+                finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey], compressed: false)
             } else {
                 finalPubKey = String(finalPubKey)
             }
@@ -1351,8 +1344,8 @@ extension TorusUtils {
     public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
         let sharedSecret = try secp256k1.ecdhWithHex(pubKeyHex: opts.ephemPublicKey, privateKeyHex: privateKey)
 
-        let aesKey = sharedSecret[0 ..< 32].bytes
-        _ = sharedSecret[32 ..< 64].bytes // TODO: check mac
+        let aesKey = Array(sharedSecret[0 ..< 32])
+        _ = Array(sharedSecret[32 ..< 64]) // TODO: check mac
         let iv = opts.iv.hexa
 
         let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: padding)

@@ -1,7 +1,7 @@
 import BigInt
 import Foundation
-#if canImport(secp256k1)
-    import secp256k1
+#if canImport(curvelib_swift)
+    import curvelib_swift
 #endif
 
 func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
@@ -25,7 +25,7 @@ func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
 }
 
 func generatePrivateExcludingIndexes(shareIndexes: [BigInt]) throws -> BigInt {
-    let key = BigInt(try secp256k1.KeyAgreement.PrivateKey().rawRepresentation)
+    let key = BigInt(Data(hex: try SecretKey().serialize().addLeading0sForLength64()))
     if shareIndexes.contains(where: { $0 == key }) {
         return try generatePrivateExcludingIndexes(shareIndexes: shareIndexes)
     }
@@ -172,7 +172,7 @@ func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicS
         while points[shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] != nil {
             shareIndex = try generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
         }
-        points[String(shareIndex, radix: 16).addLeading0sForLength64()] = Point(x: shareIndex, y: BigInt(try secp256k1.KeyAgreement.PrivateKey().rawRepresentation))
+        points[String(shareIndex, radix: 16).addLeading0sForLength64()] = Point(x: shareIndex, y: BigInt(Data(hex:try SecretKey().serialize().addLeading0sForLength64())))
     }
 
     points["0"] = Point(x: BigInt(0), y: actualS!)

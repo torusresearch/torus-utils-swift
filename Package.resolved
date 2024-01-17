@@ -29,6 +29,15 @@
         }
       },
       {
+        "package": "curvelib.swift",
+        "repositoryURL": "https://github.com/tkey/curvelib.swift",
+        "state": {
+          "branch": "refactor",
+          "revision": "11fafc0650c651bf3c8374152552e8ad1991ec17",
+          "version": null
+        }
+      },
+      {
         "package": "FetchNodeDetails",
         "repositoryURL": "https://github.com/torusresearch/fetch-node-details-swift.git",
         "state": {
@@ -44,15 +53,6 @@
           "branch": null,
           "revision": "9e929d925434b91857661bcd455d1bd53f00bf22",
           "version": "4.13.0"
-        }
-      },
-      {
-        "package": "secp256k1",
-        "repositoryURL": "https://github.com/GigaBitcoin/secp256k1.swift.git",
-        "state": {
-          "branch": null,
-          "revision": "1a14e189def5eaa92f839afdd2faad8e43b61a6e",
-          "version": "0.12.2"
         }
       },
       {
