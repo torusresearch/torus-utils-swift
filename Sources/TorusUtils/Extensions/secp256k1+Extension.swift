@@ -7,7 +7,10 @@ public struct secp256k1 {}
 
 extension secp256k1 {
     public static func ecdh(publicKey: PublicKey, privateKey: SecretKey) throws -> [UInt8] {
-        return try Data(hex: ECDH.ecdh(sk: privateKey, pk: publicKey)).bytes.sha512()
+        let shared = try publicKey.mul(key: privateKey)
+        let serialized = try shared.serialize(compressed: true)
+        let data = Data(hex: serialized).dropFirst()
+        return data.bytes.sha512()
     }
 
     public static func ecdhWithHex(pubKeyHex: String, privateKeyHex: String) throws -> [UInt8] {
