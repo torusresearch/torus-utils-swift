@@ -130,7 +130,7 @@ extension TorusUtils {
             .encode(setData)
 
         let hash = keccak256Data(encodedData).hexString
-        let sigData = try secp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
+        let sigData = try CurveSecp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
 
         return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
@@ -681,7 +681,7 @@ extension TorusUtils {
         let ephemPrivateKey = SecretKey()
         let ephemPublicKey = try ephemPrivateKey.to_public()
 
-        let sharedSecret = try secp256k1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
+        let sharedSecret = try CurveSecp256k1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
 
         let encryptionKey = Array(sharedSecret[0 ..< 32])
         let macKey = Array(sharedSecret[32 ..< 64])
@@ -707,7 +707,7 @@ extension TorusUtils {
             let nodeIndex = el.key
 
             let publicKeyHex = el.value.ephemPublicKey
-            let sharedSecret = try secp256k1.ecdhWithHex(pubKeyHex: publicKeyHex, privateKeyHex: privateKey)
+            let sharedSecret = try CurveSecp256k1.ecdhWithHex(pubKeyHex: publicKeyHex, privateKeyHex: privateKey)
 
             guard
                 let data = Data(base64Encoded: el.value.share),
@@ -765,7 +765,7 @@ extension TorusUtils {
     }
 
     internal func lagrangeInterpolation(shares: [Int: String], offset: Int = 1) throws -> String {
-        let secp256k1N = modulusValue
+        let CurveSecp256k1N = modulusValue
 
         // Convert shares to BigInt(Shares)
         var shareList = [BigInt: BigInt]()
@@ -781,21 +781,21 @@ extension TorusUtils {
                 if i != j {
                     let negatedJ = j * BigInt(-1)
                     upper = upper * negatedJ
-                    upper = upper.modulus(secp256k1N)
+                    upper = upper.modulus(CurveSecp256k1N)
 
                     var temp = i - j
-                    temp = temp.modulus(secp256k1N)
-                    lower = (lower * temp).modulus(secp256k1N)
+                    temp = temp.modulus(CurveSecp256k1N)
+                    lower = (lower * temp).modulus(CurveSecp256k1N)
                 }
             }
             guard
-                let inv = lower.inverse(secp256k1N)
+                let inv = lower.inverse(CurveSecp256k1N)
             else {
                 throw TorusUtilError.decryptionFailed
             }
-            var delta = (upper * inv).modulus(secp256k1N)
-            delta = (delta * share).modulus(secp256k1N)
-            secret = BigUInt((BigInt(secret) + delta).modulus(secp256k1N))
+            var delta = (upper * inv).modulus(CurveSecp256k1N)
+            delta = (delta * share).modulus(CurveSecp256k1N)
+            secret = BigUInt((BigInt(secret) + delta).modulus(CurveSecp256k1N))
             sharesDecrypt += 1
         }
         let secretString = String(secret.serialize().hexa.suffix(64))
@@ -1218,7 +1218,7 @@ extension TorusUtils {
         let encodedData = try JSONEncoder()
             .encode(setData)
         let hash = keccak256Data(encodedData).hexString
-        let sigData = try secp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
+        let sigData = try CurveSecp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
 
         return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
@@ -1242,7 +1242,7 @@ extension TorusUtils {
             try collection.insert(key: pk)
         }
         
-        let added = try secp256k1.combineSerializedPublicKeys(keys: collection, outputCompressed: compressed)
+        let added = try CurveSecp256k1.combineSerializedPublicKeys(keys: collection, outputCompressed: compressed)
         return added
     }
 
@@ -1342,7 +1342,7 @@ extension TorusUtils {
     }
 
     public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
-        let sharedSecret = try secp256k1.ecdhWithHex(pubKeyHex: opts.ephemPublicKey, privateKeyHex: privateKey)
+        let sharedSecret = try CurveSecp256k1.ecdhWithHex(pubKeyHex: opts.ephemPublicKey, privateKeyHex: privateKey)
 
         let aesKey = Array(sharedSecret[0 ..< 32])
         _ = Array(sharedSecret[32 ..< 64]) // TODO: check mac

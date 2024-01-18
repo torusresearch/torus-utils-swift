@@ -3,9 +3,9 @@ import Foundation
     import curvelib_swift
 #endif
 
-public struct secp256k1 {}
+public struct CurveSecp256k1 {}
 
-extension secp256k1 {
+extension CurveSecp256k1 {
     public static func ecdh(publicKey: PublicKey, privateKey: SecretKey) throws -> [UInt8] {
         let shared = try publicKey.mul(key: privateKey)
         let serialized = try shared.serialize(compressed: true)
