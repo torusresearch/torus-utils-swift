@@ -120,7 +120,7 @@ extension TorusUtils {
 
     internal func generateParams(message: String, privateKey: String) throws -> MetadataParams {
         let privKey = try SecretKey(hex: privateKey)
-        let publicKey = try privKey.to_public().serialize(compressed: false)
+        let publicKey = try privKey.toPublic().serialize(compressed: false)
 
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
@@ -200,7 +200,7 @@ extension TorusUtils {
             }
             let derivedPrivateKey = try SecretKey(hex: try lagrangeInterpolation(shares: currentCombiShares, offset: 0).addLeading0sForLength64())
 
-            let decryptedPubKey = try derivedPrivateKey.to_public().serialize(compressed: false)
+            let decryptedPubKey = try derivedPrivateKey.toPublic().serialize(compressed: false)
             let decryptedPubKeyX = String(decryptedPubKey.suffix(128).prefix(64))
             let decryptedPubKeyY = String(decryptedPubKey.suffix(64))
             if decryptedPubKeyX == thresholdPublicKey.X.addLeading0sForLength64() && decryptedPubKeyY == thresholdPublicKey.Y.addLeading0sForLength64() {
@@ -231,7 +231,7 @@ extension TorusUtils {
         let threshold = (endpoints.count / 2) + 1
 
         let sessionAuthKey = SecretKey()
-        let serializedPublicKey = try sessionAuthKey.to_public().serialize(compressed: false)
+        let serializedPublicKey = try sessionAuthKey.toPublic().serialize(compressed: false)
 
         // Split key in 2 parts, X and Y
         let pubKeyX = String(serializedPublicKey.suffix(128).prefix(64))
@@ -441,7 +441,7 @@ extension TorusUtils {
 
                 let derivedPrivateKey = try SecretKey(hex: oAuthKey)
 
-                let oAuthPubKey = try derivedPrivateKey.to_public().serialize(compressed: false)
+                let oAuthPubKey = try derivedPrivateKey.toPublic().serialize(compressed: false)
                 let oAuthPubKeyX = String(oAuthPubKey.suffix(128).prefix(64))
                 let oAuthPubKeyY = String(oAuthPubKey.suffix(64))
 
@@ -661,7 +661,7 @@ extension TorusUtils {
 
     public func encryptData(privkeyHex: String, _ dataToEncrypt: String) throws -> String {
         let privKey = try SecretKey(hex: privkeyHex)
-        let pubKey = try privKey.to_public().serialize(compressed: false)
+        let pubKey = try privKey.toPublic().serialize(compressed: false)
         let encParams = try encrypt(publicKey: pubKey, msg: dataToEncrypt, opts: nil)
         let data = try JSONEncoder().encode(encParams)
         guard let string = String(data: data, encoding: .utf8) else { throw TorusUtilError.runtime("Invalid String from enc Params") }
@@ -679,7 +679,7 @@ extension TorusUtils {
 
     public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
         let ephemPrivateKey = SecretKey()
-        let ephemPublicKey = try ephemPrivateKey.to_public()
+        let ephemPublicKey = try ephemPrivateKey.toPublic()
 
         let sharedSecret = try CurveSecp256k1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
 
@@ -745,7 +745,7 @@ extension TorusUtils {
             do {
                 let data = try lagrangeInterpolation(shares: sharesToInterpolate)
                 let finalPrivateKey = try SecretKey(hex: data)
-                let finalPublicKey = try finalPrivateKey.to_public().serialize(compressed: false)
+                let finalPublicKey = try finalPrivateKey.toPublic().serialize(compressed: false)
                 // Split key in 2 parts, X and Y
                 let pubKeyX = String(finalPublicKey.suffix(128).prefix(64))
                 let pubKeyY = String(finalPublicKey.suffix(64))
@@ -1206,7 +1206,7 @@ extension TorusUtils {
 
     internal func generateNonceMetadataParams(message: String, privateKey: BigInt, nonce: BigInt?) throws -> NonceMetadataParams {
         let privKey = try SecretKey(hex: privateKey.magnitude.serialize().hexString.addLeading0sForLength64())
-        let publicKey = try privKey.to_public().serialize(compressed: false)
+        let publicKey = try privKey.toPublic().serialize(compressed: false)
 
         let timeStamp = String(BigUInt(serverTimeOffset + Date().timeIntervalSince1970), radix: 16)
         var setData: NonceMetadataParams.SetNonceData = .init(data: message, timestamp: timeStamp)
@@ -1264,7 +1264,7 @@ extension TorusUtils {
                 finalPubKey = (pubKeyX.addLeading0sForLength64() + pubKeyY.addLeading0sForLength64()).add04Prefix()
                 if nonce != BigInt(0) {
                     let noncePrivateKey = try SecretKey(hex: BigUInt(nonce).magnitude.serialize().addLeading0sForLength64().hexString)
-                    let noncePublicKey = try noncePrivateKey.to_public().serialize(compressed: false)
+                    let noncePublicKey = try noncePrivateKey.toPublic().serialize(compressed: false)
                     finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey], compressed: false)
                 } else {
                     finalPubKey = String(finalPubKey)
@@ -1293,7 +1293,7 @@ extension TorusUtils {
             if localNonce != BigInt(0) {
                 let nonce2 = BigInt(localNonce)
                 let noncePrivateKey = try SecretKey(hex: BigUInt(nonce2).magnitude.serialize().addLeading0sForLength64().hexString)
-                let noncePublicKey = try noncePrivateKey.to_public().serialize(compressed: false)
+                let noncePublicKey = try noncePrivateKey.toPublic().serialize(compressed: false)
                 finalPubKey = try combinePublicKeys(keys: [finalPubKey, noncePublicKey], compressed: false)
             } else {
                 finalPubKey = String(finalPubKey)

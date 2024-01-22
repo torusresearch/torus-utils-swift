@@ -32,8 +32,8 @@
         "package": "curvelib.swift",
         "repositoryURL": "https://github.com/tkey/curvelib.swift",
         "state": {
-          "branch": "refactor",
-          "revision": "3477abff071170d005f05397c6049478fa6ecaf3",
+          "branch": "extension",
+          "revision": "d5acae05bfd832393524ec8e0bf8820a745e5331",
           "version": null
         }
       },
