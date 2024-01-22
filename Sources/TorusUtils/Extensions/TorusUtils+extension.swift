@@ -13,6 +13,12 @@ import OSLog
 extension TorusUtils {
     // MARK: - utils
 
+    internal func ecdh_sha512(publicKey: PublicKey, privateKey: SecretKey) throws -> [UInt8] {
+        let shared = try ECDH.ecdhStandard(sk: privateKey, pk: publicKey)
+        let data = Data(hex: shared).dropFirst()
+        return data.bytes.sha512()
+    }
+
     internal func combinations<T>(elements: ArraySlice<T>, k: Int) -> [[T]] {
         if k == 0 {
             return [[]]
@@ -130,7 +136,7 @@ extension TorusUtils {
             .encode(setData)
 
         let hash = keccak256Data(encodedData).hexString
-        let sigData = try CurveSecp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
+        let sigData = try ECDSA.signRecoverable(key: privKey, hash: hash).serialize()
 
         return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
@@ -681,7 +687,7 @@ extension TorusUtils {
         let ephemPrivateKey = SecretKey()
         let ephemPublicKey = try ephemPrivateKey.toPublic()
 
-        let sharedSecret = try CurveSecp256k1.ecdh(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
+        let sharedSecret = try ecdh_sha512(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
 
         let encryptionKey = Array(sharedSecret[0 ..< 32])
         let macKey = Array(sharedSecret[32 ..< 64])
@@ -707,7 +713,7 @@ extension TorusUtils {
             let nodeIndex = el.key
 
             let publicKeyHex = el.value.ephemPublicKey
-            let sharedSecret = try CurveSecp256k1.ecdhWithHex(pubKeyHex: publicKeyHex, privateKeyHex: privateKey)
+            let sharedSecret = try ecdh_sha512(publicKey: PublicKey(hex: publicKeyHex), privateKey: SecretKey(hex: privateKey))
 
             guard
                 let data = Data(base64Encoded: el.value.share),
@@ -1218,7 +1224,7 @@ extension TorusUtils {
         let encodedData = try JSONEncoder()
             .encode(setData)
         let hash = keccak256Data(encodedData).hexString
-        let sigData = try CurveSecp256k1.signForRecovery(hash: hash, privateKey: privKey).serialize()
+        let sigData = try ECDSA.signRecoverable(key: privKey, hash: hash).serialize()
 
         return .init(pub_key_X: String(publicKey.suffix(128).prefix(64)), pub_key_Y: String(publicKey.suffix(64)), setData: setData, signature: Data(hex: sigData).base64EncodedString())
     }
@@ -1236,13 +1242,13 @@ extension TorusUtils {
     }
 
     internal func combinePublicKeys(keys: [String], compressed: Bool) throws -> String {
-        let collection = PublicKeyCollection();
+        let collection = PublicKeyCollection()
         for item in keys {
             let pk = try PublicKey(hex: item)
             try collection.insert(key: pk)
         }
-        
-        let added = try CurveSecp256k1.combineSerializedPublicKeys(keys: collection, outputCompressed: compressed)
+
+        let added = try PublicKey.combine(collection: collection).serialize(compressed: compressed)
         return added
     }
 
@@ -1342,7 +1348,7 @@ extension TorusUtils {
     }
 
     public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
-        let sharedSecret = try CurveSecp256k1.ecdhWithHex(pubKeyHex: opts.ephemPublicKey, privateKeyHex: privateKey)
+        let sharedSecret = try ecdh_sha512(publicKey: PublicKey(hex: opts.ephemPublicKey), privateKey: SecretKey(hex: privateKey))
 
         let aesKey = Array(sharedSecret[0 ..< 32])
         _ = Array(sharedSecret[32 ..< 64]) // TODO: check mac
