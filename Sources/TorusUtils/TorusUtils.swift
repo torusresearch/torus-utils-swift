@@ -232,7 +232,7 @@ open class TorusUtils: AbstractTorusUtils {
                                       indexes: [BigUInt],
                                       endpoints: [String], verifier: String, verifierId: String, idToken: String, extraParams: [String: Codable]) async throws -> TorusKey {
         let privateKey = SecretKey()
-        let serializedPublicKey = try privateKey.to_public().serialize(compressed: false)
+        let serializedPublicKey = try privateKey.toPublic().serialize(compressed: false)
 
         // Split key in 2 parts, X and Y
         // let publicKeyHex = publicKey.toHexString()
@@ -287,7 +287,7 @@ open class TorusUtils: AbstractTorusUtils {
                     let serializedKey =  privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
                     let finalPrivateKey = try
                     SecretKey(hex: serializedKey)
-                    finalPubKey = try finalPrivateKey.to_public().serialize(compressed: false)
+                    finalPubKey = try finalPrivateKey.toPublic().serialize(compressed: false)
                 }
             } else {
                 // for imported keys in legacy networks
@@ -295,7 +295,7 @@ open class TorusUtils: AbstractTorusUtils {
                 var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                 privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
                 let finalPrivateKey = try SecretKey(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64())
-                finalPubKey = try finalPrivateKey.to_public().serialize(compressed: false)
+                finalPubKey = try finalPrivateKey.toPublic().serialize(compressed: false)
             }
 
             let oAuthKeyAddress = generateAddressFromPubKey(publicKeyX: oAuthKeyX, publicKeyY: oAuthKeyY)
