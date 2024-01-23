@@ -21,11 +21,11 @@
       },
       {
         "package": "CryptoSwift",
-        "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift.git",
+        "repositoryURL": "https://github.com/krzyzanowskim/CryptoSwift",
         "state": {
           "branch": null,
-          "revision": "32f641cf24fc7abc1c591a2025e9f2f572648b0f",
-          "version": "1.7.2"
+          "revision": "7892a123f7e8d0fe62f9f03728b17bbd4f94df5c",
+          "version": "1.8.1"
         }
       },
       {
@@ -33,7 +33,7 @@
         "repositoryURL": "https://github.com/tkey/curvelib.swift",
         "state": {
           "branch": "feat/product",
-          "revision": "4b84abc25b7c14e0f40c423a0069aa9e3ba58ec4",
+          "revision": "8ca4a8bced1e8e9500a39eec1e03016433189ef2",
           "version": null
         }
       },
@@ -48,11 +48,11 @@
       },
       {
         "package": "jwt-kit",
-        "repositoryURL": "https://github.com/vapor/jwt-kit.git",
+        "repositoryURL": "https://github.com/vapor/jwt-kit",
         "state": {
           "branch": null,
-          "revision": "9e929d925434b91857661bcd455d1bd53f00bf22",
-          "version": "4.13.0"
+          "revision": "cd0fe3af36764e876182137c3132a6d8459e1867",
+          "version": "4.13.1"
         }
       },
       {
@@ -60,8 +60,8 @@
         "repositoryURL": "https://github.com/apple/swift-crypto.git",
         "state": {
           "branch": null,
-          "revision": "60f13f60c4d093691934dc6cfdf5f508ada1f894",
-          "version": "2.6.0"
+          "revision": "cc76b894169a3c86b71bac10c78a4db6beb7a9ad",
+          "version": "3.2.0"
         }
       }
     ]

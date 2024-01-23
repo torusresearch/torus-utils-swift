@@ -24,7 +24,10 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", .product(name: "secp256k1.swift", package: "curvelib.swift")]),
+            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", 
+                .product(name: "secp256k1.swift", package: "curvelib.swift"),
+                .product(name: "encryption_aes_cbc_sha512.swift", package: "curvelib.swift")
+            ]),
         .testTarget(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit")]
