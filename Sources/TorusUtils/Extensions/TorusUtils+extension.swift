@@ -1,8 +1,7 @@
 import CryptoSwift
 import Foundation
-#if canImport(curvelib_swift)
-    import curvelib_swift
-#endif
+import secp256k1_swift
+
 import AnyCodable
 import BigInt
 import CommonSources

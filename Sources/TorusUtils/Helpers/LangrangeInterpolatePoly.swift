@@ -1,8 +1,6 @@
 import BigInt
 import Foundation
-#if canImport(curvelib_swift)
-    import curvelib_swift
-#endif
+import secp256k1_swift
 
 func modInverse(_ a: BigInt, _ m: BigInt) -> BigInt? {
     var (t, newT) = (BigInt(0), BigInt(1))
