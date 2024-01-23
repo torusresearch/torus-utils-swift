@@ -4,8 +4,8 @@ import FetchNodeDetails
 import Foundation
 import OSLog
 import AnyCodable
-#if canImport(curvelib_swift)
-    import curvelib_swift
+#if canImport(curveSecp256k1)
+    import curveSecp256k1
 #endif
 
 var utilsLogType = OSLogType.default
