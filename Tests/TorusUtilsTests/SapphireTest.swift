@@ -17,8 +17,9 @@ final class SapphireTest: XCTestCase {
 
     let TORUS_TEST_VERIFIER = "torus-test-health"
     let TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
-    let TORUS_TEST_EMAIL = "saasas@tr.us"
-    let TORUS_IMPORT_EMAIL = "importeduser5@tor.us"
+    let TORUS_TEST_EMAIL = "devnettestuser@tor.us"
+    let TORUS_HASH_ENABLED_TEST_EMAIL = "saasas@tr.us";
+    let TORUS_IMPORT_EMAIL = "Sydnie.Lehner73@yahoo.com"
     let TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com"
     let HashEnabledVerifier = "torus-test-verifierid-hash"
 
@@ -43,18 +44,18 @@ final class SapphireTest: XCTestCase {
         let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
 
         let val = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.torusNodePub, verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
-        XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x8ef416b4eAf5a8CB8754ad7F1b4c0B2F75F85554")
-        XCTAssertEqual(val.oAuthKeyData!.X, "0c7d2f73122817007596ae265c24e335f791c90959ae78c111771563a46ea3e1")
-        XCTAssertEqual(val.oAuthKeyData!.Y, "2ed65b815be494e39bbd4a52c6016da9225768831c9db8c4369865a50aa95cfb")
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x81001206C06AD09b3611b593aEEd3A607d79871E")
-        XCTAssertEqual(val.finalKeyData!.X, "12c1dff0492828894048b840818767a1fcf6b514b93921517142381bd3f2cdb0")
-        XCTAssertEqual(val.finalKeyData!.Y, "7150bcba067eb00d5014622a32352fa9d431ec7a128f83be9e7ac879e312b09b")
-        XCTAssertEqual(val.metadata?.pubNonce?.x, "784bf45a752a793ffe9f9f1343548ed7ecbce74f8a0b72670456ab8de82c7409")
-        XCTAssertEqual(val.metadata?.pubNonce?.y, "693ac3dd1671a3bdd0241af4f70051bed9a5cb371297b11a362643ebe05b95fe")
+        XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x137B3607958562D03Eb3C6086392D1eFa01aA6aa")
+        XCTAssertEqual(val.oAuthKeyData!.X, "118a674da0c68f16a1123de9611ba655f4db1e336fe1b2d746028d65d22a3c6b")
+        XCTAssertEqual(val.oAuthKeyData!.Y, "8325432b3a3418d632b4fe93db094d6d83250eea60fe512897c0ad548737f8a5")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x462A8BF111A55C9354425F875F89B22678c0Bc44")
+        XCTAssertEqual(val.finalKeyData!.X, "36e257717f746cdd52ba85f24f7c9040db8977d3b0354de70ed43689d24fa1b1")
+        XCTAssertEqual(val.finalKeyData!.Y, "58ec9768c2fe871b3e2a83cdbcf37ba6a88ad19ec2f6e16a66231732713fd507")
+        XCTAssertEqual(val.metadata?.pubNonce?.x, "5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc")
+        XCTAssertEqual(val.metadata?.pubNonce?.y, "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed")
         XCTAssertEqual(val.metadata?.nonce, BigUInt.zero)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 3)
+        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 5)
     }
 
     func testKeepPublicAddressSame() async throws {
@@ -73,13 +74,13 @@ final class SapphireTest: XCTestCase {
 
         let result = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: TORUS_TEST_EMAIL)
 
-        XCTAssertEqual(result.finalKeyData?.evmAddress.lowercased(), "0x81001206c06ad09b3611b593aeed3a607d79871e".lowercased())
+        XCTAssertEqual(result.finalKeyData?.evmAddress.lowercased(), "0x462a8bf111a55c9354425f875f89b22678c0bc44".lowercased())
 
         XCTAssertEqual(result.metadata?.typeOfUser, .v2)
 
-        XCTAssertEqual(result.metadata?.pubNonce?.x, "784bf45a752a793ffe9f9f1343548ed7ecbce74f8a0b72670456ab8de82c7409")
+        XCTAssertEqual(result.metadata?.pubNonce?.x, "5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc")
 
-        XCTAssertEqual(result.metadata?.pubNonce?.y, "693ac3dd1671a3bdd0241af4f70051bed9a5cb371297b11a362643ebe05b95fe")
+        XCTAssertEqual(result.metadata?.pubNonce?.y, "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed")
     }
 
     func testKeyAssignSapphireDevnet() async throws {
@@ -109,19 +110,19 @@ final class SapphireTest: XCTestCase {
             idToken: token
         )
 
-        XCTAssertEqual(data.finalKeyData?.evmAddress, "0x81001206C06AD09b3611b593aEEd3A607d79871E")
-        XCTAssertEqual(data.finalKeyData?.X, "12c1dff0492828894048b840818767a1fcf6b514b93921517142381bd3f2cdb0")
-        XCTAssertEqual(data.finalKeyData?.Y, "7150bcba067eb00d5014622a32352fa9d431ec7a128f83be9e7ac879e312b09b")
-        XCTAssertEqual(data.finalKeyData?.privKey, "802ea3799fb319994a146b345b4399977c12d82078618e5880a20df020296e96")
-        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x8ef416b4eAf5a8CB8754ad7F1b4c0B2F75F85554")
-        XCTAssertEqual(data.oAuthKeyData?.X, "0c7d2f73122817007596ae265c24e335f791c90959ae78c111771563a46ea3e1")
-        XCTAssertEqual(data.oAuthKeyData?.Y, "2ed65b815be494e39bbd4a52c6016da9225768831c9db8c4369865a50aa95cfb")
-        XCTAssertEqual(data.oAuthKeyData?.privKey, "17e7bf0456be9402696d32423fb38c34732cbb340bcba48c6bc83c84d876328a")
+        XCTAssertEqual(data.finalKeyData?.evmAddress, "0x462A8BF111A55C9354425F875F89B22678c0Bc44")
+        XCTAssertEqual(data.finalKeyData?.X, "36e257717f746cdd52ba85f24f7c9040db8977d3b0354de70ed43689d24fa1b1")
+        XCTAssertEqual(data.finalKeyData?.Y, "58ec9768c2fe871b3e2a83cdbcf37ba6a88ad19ec2f6e16a66231732713fd507")
+        XCTAssertEqual(data.finalKeyData?.privKey, "230dad9f42039569e891e6b066ff5258b14e9764ef5176d74aeb594d1a744203")
+        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x137B3607958562D03Eb3C6086392D1eFa01aA6aa")
+        XCTAssertEqual(data.oAuthKeyData?.X, "118a674da0c68f16a1123de9611ba655f4db1e336fe1b2d746028d65d22a3c6b")
+        XCTAssertEqual(data.oAuthKeyData?.Y, "8325432b3a3418d632b4fe93db094d6d83250eea60fe512897c0ad548737f8a5")
+        XCTAssertEqual(data.oAuthKeyData?.privKey, "6b3c872a269aa8994a5acc8cdd70ea3d8d182d42f8af421c0c39ea124e9b66fa")
         XCTAssertNotEqual(data.sessionData?.sessionTokenData.count, 0)
         XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
-        XCTAssertEqual(data.metadata?.pubNonce?.x, "784bf45a752a793ffe9f9f1343548ed7ecbce74f8a0b72670456ab8de82c7409")
-        XCTAssertEqual(data.metadata?.pubNonce?.y, "693ac3dd1671a3bdd0241af4f70051bed9a5cb371297b11a362643ebe05b95fe")
-        XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "6846e47548f48596e0a738f21b900d6308e61cec6c95e9cc14d9d16b47b33c0c")
+        XCTAssertEqual(data.metadata?.pubNonce?.x, "5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc")
+        XCTAssertEqual(data.metadata?.pubNonce?.y, "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed")
+        XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)
         XCTAssertEqual(data.metadata?.upgraded, false)
         XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
@@ -175,19 +176,19 @@ final class SapphireTest: XCTestCase {
                                                   torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(),
                                                   verifier: TORUS_TEST_VERIFIER, verifierParams: verifierParams, idToken: token)
 
-        XCTAssertEqual(data.finalKeyData?.evmAddress, "0x81001206C06AD09b3611b593aEEd3A607d79871E")
-        XCTAssertEqual(data.finalKeyData?.X, "12c1dff0492828894048b840818767a1fcf6b514b93921517142381bd3f2cdb0")
-        XCTAssertEqual(data.finalKeyData?.Y, "7150bcba067eb00d5014622a32352fa9d431ec7a128f83be9e7ac879e312b09b")
-        XCTAssertEqual(data.finalKeyData?.privKey, "802ea3799fb319994a146b345b4399977c12d82078618e5880a20df020296e96")
-        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x8ef416b4eAf5a8CB8754ad7F1b4c0B2F75F85554")
-        XCTAssertEqual(data.oAuthKeyData?.X, "0c7d2f73122817007596ae265c24e335f791c90959ae78c111771563a46ea3e1")
-        XCTAssertEqual(data.oAuthKeyData?.Y, "2ed65b815be494e39bbd4a52c6016da9225768831c9db8c4369865a50aa95cfb")
-        XCTAssertEqual(data.oAuthKeyData?.privKey, "17e7bf0456be9402696d32423fb38c34732cbb340bcba48c6bc83c84d876328a")
+        XCTAssertEqual(data.finalKeyData?.evmAddress, "0x462A8BF111A55C9354425F875F89B22678c0Bc44")
+        XCTAssertEqual(data.finalKeyData?.X, "36e257717f746cdd52ba85f24f7c9040db8977d3b0354de70ed43689d24fa1b1")
+        XCTAssertEqual(data.finalKeyData?.Y, "58ec9768c2fe871b3e2a83cdbcf37ba6a88ad19ec2f6e16a66231732713fd507")
+        XCTAssertEqual(data.finalKeyData?.privKey, "230dad9f42039569e891e6b066ff5258b14e9764ef5176d74aeb594d1a744203")
+        XCTAssertEqual(data.oAuthKeyData?.evmAddress, "0x137B3607958562D03Eb3C6086392D1eFa01aA6aa")
+        XCTAssertEqual(data.oAuthKeyData?.X, "118a674da0c68f16a1123de9611ba655f4db1e336fe1b2d746028d65d22a3c6b")
+        XCTAssertEqual(data.oAuthKeyData?.Y, "8325432b3a3418d632b4fe93db094d6d83250eea60fe512897c0ad548737f8a5")
+        XCTAssertEqual(data.oAuthKeyData?.privKey, "6b3c872a269aa8994a5acc8cdd70ea3d8d182d42f8af421c0c39ea124e9b66fa")
         XCTAssertNotEqual(data.sessionData?.sessionTokenData.count, 0)
         XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
-        XCTAssertEqual(data.metadata?.pubNonce?.x, "784bf45a752a793ffe9f9f1343548ed7ecbce74f8a0b72670456ab8de82c7409")
-        XCTAssertEqual(data.metadata?.pubNonce?.y, "693ac3dd1671a3bdd0241af4f70051bed9a5cb371297b11a362643ebe05b95fe")
-        XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "6846e47548f48596e0a738f21b900d6308e61cec6c95e9cc14d9d16b47b33c0c")
+        XCTAssertEqual(data.metadata?.pubNonce?.x, "5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc")
+        XCTAssertEqual(data.metadata?.pubNonce?.y, "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed")
+        XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)
         XCTAssertEqual(data.metadata?.upgraded, false)
         XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
@@ -258,7 +259,7 @@ final class SapphireTest: XCTestCase {
         let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: HashEnabledVerifier)
         let pubAddress = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeSSSEndpoints(),
                                                           torusNodePubs: nodeDetails.getTorusNodePub(),
-                                                          verifier: HashEnabledVerifier, verifierId: TORUS_TEST_EMAIL)
+                                                          verifier: HashEnabledVerifier, verifierId: TORUS_HASH_ENABLED_TEST_EMAIL)
         XCTAssertEqual(pubAddress.oAuthKeyData!.evmAddress, "0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219")
         XCTAssertEqual(pubAddress.oAuthKeyData!.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
         XCTAssertEqual(pubAddress.oAuthKeyData!.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
@@ -270,7 +271,7 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt.zero)
         XCTAssertEqual(pubAddress.metadata?.upgraded, false)
         XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-        XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 3)
+        XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 5)
     }
 
     func testLoginWhenHashEnabled() async throws {
@@ -281,19 +282,19 @@ final class SapphireTest: XCTestCase {
         let result = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeSSSEndpoints(),
                                                     torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(),
                                                     verifier: HashEnabledVerifier, verifierParams: verifierParams, idToken: token)
-        XCTAssertEqual(result.finalKeyData?.evmAddress, "0xF79b5ffA48463eba839ee9C97D61c6063a96DA03")
-        XCTAssertEqual(result.finalKeyData?.X, "21cd0ae3168d60402edb8bd65c58ff4b3e0217127d5bb5214f03f84a76f24d8a")
-        XCTAssertEqual(result.finalKeyData?.Y, "575b7a4d0ef9921b3b1b84f30d412e87bc69b4eab83f6706e247cceb9e985a1e")
-        XCTAssertEqual(result.finalKeyData?.privKey, "066270dfa345d3d0415c8223e045f366b238b50870de7e9658e3c6608a7e2d32")
-        XCTAssertEqual(result.oAuthKeyData?.evmAddress, "0x4135ad20D2E9ACF37D64E7A6bD8AC34170d51219")
-        XCTAssertEqual(result.oAuthKeyData?.X, "9c591943683c0e5675f99626cea84153a3c5b72c6e7840f8b8b53d0f2bb50c67")
-        XCTAssertEqual(result.oAuthKeyData?.Y, "9d9896d82e565a2d5d437745af6e4560f3564c2ac0d0edcb72e0b508b3ac05a0")
-        XCTAssertEqual(result.oAuthKeyData?.privKey, "b47769e81328794adf3534e58d02803ca2a5e4588db81780f5bf679c77988946")
+        XCTAssertEqual(result.finalKeyData?.evmAddress, "0x8a7e297e20804786767B1918a5CFa11683e5a3BB")
+        XCTAssertEqual(result.finalKeyData?.X, "7927d5281aea24fd93f41696f79c91370ec0097ff65e83e95691fffbde6d733a")
+        XCTAssertEqual(result.finalKeyData?.Y, "f22735f0e72ff225274cf499d50b240b7571063e0584471b2b4dab337ad5d8da")
+        XCTAssertEqual(result.finalKeyData?.privKey, "f161f63a84f1c935525ec0bda74bc5a15de6a9a7be28fad237ef6162df335fe6")
+        XCTAssertEqual(result.oAuthKeyData?.evmAddress, "0xaEafa3Fc7349E897F8fCe981f55bbD249f12aC8C")
+        XCTAssertEqual(result.oAuthKeyData?.X, "72d9172d7edc623266d6c625db91505e6b64a5524e6d7c7c0184b1bbdea1e986")
+        XCTAssertEqual(result.oAuthKeyData?.Y, "8c26d557a0a9cb22dc2a30d36bf67de93a0eb6d4ef503a849c7de2d14dcbdaaa")
+        XCTAssertEqual(result.oAuthKeyData?.privKey, "62e110d9d698979c1966d14b2759006cf13be7dfc86a63ff30812e2032163f2f")
         XCTAssertNotEqual(result.sessionData?.sessionTokenData.count, 0)
         XCTAssertNotEqual(result.sessionData?.sessionAuthKey, "")
-        XCTAssertEqual(result.metadata?.pubNonce?.x, "d6404befc44e3ab77a8387829d77e9c77a9c2fb37ae314c3a59bdc108d70349d")
-        XCTAssertEqual(result.metadata?.pubNonce?.y, "1054dfe297f1d977ccc436109cbcce64e95b27f93efc0f1dab739c9146eda2e")
-        XCTAssertEqual(result.metadata?.nonce, BigUInt("51eb06f7901d5a8562274d3e53437328ca41ad96926f075122f6bd50e31be52d", radix: 16))
+        XCTAssertEqual(result.metadata?.pubNonce?.x, "5712d789f7ecf3435dd9bf1136c2daaa634f0222d64e289d2abe30a729a6a22b")
+        XCTAssertEqual(result.metadata?.pubNonce?.y, "2d2b4586fd5fd9d15c22f66b61bc475742754a8b96d1edb7b2590e4c4f97b3f0")
+        XCTAssertEqual(result.metadata?.nonce?.serialize().hexString, "8e80e560ae59319938f7ef727ff2c5346caac1c7f5be96d3076e3342ad1d20b7")
         XCTAssertEqual(result.metadata?.typeOfUser, .v2)
         XCTAssertEqual(result.metadata?.upgraded, false)
         XCTAssertNotEqual(result.nodesData?.nodeIndexes.count, 0)
