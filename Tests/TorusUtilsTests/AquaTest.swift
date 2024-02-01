@@ -2,9 +2,6 @@ import BigInt
 import CommonSources
 import FetchNodeDetails
 import JWTKit
-#if canImport(secp256k1)
-    import secp256k1
-#endif
 import XCTest
 
 import CoreMedia
@@ -56,28 +53,29 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
         XCTAssertEqual(val.oAuthKeyData!.X, "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d")
         XCTAssertEqual(val.oAuthKeyData!.Y, "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c")
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0xDfA967285AC699A70DA340F60d00DB19A272639d")
-        XCTAssertEqual(val.finalKeyData!.X, "4fc8db5d3fe164a3ab70fd6348721f2be848df2cc02fd2db316a154855a7aa7d")
-        XCTAssertEqual(val.finalKeyData!.Y, "f76933cbf5fe2916681075bb6cb4cde7d5f6b6ce290071b1b7106747d906457c")
-        XCTAssertNil(val.metadata?.pubNonce)
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x79F06350eF34Aeed4BE68e26954D405D573f1438")
+        XCTAssertEqual(val.finalKeyData!.X, "99df45abc8e6ee03d2f94df33be79e939eadfbed20c6b88492782fdc3ef1dfd3")
+        XCTAssertEqual(val.finalKeyData!.Y, "12bf3e54599a177fdb88f8b22419df7ddf1622e1d2344301edbe090890a72b16")
+        XCTAssertEqual(val.metadata!.pubNonce!.x, "dc5a031fd2e0b55dbaece314ea125bac9da5f0a916bf156ff36b5ad71380ea32")
+        XCTAssertEqual(val.metadata!.pubNonce!.y, "affd749b98c209d2f9cf4dacb145d7897f82f1e2924a47b07874302ecc0b8ef1")
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
-        XCTAssertEqual(val.metadata?.typeOfUser, .v1)
+        XCTAssertEqual(val.metadata?.typeOfUser, .v2)
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
         verifier = "tkey-google-aqua"
         verifierID = "somev2user@gmail.com"
         val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
-        XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x5735dDC8d5125B23d77C3531aab3895A533584a3")
-        XCTAssertEqual(val.oAuthKeyData!.X, "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873")
-        XCTAssertEqual(val.oAuthKeyData!.Y, "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2")
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x5735dDC8d5125B23d77C3531aab3895A533584a3")
-        XCTAssertEqual(val.finalKeyData!.X, "e1b419bc52b82e14b148c307f10479cfa464d20c947555fb4758c586eab12873")
-        XCTAssertEqual(val.finalKeyData!.Y, "75f47d7d5a271c0fcf51a790c1683a1cb3394b1d37d20e29c346ac249e3bfca2")
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x5735dDC8d5125B23d77C3531aab3895A533584a3")
+        XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x4ea5260fF85678A2a326D08DF9C44d1f559a5828")
+        XCTAssertEqual(val.oAuthKeyData!.X, "0e6febe33a9d4eeb680cc6b63ff6237ad1971f27adcd7f104a3b1de18eda9337")
+        XCTAssertEqual(val.oAuthKeyData!.Y, "a5a915561f3543688e71281a850b9ee10b9690f305d9e79028dfc8359192b82d")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0xBc32f315515AdE7010cabC5Fd68c966657A570BD")
+        XCTAssertEqual(val.finalKeyData!.X, "4897f120584ee18a72b9a6bb92c3ef6e45fc5fdff70beae7dc9325bd01332022")
+        XCTAssertEqual(val.finalKeyData!.Y, "2066dbef2fcdded4573e3c04d1c04edd5d44662168e636ed9d0b0cbe2e67c968")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0xBc32f315515AdE7010cabC5Fd68c966657A570BD")
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
-        XCTAssertEqual(val.metadata?.typeOfUser, .v1)
+        XCTAssertEqual(val.metadata?.typeOfUser, .v2)
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
         verifierID = "caspertorus@gmail.com"
@@ -85,12 +83,12 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD")
         XCTAssertEqual(val.oAuthKeyData!.X, "e76d2f7fa2c0df324b4ab74629c3af47aa4609c35f1d2b6b90b77a47ab9a1281")
         XCTAssertEqual(val.oAuthKeyData!.Y, "b33b35148d72d357070f66372e07fec436001bdb15c098276b120b9ed64c1e5f")
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x4ce0D09C3989eb3cC9372cC27fa022D721D737dD")
-        XCTAssertEqual(val.finalKeyData!.X, "e76d2f7fa2c0df324b4ab74629c3af47aa4609c35f1d2b6b90b77a47ab9a1281")
-        XCTAssertEqual(val.finalKeyData!.Y, "b33b35148d72d357070f66372e07fec436001bdb15c098276b120b9ed64c1e5f")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x5469C5aCB0F30929226AfF4622918DA8E1424a8D")
+        XCTAssertEqual(val.finalKeyData!.X, "c20fac685bb67169e92f1d5d8894d4eea18753c0ef3b7b1b2224233b2dfa3539")
+        XCTAssertEqual(val.finalKeyData!.Y, "c4f080b5c8d5c55c8eaba4bec70f668f36db4126f358b491d631fefea7c19d21")
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
-        XCTAssertEqual(val.metadata?.typeOfUser, .v1)
+        XCTAssertEqual(val.metadata?.typeOfUser, .v2)
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 

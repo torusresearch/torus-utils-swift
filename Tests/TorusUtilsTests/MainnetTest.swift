@@ -1,9 +1,6 @@
 import BigInt
 import FetchNodeDetails
 import JWTKit
-#if canImport(secp256k1)
-    import secp256k1
-#endif
 import XCTest
 
 import CommonSources
@@ -62,16 +59,17 @@ class MainnetTests: XCTestCase {
         let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER, veriferID: TORUS_TEST_EMAIL)
         var val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier1, verifierId: verifierID1)
 
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
-        XCTAssertEqual(val.finalKeyData!.X, "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4")
-        XCTAssertEqual(val.finalKeyData!.Y, "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0xb2e1c3119f8D8E73de7eaF7A535FB39A3Ae98C5E")
+        XCTAssertEqual(val.finalKeyData!.X, "072beda348a832aed06044a258cb6a8d428ec7c245c5da92db5da4f3ab433e55")
+        XCTAssertEqual(val.finalKeyData!.Y, "54ace0d3df2504fa29f17d424a36a0f92703899fad0afee93d010f6d84b310e5")
         XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
         XCTAssertEqual(val.oAuthKeyData!.X, "3b5655d78978b6fd132562b5cb66b11bcd868bd2a9e16babe4a1ca50178e57d4")
         XCTAssertEqual(val.oAuthKeyData!.Y, "15338510798d6b55db28c121d86babcce19eb9f1882f05fae8ee9b52ed09e8f1")
-        XCTAssertNil(val.metadata?.pubNonce)
+        XCTAssertEqual(val.metadata!.pubNonce!.x, "eb22d93244acf7fcbeb6566da722bc9c8e5433cd28da25ca0650d9cb32806c39")
+        XCTAssertEqual(val.metadata!.pubNonce!.y, "765541e214f067cfc44dcf41e582ae09b71c2e607a301cc8a45e1f316a6ba91c")
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
-        XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
+        XCTAssertEqual(val.metadata?.typeOfUser, .v2)
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
         let verifier2: String = "tkey-google"
@@ -95,17 +93,17 @@ class MainnetTests: XCTestCase {
         let verifierID3: String = "caspertorus@gmail.com"
         val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier3, verifierId: verifierID3)
 
-        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53")
-        XCTAssertEqual(val.finalKeyData!.X, "c01282dd68d2341031a1cff06f70d821cad45140f425f1c25055a8aa64959df8")
-        XCTAssertEqual(val.finalKeyData!.Y, "cb3937773bb819d60b780b6d4c2edcf27c0f7090ba1fc2ff42504a8138a8e2d7")
+        XCTAssertEqual(val.finalKeyData!.evmAddress, "0x40A4A04fDa1f29a3667152C8830112FBd6A77BDD")
+        XCTAssertEqual(val.finalKeyData!.X, "6779af3031d9e9eec6b4133b0ae13e367c83a614f92d2008e10c7f3b8e6723bc")
+        XCTAssertEqual(val.finalKeyData!.Y, "80edc4502abdfb220dd6e2fcfa2dbb058125dc95873e4bfa6877f9c26da7fdff")
         XCTAssertEqual(val.oAuthKeyData!.evmAddress, "0x61E52B6e488EC3dD6FDc0F5ed04a62Bb9c6BeF53")
         XCTAssertEqual(val.oAuthKeyData!.X, "c01282dd68d2341031a1cff06f70d821cad45140f425f1c25055a8aa64959df8")
         XCTAssertEqual(val.oAuthKeyData!.Y, "cb3937773bb819d60b780b6d4c2edcf27c0f7090ba1fc2ff42504a8138a8e2d7")
-        XCTAssertEqual(val.metadata?.pubNonce?.x, nil)
-        XCTAssertEqual(val.metadata?.pubNonce?.y, nil)
+        XCTAssertEqual(val.metadata?.pubNonce?.x, "16214bf232167258fb5f98fa9d84968ffec3236aaf0994fc366940c4bc07a5b1")
+        XCTAssertEqual(val.metadata?.pubNonce?.y, "475e8c09d2cc8f6c12a767f51c052b1bf8e8d3a2a2b6818d4b199dc283e80ac4")
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
-        XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
+        XCTAssertEqual(val.metadata?.typeOfUser, .v2)
         XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
@@ -113,7 +111,9 @@ class MainnetTests: XCTestCase {
         let email = generateRandomEmail(of: 6)
         let nodeDetails = try await get_fnd_and_tu_data(verifer: "google", veriferID: email)
         let val = try await tu.keyAssign(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: TORUS_TEST_VERIFIER, verifierId: email, signerHost: tu.signerHost, network: .legacy(.MAINNET))
-        let result = val.result as! [String: Any]
+        guard let result = val.result as? [String: Any] else {
+            throw TorusUtilError.empty
+        }
         let keys = result["keys"] as! [[String: String]]
         _ = keys[0]["address"]
 
