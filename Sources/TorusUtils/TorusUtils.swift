@@ -30,7 +30,7 @@ open class TorusUtils: AbstractTorusUtils {
                 signerHost: String = "https://signer.tor.us/api/sign",
                 allowHost: String = "https://signer.tor.us/api/allow",
                 network: TorusNetwork = TorusNetwork.legacy(.MAINNET),
-                clientId: String = "",
+                clientId: String,
                 legacyMetadataHost: String = "https://metadata.tor.us"
     ) {
         self.urlSession = urlSession
