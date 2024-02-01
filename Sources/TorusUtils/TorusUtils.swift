@@ -72,14 +72,16 @@ open class TorusUtils: AbstractTorusUtils {
         allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifierId")
         allowHostRequest.addValue(clientId, forHTTPHeaderField: "clientId")
         allowHostRequest.addValue(network.name, forHTTPHeaderField: "network")
-        allowHostRequest.addValue("true", forHTTPHeaderField: "enable_gating")
-        do {
-            _ = try await session.data(for: allowHostRequest)
-        } catch {
-            os_log("retrieveShares: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
-            throw error
+        allowHostRequest.addValue("true", forHTTPHeaderField: "enablegating")
+        
+        let result = try await session.data(for: allowHostRequest)
+        let resultJson = try JSONSerialization.jsonObject(with: result.0) as? [String: Any]
+        
+        if let resultError = resultJson?["error"] as? String  {
+            os_log("retrieveShares: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, resultError)
+            throw resultError
         }
-
+        
         if isLegacyNetwork() {
             let result = try await legacyRetrieveShares(torusNodePubs: torusNodePubs, indexes: indexes, endpoints: endpoints, verifier: verifier, verifierId: verifierParams.verifier_id, idToken: idToken, extraParams: extraParams)
             return result

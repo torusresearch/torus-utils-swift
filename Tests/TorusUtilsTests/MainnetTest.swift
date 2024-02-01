@@ -19,6 +19,7 @@ class MainnetTests: XCTestCase {
     static var privKey: String = ""
 
     let TORUS_TEST_VERIFIER = "torus-test-health"
+    let TORUS_TEST_VERIFIER_GATED = "w3a-google-demo "
     let TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
     let TORUS_TEST_EMAIL = "hello@tor.us"
     var signerHost = "https://signer.tor.us/api/sign"
@@ -149,6 +150,27 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.metadata?.upgraded, nil)
         XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
+    }
+    
+    
+    func test_login_gated() async throws {
+        let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
+        let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
+        let extraParams = ["verifieridentifier": TORUS_TEST_VERIFIER_GATED, "verifier_id": TORUS_TEST_EMAIL] as [String: Codable]
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: TORUS_TEST_VERIFIER_GATED, veriferID: TORUS_TEST_EMAIL)
+        do {
+            _ = try await tu.retrieveShares(
+                endpoints: nodeDetails.getTorusNodeEndpoints(),
+                torusNodePubs: nodeDetails.getTorusNodePub(),
+                indexes: nodeDetails.getTorusIndexes(),
+                verifier: TORUS_TEST_VERIFIER_GATED,
+                verifierParams: verifierParams,
+                idToken: jwt,
+                extraParams: extraParams)
+            XCTFail("Should on success on gated login test case")
+        } catch {
+            print (error)
+        }
     }
 
     func test_aggregate_login() async throws {
