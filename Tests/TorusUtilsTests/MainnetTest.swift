@@ -33,7 +33,7 @@ class MainnetTests: XCTestCase {
 
     func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-        tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.MAINNET))
+        tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.MAINNET), clientId: "YOUR_CLIENT_ID")
         return nodeDetails
     }
 

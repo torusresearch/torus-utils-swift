@@ -36,7 +36,7 @@ final class SapphireTest: XCTestCase {
 
     func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-        torus = TorusUtils(enableOneKey: enableOneKey, network: .sapphire(.SAPPHIRE_DEVNET))
+        torus = TorusUtils(enableOneKey: enableOneKey, network: .sapphire(.SAPPHIRE_DEVNET), clientId: "YOUR_CLIENT_ID")
         return nodeDetails
     }
 
@@ -336,4 +336,32 @@ final class SapphireTest: XCTestCase {
         try await testAggregrateLoginWithEmail(email: email)
     }
     */
+    
+    
+    func testGating() async throws {
+        let torus = TorusUtils(enableOneKey: true, network: .sapphire(.SAPPHIRE_MAINNET), clientId: "YOUR_CLIENT_ID")
+        let token = try generateIdToken(email: TORUS_TEST_EMAIL)
+
+        let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
+
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: "w3a-auth0-demo", veriferID: TORUS_TEST_EMAIL)
+
+        do {
+            let data = try await torus.retrieveShares(
+                endpoints: nodeDetails.getTorusNodeEndpoints(),
+                torusNodePubs: nodeDetails.getTorusNodePub(),
+                indexes: nodeDetails.getTorusIndexes(),
+                verifier: "w3a-auth0-demo",
+                verifierParams: verifierParams,
+                idToken: token
+            )
+            XCTAssert(false, "Should not pass")
+        }catch {
+            if (!error.localizedDescription.contains("code: 1001")) {
+                XCTAssert(false, "Should fail with signer allow gating error")
+            }
+        }
+
+    }
+
 }
