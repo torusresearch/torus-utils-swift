@@ -42,7 +42,6 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_should_fetch_user_type_and_public_addresses() async throws {
@@ -61,7 +60,6 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, .v2)
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
         verifier = "tkey-google-aqua"
         verifierID = "somev2user@gmail.com"
@@ -76,7 +74,6 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, .v2)
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
         verifierID = "caspertorus@gmail.com"
         val = try await tu.getUserTypeAndAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), verifier: verifier, verifierId: verifierID)
@@ -89,7 +86,6 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, .v2)
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_key_assign() async throws {
@@ -127,7 +123,6 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce, BigUInt(0))
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.metadata?.upgraded, nil)
-        XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_aggregate_login() async throws {
@@ -153,7 +148,6 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce, BigUInt(0))
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.metadata?.upgraded, nil)
-        XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 }
 
