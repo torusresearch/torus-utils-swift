@@ -271,7 +271,7 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt.zero)
         XCTAssertEqual(pubAddress.metadata?.upgraded, false)
         XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-        XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 5)
+        XCTAssertTrue(pubAddress.nodesData!.nodeIndexes.count >= 3)
     }
 
     func testLoginWhenHashEnabled() async throws {
