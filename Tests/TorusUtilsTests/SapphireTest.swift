@@ -340,7 +340,7 @@ final class SapphireTest: XCTestCase {
         let nodeDetails = try await get_fnd_and_tu_data(verifer: "w3a-auth0-demo", veriferID: TORUS_TEST_EMAIL)
 
         do {
-            let data = try await torus.retrieveShares(
+            _ = try await torus.retrieveShares(
                 endpoints: nodeDetails.getTorusNodeEndpoints(),
                 torusNodePubs: nodeDetails.getTorusNodePub(),
                 indexes: nodeDetails.getTorusIndexes(),
