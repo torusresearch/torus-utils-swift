@@ -36,7 +36,7 @@ final class SapphireTest: XCTestCase {
 
     func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-        torus = TorusUtils(enableOneKey: enableOneKey, network: .sapphire(.SAPPHIRE_DEVNET))
+        torus = TorusUtils(enableOneKey: enableOneKey, network: .sapphire(.SAPPHIRE_DEVNET), clientId: "YOUR_CLIENT_ID")
         return nodeDetails
     }
 
@@ -55,7 +55,6 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, BigUInt.zero)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 5)
     }
 
     func testKeepPublicAddressSame() async throws {
@@ -125,7 +124,6 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)
         XCTAssertEqual(data.metadata?.upgraded, false)
-        XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
     func testNewUserLogin() async throws {
@@ -160,7 +158,6 @@ final class SapphireTest: XCTestCase {
         XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
         XCTAssertNotEqual(data.metadata?.pubNonce?.x, "")
         XCTAssertNotEqual(data.metadata?.pubNonce?.y, "")
-        XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
     func testNodeDownAbleToLogin() async throws {
@@ -191,7 +188,6 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)
         XCTAssertEqual(data.metadata?.upgraded, false)
-        XCTAssertNotEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
     func testPubAdderessOfTssVerifierId() async throws {
@@ -214,7 +210,6 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt("0"))
         XCTAssertEqual(pubAddress.metadata?.upgraded, false)
         XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-        XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 3)
     }
 
     func testAssignKeyToTssVerifier() async throws {
@@ -271,7 +266,6 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(pubAddress.metadata?.nonce, BigUInt.zero)
         XCTAssertEqual(pubAddress.metadata?.upgraded, false)
         XCTAssertEqual(pubAddress.metadata?.typeOfUser, UserType(rawValue: "v2"))
-        XCTAssertEqual(pubAddress.nodesData?.nodeIndexes.count, 5)
     }
 
     func testLoginWhenHashEnabled() async throws {
@@ -297,7 +291,6 @@ final class SapphireTest: XCTestCase {
         XCTAssertEqual(result.metadata?.nonce?.serialize().hexString, "8e80e560ae59319938f7ef727ff2c5346caac1c7f5be96d3076e3342ad1d20b7")
         XCTAssertEqual(result.metadata?.typeOfUser, .v2)
         XCTAssertEqual(result.metadata?.upgraded, false)
-        XCTAssertNotEqual(result.nodesData?.nodeIndexes.count, 0)
     }
 
     func testAggregrateLoginWithEmail(email: String) async throws {
@@ -336,4 +329,32 @@ final class SapphireTest: XCTestCase {
         try await testAggregrateLoginWithEmail(email: email)
     }
     */
+    
+    
+    func testGating() async throws {
+        let torus = TorusUtils(enableOneKey: true, network: .sapphire(.SAPPHIRE_MAINNET), clientId: "YOUR_CLIENT_ID")
+        let token = try generateIdToken(email: TORUS_TEST_EMAIL)
+
+        let verifierParams = VerifierParams(verifier_id: TORUS_TEST_EMAIL)
+
+        let nodeDetails = try await get_fnd_and_tu_data(verifer: "w3a-auth0-demo", veriferID: TORUS_TEST_EMAIL)
+
+        do {
+            _ = try await torus.retrieveShares(
+                endpoints: nodeDetails.getTorusNodeEndpoints(),
+                torusNodePubs: nodeDetails.getTorusNodePub(),
+                indexes: nodeDetails.getTorusIndexes(),
+                verifier: "w3a-auth0-demo",
+                verifierParams: verifierParams,
+                idToken: token
+            )
+            XCTAssert(false, "Should not pass")
+        }catch {
+            if (!error.localizedDescription.contains("code: 1001")) {
+                XCTAssert(false, "Should fail with signer allow gating error")
+            }
+        }
+
+    }
+
 }

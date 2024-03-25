@@ -22,7 +22,7 @@ class OneKeyTest: XCTestCase {
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = true) async throws -> AllNodeDetailsModel {
         do {
             let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-            tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.TESTNET))
+            tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.TESTNET), clientId: "YOUR_CLIENT_ID")
             return nodeDetails
         } catch {
             throw error

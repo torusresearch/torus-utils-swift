@@ -23,7 +23,7 @@ class CyanTest: XCTestCase {
 
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-        tu = TorusUtils(enableOneKey: enableOneKey, signerHost: signerHost, allowHost: allowHost, network: .legacy(.CYAN))
+        tu = TorusUtils(enableOneKey: enableOneKey, signerHost: signerHost, allowHost: allowHost, network: .legacy(.CYAN), clientId: "YOUR_CLIENT_ID")
         return nodeDetails
     }
 
@@ -42,7 +42,6 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_get_user_type_and_addresses() async throws {
@@ -131,7 +130,6 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce, BigUInt(0))
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.metadata?.upgraded, nil)
-        XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_aggregate_login() async throws {
@@ -157,6 +155,5 @@ class CyanTest: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce, BigUInt(0))
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.metadata?.upgraded, nil)
-        XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 }

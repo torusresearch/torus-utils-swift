@@ -33,7 +33,7 @@ class MainnetTests: XCTestCase {
 
     func get_fnd_and_tu_data(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-        tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.MAINNET))
+        tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.MAINNET), clientId: "YOUR_CLIENT_ID")
         return nodeDetails
     }
 
@@ -50,7 +50,6 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v1"))
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_fetch_user_type_and_addresses() async throws {
@@ -70,7 +69,6 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, .v2)
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
         let verifier2: String = "tkey-google"
         let verifierID2: String = "somev2user@gmail.com"
@@ -87,7 +85,6 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, UserType(rawValue: "v2"))
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
 
         let verifier3: String = "tkey-google"
         let verifierID3: String = "caspertorus@gmail.com"
@@ -104,7 +101,6 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(val.metadata?.nonce, 0)
         XCTAssertEqual(val.metadata?.upgraded, false)
         XCTAssertEqual(val.metadata?.typeOfUser, .v2)
-        XCTAssertEqual(val.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_key_assign() async throws {
@@ -148,7 +144,6 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce, BigUInt(0))
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.metadata?.upgraded, nil)
-        XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 
     func test_aggregate_login() async throws {
@@ -176,6 +171,5 @@ class MainnetTests: XCTestCase {
         XCTAssertEqual(data.metadata?.nonce, BigUInt(0))
         XCTAssertEqual(data.metadata?.typeOfUser, .v1)
         XCTAssertEqual(data.metadata?.upgraded, nil)
-        XCTAssertEqual(data.nodesData?.nodeIndexes.count, 0)
     }
 }

@@ -29,7 +29,7 @@ open class TorusUtils: AbstractTorusUtils {
                 signerHost: String = "https://signer.tor.us/api/sign",
                 allowHost: String = "https://signer.tor.us/api/allow",
                 network: TorusNetwork = TorusNetwork.legacy(.MAINNET),
-                clientId: String = "",
+                clientId: String,
                 legacyMetadataHost: String = "https://metadata.tor.us"
     ) {
         self.urlSession = urlSession
@@ -69,11 +69,16 @@ open class TorusUtils: AbstractTorusUtils {
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "verifier")
         allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifier_id")
         allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifierId")
-        allowHostRequest.addValue(clientId, forHTTPHeaderField: "clientId")
+        allowHostRequest.addValue(clientId, forHTTPHeaderField: "clientid")
         allowHostRequest.addValue(network.name, forHTTPHeaderField: "network")
-        allowHostRequest.addValue("true", forHTTPHeaderField: "enable_gating")
+        allowHostRequest.addValue("true", forHTTPHeaderField: "enablegating")
         do {
-            _ = try await session.data(for: allowHostRequest)
+            let result = try await session.data(for: allowHostRequest)
+            let responseData = try JSONDecoder().decode(AllowSuccess.self, from: result.0)
+            if (responseData.success == false ) {
+                let errorData = try JSONDecoder().decode(AllowRejected.self, from: result.0)
+                throw "code: \(errorData.code), error: \(errorData.error)"
+            }
         } catch {
             os_log("retrieveShares: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
             throw error

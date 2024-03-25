@@ -50,3 +50,16 @@ public struct TorusKey {
     public let metadata: Metadata?
     public let nodesData: NodesData?
 }
+
+
+// allow response
+public struct AllowSuccess : Codable {
+    public let success: Bool
+}
+
+public struct AllowRejected : Codable {
+    public let code: Int32
+    public let error: String
+    public let success: Bool
+}
+
