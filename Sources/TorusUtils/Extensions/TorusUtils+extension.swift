@@ -9,6 +9,7 @@ import CommonSources
 import CryptoKit
 import FetchNodeDetails
 import OSLog
+import encryption_aes_cbc_sha512
 
 extension TorusUtils {
     // MARK: - utils
@@ -684,24 +685,27 @@ extension TorusUtils {
     }
 
     public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
-        let ephemPrivateKey = SecretKey()
-        let ephemPublicKey = try ephemPrivateKey.toPublic()
+        let curveMsg = try Encryption.encrypt(pk: PublicKey(hex: publicKey), plainText: msg)
+        return try .init(iv: curveMsg.iv(), ephemPublicKey: curveMsg.ephemeralPublicKey().serialize(compressed: false), ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
 
-        let sharedSecret = try ecdh_sha512(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
-
-        let encryptionKey = Array(sharedSecret[0 ..< 32])
-        let macKey = Array(sharedSecret[32 ..< 64])
-        let random = try randomBytes(ofLength: 16)
-        let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
-
-        let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
-        let ciphertext = try aes.encrypt(msg.customBytes())
-        var dataToMac: [UInt8] = iv
-        dataToMac.append(contentsOf: Data(hex: try ephemPublicKey.serialize(compressed: false)))
-        dataToMac.append(contentsOf: ciphertext)
-        let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
-        return .init(iv: iv.toHexString(), ephemPublicKey: try ephemPublicKey.serialize(compressed: false),
-                     ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
+//        let ephemPrivateKey = SecretKey()
+//        let ephemPublicKey = try ephemPrivateKey.toPublic()
+//
+//        let sharedSecret = try ecdh_sha512(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
+//
+//        let encryptionKey = Array(sharedSecret[0 ..< 32])
+//        let macKey = Array(sharedSecret[32 ..< 64])
+//        let random = try randomBytes(ofLength: 16)
+//        let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
+//
+//        let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
+//        let ciphertext = try aes.encrypt(msg.customBytes())
+//        var dataToMac: [UInt8] = iv
+//        dataToMac.append(contentsOf: Data(hex: try ephemPublicKey.serialize(compressed: false)))
+//        dataToMac.append(contentsOf: ciphertext)
+//        let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
+//        return .init(iv: iv.toHexString(), ephemPublicKey: try ephemPublicKey.serialize(compressed: false),
+//                     ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
     }
 
     // MARK: - decrypt shares
@@ -1348,15 +1352,10 @@ extension TorusUtils {
     }
 
     public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
-        let sharedSecret = try ecdh_sha512(publicKey: PublicKey(hex: opts.ephemPublicKey), privateKey: SecretKey(hex: privateKey))
-
-        let aesKey = Array(sharedSecret[0 ..< 32])
-        _ = Array(sharedSecret[32 ..< 64]) // TODO: check mac
-        let iv = opts.iv.hexa
-
-        let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: padding)
-        let plaintext = try aes.decrypt(opts.ciphertext.hexa)
-        let data = Data(plaintext)
+        let secret = try SecretKey(hex: privateKey)
+        let msg = try EncryptedMessage(cipherText: opts.ciphertext, ephemeralPublicKey: PublicKey(hex: opts.ephemPublicKey), iv: opts.iv, mac: opts.mac)
+        let result = try Encryption.decrypt(sk: secret, encrypted: msg)
+        let data = result.data(using: .utf8) ?? Data()
         return data
     }
 }
