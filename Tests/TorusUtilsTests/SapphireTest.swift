@@ -367,7 +367,7 @@ final class SapphireTest: XCTestCase {
         let msg = "hello test data"
         let encryptData = try torus.encrypt(publicKey: pk.toPublic().serialize(compressed: false), msg: msg)
         
-        let curveMsg = try Encryption.encrypt(pk: pk.toPublic(), plainText: msg)
+        let curveMsg = try Encryption.encrypt(pk: pk.toPublic(), data: msg.data(using: .utf8)!)
         let em = try EncryptedMessage(cipherText: encryptData.ciphertext, ephemeralPublicKey: PublicKey(hex: encryptData.ephemPublicKey) , iv: encryptData.iv, mac: encryptData.mac)
 
         let eciesData = ECIES(iv: encryptData.iv, ephemPublicKey: encryptData.ephemPublicKey, ciphertext: encryptData.ciphertext, mac: encryptData.mac)
@@ -380,9 +380,8 @@ final class SapphireTest: XCTestCase {
         let result = try Encryption.decrypt(sk: pk, encrypted: em)
         let result2 = try Encryption.decrypt(sk: pk, encrypted: curveMsg)
         
-//        print( result )
-        print(String(data: decrypteData, encoding: .utf8))
-        print(String(data: decrypteData2, encoding: .utf8))
+        XCTAssertEqual(msg.data(using: .utf8)!, result)
+        XCTAssertEqual(msg.data(using: .utf8)!, result2)
         
     }
 

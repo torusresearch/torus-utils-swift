@@ -685,27 +685,11 @@ extension TorusUtils {
     }
 
     public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
-        let curveMsg = try Encryption.encrypt(pk: PublicKey(hex: publicKey), plainText: msg)
+        guard let data = msg.data(using: .utf8) else {
+            throw TorusUtilError.runtime("Encryption: Invalid utf8 string")
+        }
+        let curveMsg = try Encryption.encrypt(pk: PublicKey(hex: publicKey), data: data)
         return try .init(iv: curveMsg.iv(), ephemPublicKey: curveMsg.ephemeralPublicKey().serialize(compressed: false), ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
-
-//        let ephemPrivateKey = SecretKey()
-//        let ephemPublicKey = try ephemPrivateKey.toPublic()
-//
-//        let sharedSecret = try ecdh_sha512(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
-//
-//        let encryptionKey = Array(sharedSecret[0 ..< 32])
-//        let macKey = Array(sharedSecret[32 ..< 64])
-//        let random = try randomBytes(ofLength: 16)
-//        let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
-//
-//        let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
-//        let ciphertext = try aes.encrypt(msg.customBytes())
-//        var dataToMac: [UInt8] = iv
-//        dataToMac.append(contentsOf: Data(hex: try ephemPublicKey.serialize(compressed: false)))
-//        dataToMac.append(contentsOf: ciphertext)
-//        let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
-//        return .init(iv: iv.toHexString(), ephemPublicKey: try ephemPublicKey.serialize(compressed: false),
-//                     ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
     }
 
     // MARK: - decrypt shares
@@ -1355,8 +1339,7 @@ extension TorusUtils {
         let secret = try SecretKey(hex: privateKey)
         let msg = try EncryptedMessage(cipherText: opts.ciphertext, ephemeralPublicKey: PublicKey(hex: opts.ephemPublicKey), iv: opts.iv, mac: opts.mac)
         let result = try Encryption.decrypt(sk: secret, encrypted: msg)
-        let data = result.data(using: .utf8) ?? Data()
-        return data
+        return result
     }
 }
 
