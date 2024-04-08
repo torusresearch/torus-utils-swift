@@ -4,6 +4,8 @@ import JWTKit
 import XCTest
 
 import CommonSources
+import curveSecp256k1
+import encryption_aes_cbc_sha512
 
 @testable import TorusUtils
 
@@ -356,5 +358,33 @@ final class SapphireTest: XCTestCase {
         }
 
     }
+    
+    func testencryption() async throws {
+            let torus = TorusUtils(enableOneKey: true, network: .sapphire(.SAPPHIRE_MAINNET), clientId: "YOUR_CLIENT_ID")
+
+            let pk = curveSecp256k1.SecretKey()
+            let pk_str = try pk.serialize()
+
+            let msg = "hello test data"
+            let encryptData = try torus.encrypt(publicKey: pk.toPublic().serialize(compressed: false), msg: msg)
+//            let curveMsg = try Encryption.encrypt(pk: pk.toPublic(), data: msg.data(using: .utf8)!)
+            
+//            let em = try EncryptedMessage(cipherText: encryptData.ciphertext, ephemeralPublicKey: PublicKey(hex: encryptData.ephemPublicKey) , iv: encryptData.iv, mac: encryptData.mac)
+
+            
+            let eciesData = ECIES(iv: encryptData.iv, ephemPublicKey: encryptData.ephemPublicKey, ciphertext: encryptData.ciphertext, mac: encryptData.mac)
+//            let emp = try curveMsg.ephemeralPublicKey().serialize(compressed: false);
+//            let eciesData2 = try ECIES(iv: curveMsg.iv(), ephemPublicKey: emp, ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
+
+            let decrypteData = try torus.decrypt(privateKey: pk_str, opts: eciesData)
+//            let decrypteData2 = try torus.decrypt(privateKey: pk_str, opts: eciesData2)
+
+//            let result = try Encryption.decrypt(sk: pk, encrypted: em)
+//            let result2 = try Encryption.decrypt(sk: pk, encrypted: curveMsg)
+
+            XCTAssertEqual(msg.data(using: .utf8)!, decrypteData)
+//            XCTAssertEqual(msg.data(using: .utf8)!, result2)
+
+        }
 
 }

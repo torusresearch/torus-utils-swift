@@ -687,7 +687,7 @@ extension TorusUtils {
         let ephemPrivateKey = SecretKey()
         let ephemPublicKey = try ephemPrivateKey.toPublic()
 
-        let sharedSecret = try ecdh_sha512(publicKey: ephemPublicKey, privateKey: ephemPrivateKey)
+        let sharedSecret = try ecdh_sha512(publicKey: PublicKey(hex: publicKey), privateKey: ephemPrivateKey)
 
         let encryptionKey = Array(sharedSecret[0 ..< 32])
         let macKey = Array(sharedSecret[32 ..< 64])
