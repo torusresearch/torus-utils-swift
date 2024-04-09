@@ -20,7 +20,7 @@ dependencies: [
 ```
 
 ## Getting Started
-Initialize the `TorusUtils` class by passing `TorusNetwork`, `enableKey`, and your `clientId`. `enableKey` if true, adds the nonce value to the key, to make it compaitible with v2 users. The package supports both legacy and sapphire networks.  
+Initialize the `TorusUtils` class by passing `TorusNetwork`, `enableOneKey`, and your `clientId`. `enableOneKey` if true, adds the nonce value to the key, to make it compaitible with v2 users. The package supports both legacy and sapphire networks.  
 
 ```swift
   let torus = TorusUtils(
