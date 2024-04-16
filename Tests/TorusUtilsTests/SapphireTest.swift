@@ -5,6 +5,8 @@ import XCTest
 import curveSecp256k1
 import encryption_aes_cbc_sha512
 import CommonSources
+import curveSecp256k1
+import encryption_aes_cbc_sha512
 
 @testable import TorusUtils
 
