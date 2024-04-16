@@ -2,7 +2,7 @@ import BigInt
 import Foundation
 //import CryptoSwift
 
-import curvelibSha3
+import curveSecp256k1
 
 func keccak256Data(_ data: Data) -> Data {
     let hash = try? keccak256(data: data)

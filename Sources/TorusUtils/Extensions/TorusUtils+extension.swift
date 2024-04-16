@@ -8,7 +8,7 @@ import CommonSources
 import CryptoKit
 import FetchNodeDetails
 import OSLog
-import encryption_aes_cbc_sha512
+
 
 
 extension TorusUtils {
@@ -683,7 +683,7 @@ extension TorusUtils {
         guard let data = msg.data(using: .utf8) else {
             throw TorusUtilError.runtime("Encryption: Invalid utf8 string")
         }
-        let curveMsg = try Encryption.encrypt(pk: PublicKey(hex: publicKey), data: data)
+        let curveMsg = try Encryption.encrypt(pk: PublicKey(hex: publicKey), plainText: data)
         return try .init(iv: curveMsg.iv(), ephemPublicKey: curveMsg.ephemeralPublicKey().serialize(compressed: false), ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
     }
 

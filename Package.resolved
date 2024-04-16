@@ -23,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tkey/curvelib.swift",
       "state" : {
-        "branch" : "feat/cocoapod",
-        "revision" : "282343f23790dcdf189d844eb65c485bbad3eb73"
+        "revision" : "2df9f638fd121b445ce3b410cd79ac4d0cfa94ed",
+        "version" : "1.0.0"
       }
     },
     {
