@@ -130,7 +130,8 @@ class AquaTest: XCTestCase {
         let verifierID: String = TORUS_TEST_EMAIL
         let verifierParams = VerifierParams(verifier_id: verifierID)
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-        let hashedIDToken = jwt.sha3(.keccak256)
+        let hashedIDToken =  keccak256Data(jwt.data(using: .utf8) ?? Data()).toHexString();
+        
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Codable]
         let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)
@@ -144,10 +145,10 @@ class AquaTest: XCTestCase {
         XCTAssertEqual(data.oAuthKeyData?.privKey, "488d39ac548e15cfb0eaf161d86496e1645b09437df21311e24a56c4efd76355")
         XCTAssertEqual(data.sessionData?.sessionTokenData.count, 0)
         XCTAssertEqual(data.sessionData?.sessionAuthKey, "")
-        XCTAssertEqual(data.metadata?.pubNonce, nil)
+        XCTAssertEqual(data.metadata?.pubNonce == nil, true)
         XCTAssertEqual(data.metadata?.nonce, BigUInt(0))
-        XCTAssertEqual(data.metadata?.typeOfUser, .v1)
-        XCTAssertEqual(data.metadata?.upgraded, nil)
+        XCTAssertEqual(data.metadata?.typeOfUser == UserType.v1, true)
+        XCTAssertEqual(data.metadata?.upgraded == nil, true)
     }
 }
 

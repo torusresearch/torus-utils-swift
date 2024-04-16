@@ -19,30 +19,21 @@
       }
     },
     {
-      "identity" : "cryptoswift",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/krzyzanowskim/CryptoSwift",
-      "state" : {
-        "revision" : "7892a123f7e8d0fe62f9f03728b17bbd4f94df5c",
-        "version" : "1.8.1"
-      }
-    },
-    {
       "identity" : "curvelib.swift",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/tkey/curvelib.swift",
       "state" : {
         "branch" : "feat/cocoapod",
-        "revision" : "3f1cce96e760c77930f00e79adab2437f3014a3c"
+        "revision" : "282343f23790dcdf189d844eb65c485bbad3eb73"
       }
     },
     {
       "identity" : "fetch-node-details-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/torusresearch/fetch-node-details-swift.git",
+      "location" : "https://github.com/torusresearch/fetch-node-details-swift",
       "state" : {
-        "revision" : "d591af500f32ce3c88d04af9bb74d746585acfea",
-        "version" : "5.1.0"
+        "branch" : "feat/commonSources",
+        "revision" : "8eb9018e35b3e97915d12887f226a58c013693f2"
       }
     },
     {
@@ -50,8 +41,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/vapor/jwt-kit",
       "state" : {
-        "revision" : "e05513b5aec24f88012b6e3034115b6bc915356a",
-        "version" : "4.13.2"
+        "revision" : "c2595b9ad7f512d7f334830b4df1fed6e917946a",
+        "version" : "4.13.4"
       }
     },
     {

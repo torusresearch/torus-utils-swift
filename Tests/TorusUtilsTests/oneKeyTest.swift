@@ -68,7 +68,7 @@ class OneKeyTest: XCTestCase {
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
         let verifierParams = VerifierParams(verifier_id: verifierID)
-        let hashedIDToken = jwt.sha3(.keccak256)
+        let hashedIDToken = keccak256Data( jwt.data(using: .utf8) ?? Data() ).toHexString()
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Codable]
         let nodeDetails = try await getFNDAndTUData(verifer: verifier, veriferID: verifierID)
         let data = try await tu.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), torusNodePubs: nodeDetails.getTorusNodePub(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken, extraParams: extraParams)

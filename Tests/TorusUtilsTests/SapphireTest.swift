@@ -300,7 +300,7 @@ final class SapphireTest: XCTestCase {
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = email
         let jwt = try! generateIdToken(email: email)
-        let hashedIDToken = jwt.sha3(.keccak256)
+        let hashedIDToken = keccak256Data(jwt.data(using: .utf8) ?? Data()).toHexString()
         let extraParams = ["verifier_id": email, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": email, "idtoken": jwt]]] as [String: Codable]
 
         let nodeManager = NodeDetailManager(network: .sapphire(.SAPPHIRE_DEVNET))
@@ -314,7 +314,7 @@ final class SapphireTest: XCTestCase {
         XCTAssertNotNil(data.finalKeyData?.evmAddress)
         XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
         XCTAssertNotNil(data.oAuthKeyData?.evmAddress)
-        XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+        XCTAssertEqual(data.metadata?.typeOfUser == UserType.v2, true)
         XCTAssertNotNil(data.metadata?.nonce)
         XCTAssertEqual(data.metadata?.upgraded, false)
     }

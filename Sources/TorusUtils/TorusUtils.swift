@@ -247,8 +247,9 @@ open class TorusUtils: AbstractTorusUtils {
         // Hash the token from OAuth login
 
         let timestamp = String(Int(getTimestamp()))
-        let hashedToken = idToken.sha3(.keccak256)
 
+        let hashedToken = keccak256Data(idToken.data(using: .utf8)  ?? Data()).toHexString()
+//        let hashedToken = idToken.sha3(.keccak256)
         var lookupPubkeyX: String = ""
         var lookupPubkeyY: String = ""
         do {

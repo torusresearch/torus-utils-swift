@@ -12,9 +12,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/tkey/curvelib.swift", branch: "feat/cocoapod"),
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", from: "5.1.0"),
-        .package(name:"CryptoSwift", url: "https://github.com/krzyzanowskim/CryptoSwift",from: "1.5.1"),
-        .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit", from: "4.0.0"),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", branch: "feat/commonSources"),
+        .package(url: "https://github.com/vapor/jwt-kit", from: "4.0.0"),
         .package(
             name:"AnyCodable",
             url: "https://github.com/Flight-School/AnyCodable",
@@ -24,15 +23,16 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["FetchNodeDetails", "CryptoSwift", "AnyCodable", 
+            dependencies: ["AnyCodable", "FetchNodeDetails",
+//                .product(name: "FetchNodeDetails", package: "FetchNodeDetails"),
                 .product(name: "curveSecp256k1", package: "curvelib.swift"),
-                .product(name: "encryption_aes_cbc_sha512", package: "curvelib.swift")
+                .product(name: "encryption_aes_cbc_sha512", package: "curvelib.swift"),
+                .product(name: "curvelibSha3", package: "curvelib.swift")
             ]),
         .testTarget(
             name: "TorusUtilsTests",
             dependencies: ["TorusUtils", .product(name: "JWTKit", package: "jwt-kit")]
         )
-    ],
-    swiftLanguageVersions: [.v5]
+    ]
 )
 
