@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/tkey/curvelib.swift", branch: "feat/cocoapod"),
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", branch: "feat/commonSources"),
+        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", from: "5.2.0"),
         .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit", from: "4.0.0"),
         .package(
             name:"AnyCodable",

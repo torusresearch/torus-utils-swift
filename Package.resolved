@@ -32,8 +32,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/torusresearch/fetch-node-details-swift",
       "state" : {
-        "branch" : "feat/commonSources",
-        "revision" : "8eb9018e35b3e97915d12887f226a58c013693f2"
+        "revision" : "bf2f0759da5c5c80765773b08c2756045edf608f",
+        "version" : "5.2.0"
       }
     },
     {
