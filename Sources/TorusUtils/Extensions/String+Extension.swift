@@ -57,7 +57,6 @@ extension String {
         let arr = Array(lowerCaseAddress)
         let hash = keccak256Data(lowerCaseAddress.data(using: .utf8) ?? Data() ).toHexString()
         
-        //Array(lowerCaseAddress.sha3(.keccak256))
         var result = String()
         for i in 0 ... lowerCaseAddress.count - 1 {
             let iIndex = hash.index(hash.startIndex, offsetBy: i)

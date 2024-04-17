@@ -249,7 +249,6 @@ open class TorusUtils: AbstractTorusUtils {
         let timestamp = String(Int(getTimestamp()))
 
         let hashedToken = keccak256Data(idToken.data(using: .utf8)  ?? Data()).toHexString()
-//        let hashedToken = idToken.sha3(.keccak256)
         var lookupPubkeyX: String = ""
         var lookupPubkeyY: String = ""
         do {
