@@ -12,10 +12,9 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/tkey/curvelib.swift", from: "1.0.0"),
-        .package(name:"FetchNodeDetails", url: "https://github.com/torusresearch/fetch-node-details-swift", from: "5.2.0"),
-        .package(name:"jwt-kit", url: "https://github.com/vapor/jwt-kit", from: "4.0.0"),
+        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from: "5.2.0"),
+        .package(url: "https://github.com/vapor/jwt-kit", from: "4.0.0"),
         .package(
-            name:"AnyCodable",
             url: "https://github.com/Flight-School/AnyCodable",
             from: "0.6.0"
         ),
@@ -23,7 +22,8 @@ let package = Package(
     targets: [
         .target(
             name: "TorusUtils",
-            dependencies: ["AnyCodable", "FetchNodeDetails",
+            dependencies: ["AnyCodable",
+                .product(name: "FetchNodeDetails", package: "fetch-node-details-swift"),
                 .product(name: "curveSecp256k1", package: "curvelib.swift"),
             ]),
         .testTarget(

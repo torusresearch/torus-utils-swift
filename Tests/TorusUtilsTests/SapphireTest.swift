@@ -373,8 +373,8 @@ final class SapphireTest: XCTestCase {
         let emp = try curveMsg.ephemeralPublicKey().serialize(compressed: false);
         let eciesData2 = try ECIES(iv: curveMsg.iv(), ephemPublicKey: emp, ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
         
-        let decrypteData = try torus.decrypt(privateKey: pk_str, opts: eciesData)
-        let decrypteData2 = try torus.decrypt(privateKey: pk_str, opts: eciesData2)
+        _ = try torus.decrypt(privateKey: pk_str, opts: eciesData)
+        _ = try torus.decrypt(privateKey: pk_str, opts: eciesData2)
         
         let result = try Encryption.decrypt(sk: pk, encrypted: em)
         let result2 = try Encryption.decrypt(sk: pk, encrypted: curveMsg)
