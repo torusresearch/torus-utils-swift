@@ -247,8 +247,8 @@ open class TorusUtils: AbstractTorusUtils {
         // Hash the token from OAuth login
 
         let timestamp = String(Int(getTimestamp()))
-        let hashedToken = idToken.sha3(.keccak256)
 
+        let hashedToken = keccak256Data(idToken.data(using: .utf8)  ?? Data()).toHexString()
         var lookupPubkeyX: String = ""
         var lookupPubkeyY: String = ""
         do {
@@ -436,7 +436,7 @@ open class TorusUtils: AbstractTorusUtils {
                                 let pointHex = PointHex(from: first.publicKey)
                                 shareResponses.append(pointHex)
                                 let metadata = first.metadata
-                                let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
+                                let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y, mac: metadata.mac)
                                 resultArray[i] = model
                             }
                         } else if let decodedResult = decoded.result as? LegacyShareRequestResult {
@@ -448,7 +448,7 @@ open class TorusUtils: AbstractTorusUtils {
                                 let metadata = first.metadata
                                 X = pointHex.x
                                 Y = pointHex.y
-                                let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y)
+                                let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y, mac: metadata.mac)
                                 resultArray[i] = model
                             }
                         } else {

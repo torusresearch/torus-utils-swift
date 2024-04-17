@@ -1,4 +1,3 @@
-import CryptoSwift
 import Foundation
 #if canImport(curveSecp256k1)
     import curveSecp256k1
@@ -10,14 +9,10 @@ import CryptoKit
 import FetchNodeDetails
 import OSLog
 
-extension TorusUtils {
-    // MARK: - utils
 
-    internal func ecdh_sha512(publicKey: PublicKey, privateKey: SecretKey) throws -> [UInt8] {
-        let shared = try ECDH.ecdhStandard(sk: privateKey, pk: publicKey)
-        let data = Data(hex: shared).dropFirst()
-        return data.bytes.sha512()
-    }
+
+extension TorusUtils {
+
 
     internal func combinations<T>(elements: ArraySlice<T>, k: Int) -> [[T]] {
         if k == 0 {
@@ -245,8 +240,9 @@ extension TorusUtils {
 
         // Hash the token from OAuth login
         let timestamp = String(Int(getTimestamp()))
-        let hashedToken = idToken.sha3(.keccak256)
-
+        let hashedToken = keccak256Data(idToken.data(using: .utf8) ?? Data()).toHexString()
+        
+        
         let nodeSigs = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, nodeSigs)
         var promiseArrRequest = [URLRequest]()
@@ -653,7 +649,7 @@ extension TorusUtils {
         return BigUInt(message, radix: 16)!
     }
 
-    internal func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String, padding: Padding = .pkcs7) throws -> String {
+    internal func decryptNodeData(eciesData: EciesHex, ciphertextHex: String, privKey: String) throws -> String {
         let eciesOpts = ECIES(
             iv: eciesData.iv,
             ephemPublicKey: eciesData.ephemPublicKey,
@@ -661,7 +657,7 @@ extension TorusUtils {
             mac: eciesData.mac
         )
 
-        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts, padding: padding).hexString
+        let decryptedSigBuffer = try decrypt(privateKey: privKey, opts: eciesOpts).hexString
         return decryptedSigBuffer
     }
 
@@ -684,24 +680,11 @@ extension TorusUtils {
     }
 
     public func encrypt(publicKey: String, msg: String, opts: Ecies? = nil) throws -> Ecies {
-        let ephemPrivateKey = SecretKey()
-        let ephemPublicKey = try ephemPrivateKey.toPublic()
-
-        let sharedSecret = try ecdh_sha512(publicKey: PublicKey(hex: publicKey), privateKey: ephemPrivateKey)
-
-        let encryptionKey = Array(sharedSecret[0 ..< 32])
-        let macKey = Array(sharedSecret[32 ..< 64])
-        let random = try randomBytes(ofLength: 16)
-        let iv: [UInt8] = (opts?.iv ?? random.toHexString()).hexa
-
-        let aes = try AES(key: encryptionKey, blockMode: CBC(iv: iv), padding: .pkcs7)
-        let ciphertext = try aes.encrypt(msg.customBytes())
-        var dataToMac: [UInt8] = iv
-        dataToMac.append(contentsOf: Data(hex: try ephemPublicKey.serialize(compressed: false)))
-        dataToMac.append(contentsOf: ciphertext)
-        let mac = try? HMAC(key: macKey, variant: .sha2(.sha256)).authenticate(dataToMac)
-        return .init(iv: iv.toHexString(), ephemPublicKey: try ephemPublicKey.serialize(compressed: false),
-                     ciphertext: ciphertext.toHexString(), mac: mac?.toHexString() ?? "")
+        guard let data = msg.data(using: .utf8) else {
+            throw TorusUtilError.runtime("Encryption: Invalid utf8 string")
+        }
+        let curveMsg = try Encryption.encrypt(pk: PublicKey(hex: publicKey), plainText: data)
+        return try .init(iv: curveMsg.iv(), ephemPublicKey: curveMsg.ephemeralPublicKey().serialize(compressed: false), ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
     }
 
     // MARK: - decrypt shares
@@ -712,27 +695,16 @@ extension TorusUtils {
         for (_, el) in shares.enumerated() {
             let nodeIndex = el.key
 
-            let publicKeyHex = el.value.ephemPublicKey
-            let sharedSecret = try ecdh_sha512(publicKey: PublicKey(hex: publicKeyHex), privateKey: SecretKey(hex: privateKey))
-
             guard
                 let data = Data(base64Encoded: el.value.share),
-                let share = String(data: data, encoding: .utf8)?.hexa
+                let share = String(data: data, encoding: .utf8)
             else {
                 throw TorusUtilError.decryptionFailed
             }
-
-            do {
-                // AES-CBCblock-256
-                let aesKey = Array(sharedSecret[0 ..< 32])
-                _ = Array(sharedSecret[32 ..< 64]) // TODO: check mac
-                let iv = el.value.iv.hexa
-                let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: .pkcs7)
-                let decryptData = try aes.decrypt(share)
-                result[nodeIndex] = decryptData.hexa
-            } catch let err {
-                result[nodeIndex] = TorusUtilError.decodingFailed(err.localizedDescription).debugDescription
-            }
+            
+            let ecies: ECIES = .init(iv: el.value.iv, ephemPublicKey: el.value.ephemPublicKey, ciphertext: share, mac: el.value.mac)
+            result[nodeIndex] = try decrypt(privateKey: privateKey, opts: ecies).toHexString()
+            
             if shares.count == result.count {
                 return result
             }
@@ -1347,17 +1319,11 @@ extension TorusUtils {
         return tupleElements
     }
 
-    public func decrypt(privateKey: String, opts: ECIES, padding: Padding = .pkcs7) throws -> Data {
-        let sharedSecret = try ecdh_sha512(publicKey: PublicKey(hex: opts.ephemPublicKey), privateKey: SecretKey(hex: privateKey))
-
-        let aesKey = Array(sharedSecret[0 ..< 32])
-        _ = Array(sharedSecret[32 ..< 64]) // TODO: check mac
-        let iv = opts.iv.hexa
-
-        let aes = try AES(key: aesKey, blockMode: CBC(iv: iv), padding: padding)
-        let plaintext = try aes.decrypt(opts.ciphertext.hexa)
-        let data = Data(plaintext)
-        return data
+    public func decrypt(privateKey: String, opts: ECIES) throws -> Data {
+        let secret = try SecretKey(hex: privateKey)
+        let msg = try EncryptedMessage(cipherText: opts.ciphertext, ephemeralPublicKey: PublicKey(hex: opts.ephemPublicKey), iv: opts.iv, mac: opts.mac)
+        let result = try Encryption.decrypt(sk: secret, encrypted: msg)
+        return result
     }
 }
 

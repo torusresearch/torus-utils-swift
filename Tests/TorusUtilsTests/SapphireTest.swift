@@ -2,10 +2,8 @@ import BigInt
 import FetchNodeDetails
 import JWTKit
 import XCTest
-
-import CommonSources
 import curveSecp256k1
-import encryption_aes_cbc_sha512
+import CommonSources
 
 @testable import TorusUtils
 
@@ -123,7 +121,7 @@ final class SapphireTest: XCTestCase {
         XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
         XCTAssertEqual(data.metadata?.pubNonce?.x, "5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc")
         XCTAssertEqual(data.metadata?.pubNonce?.y, "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed")
-        XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
+        XCTAssertEqual(data.metadata?.nonce?.serialize().toHexString(), "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)
         XCTAssertEqual(data.metadata?.upgraded, false)
     }
@@ -187,7 +185,7 @@ final class SapphireTest: XCTestCase {
         XCTAssertNotEqual(data.sessionData?.sessionAuthKey, "")
         XCTAssertEqual(data.metadata?.pubNonce?.x, "5d03a0df9b3db067d3363733df134598d42873bb4730298a53ee100975d703cc")
         XCTAssertEqual(data.metadata?.pubNonce?.y, "279434dcf0ff22f077877a70bcad1732412f853c96f02505547f7ca002b133ed")
-        XCTAssertEqual(data.metadata?.nonce?.serialize().hexString, "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
+        XCTAssertEqual(data.metadata?.nonce?.serialize().toHexString(), "b7d126751b68ecd09e371a23898e6819dee54708a5ead4f6fe83cdc79c0f1c4a")
         XCTAssertEqual(data.metadata?.typeOfUser, .v2)
         XCTAssertEqual(data.metadata?.upgraded, false)
     }
@@ -290,7 +288,7 @@ final class SapphireTest: XCTestCase {
         XCTAssertNotEqual(result.sessionData?.sessionAuthKey, "")
         XCTAssertEqual(result.metadata?.pubNonce?.x, "5712d789f7ecf3435dd9bf1136c2daaa634f0222d64e289d2abe30a729a6a22b")
         XCTAssertEqual(result.metadata?.pubNonce?.y, "2d2b4586fd5fd9d15c22f66b61bc475742754a8b96d1edb7b2590e4c4f97b3f0")
-        XCTAssertEqual(result.metadata?.nonce?.serialize().hexString, "8e80e560ae59319938f7ef727ff2c5346caac1c7f5be96d3076e3342ad1d20b7")
+        XCTAssertEqual(result.metadata?.nonce?.serialize().toHexString(), "8e80e560ae59319938f7ef727ff2c5346caac1c7f5be96d3076e3342ad1d20b7")
         XCTAssertEqual(result.metadata?.typeOfUser, .v2)
         XCTAssertEqual(result.metadata?.upgraded, false)
     }
@@ -299,7 +297,7 @@ final class SapphireTest: XCTestCase {
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = email
         let jwt = try! generateIdToken(email: email)
-        let hashedIDToken = jwt.sha3(.keccak256)
+        let hashedIDToken = keccak256Data(jwt.data(using: .utf8) ?? Data()).toHexString()
         let extraParams = ["verifier_id": email, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": email, "idtoken": jwt]]] as [String: Codable]
 
         let nodeManager = NodeDetailManager(network: .sapphire(.SAPPHIRE_DEVNET))
@@ -313,7 +311,7 @@ final class SapphireTest: XCTestCase {
         XCTAssertNotNil(data.finalKeyData?.evmAddress)
         XCTAssertNotEqual(data.finalKeyData?.evmAddress, "")
         XCTAssertNotNil(data.oAuthKeyData?.evmAddress)
-        XCTAssertEqual(data.metadata?.typeOfUser, .v2)
+        XCTAssertEqual(data.metadata?.typeOfUser == UserType.v2, true)
         XCTAssertNotNil(data.metadata?.nonce)
         XCTAssertEqual(data.metadata?.upgraded, false)
     }
@@ -360,31 +358,30 @@ final class SapphireTest: XCTestCase {
     }
     
     func testencryption() async throws {
-            let torus = TorusUtils(enableOneKey: true, network: .sapphire(.SAPPHIRE_MAINNET), clientId: "YOUR_CLIENT_ID")
+        let torus = TorusUtils(enableOneKey: true, network: .sapphire(.SAPPHIRE_MAINNET), clientId: "YOUR_CLIENT_ID")
 
-            let pk = curveSecp256k1.SecretKey()
-            let pk_str = try pk.serialize()
+        let pk = curveSecp256k1.SecretKey()
+        let pk_str = try pk.serialize()
+        
+        let msg = "hello test data"
+        let encryptData = try torus.encrypt(publicKey: pk.toPublic().serialize(compressed: false), msg: msg)
+        
+        let curveMsg = try Encryption.encrypt(pk: pk.toPublic(), plainText: msg.data(using: .utf8)!)
+        let em = try EncryptedMessage(cipherText: encryptData.ciphertext, ephemeralPublicKey: PublicKey(hex: encryptData.ephemPublicKey) , iv: encryptData.iv, mac: encryptData.mac)
 
-            let msg = "hello test data"
-            let encryptData = try torus.encrypt(publicKey: pk.toPublic().serialize(compressed: false), msg: msg)
-//            let curveMsg = try Encryption.encrypt(pk: pk.toPublic(), data: msg.data(using: .utf8)!)
-            
-//            let em = try EncryptedMessage(cipherText: encryptData.ciphertext, ephemeralPublicKey: PublicKey(hex: encryptData.ephemPublicKey) , iv: encryptData.iv, mac: encryptData.mac)
-
-            
-            let eciesData = ECIES(iv: encryptData.iv, ephemPublicKey: encryptData.ephemPublicKey, ciphertext: encryptData.ciphertext, mac: encryptData.mac)
-//            let emp = try curveMsg.ephemeralPublicKey().serialize(compressed: false);
-//            let eciesData2 = try ECIES(iv: curveMsg.iv(), ephemPublicKey: emp, ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
-
-            let decrypteData = try torus.decrypt(privateKey: pk_str, opts: eciesData)
-//            let decrypteData2 = try torus.decrypt(privateKey: pk_str, opts: eciesData2)
-
-//            let result = try Encryption.decrypt(sk: pk, encrypted: em)
-//            let result2 = try Encryption.decrypt(sk: pk, encrypted: curveMsg)
-
-            XCTAssertEqual(msg.data(using: .utf8)!, decrypteData)
-//            XCTAssertEqual(msg.data(using: .utf8)!, result2)
-
-        }
+        let eciesData = ECIES(iv: encryptData.iv, ephemPublicKey: encryptData.ephemPublicKey, ciphertext: encryptData.ciphertext, mac: encryptData.mac)
+        let emp = try curveMsg.ephemeralPublicKey().serialize(compressed: false);
+        let eciesData2 = try ECIES(iv: curveMsg.iv(), ephemPublicKey: emp, ciphertext: curveMsg.chipherText(), mac: curveMsg.mac())
+        
+        _ = try torus.decrypt(privateKey: pk_str, opts: eciesData)
+        _ = try torus.decrypt(privateKey: pk_str, opts: eciesData2)
+        
+        let result = try Encryption.decrypt(sk: pk, encrypted: em)
+        let result2 = try Encryption.decrypt(sk: pk, encrypted: curveMsg)
+        
+        XCTAssertEqual(msg.data(using: .utf8)!, result)
+        XCTAssertEqual(msg.data(using: .utf8)!, result2)
+        
+    }
 
 }

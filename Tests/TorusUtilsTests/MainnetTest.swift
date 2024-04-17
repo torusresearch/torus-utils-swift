@@ -150,7 +150,7 @@ class MainnetTests: XCTestCase {
         let verifier: String = TORUS_TEST_AGGREGATE_VERIFIER
         let verifierID: String = TORUS_TEST_EMAIL
         let jwt = try! generateIdToken(email: TORUS_TEST_EMAIL)
-        let hashedIDToken = jwt.sha3(.keccak256)
+        let hashedIDToken = keccak256Data(jwt.data(using: .utf8) ?? Data()).toHexString()
         let extraParams = ["verifier_id": TORUS_TEST_EMAIL, "sub_verifier_ids": [TORUS_TEST_VERIFIER], "verify_params": [["verifier_id": TORUS_TEST_EMAIL, "idtoken": jwt]]] as [String: Codable]
         let verifierParams = VerifierParams(verifier_id: verifierID)
         let nodeDetails = try await get_fnd_and_tu_data(verifer: verifier, veriferID: verifierID)
