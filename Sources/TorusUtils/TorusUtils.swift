@@ -78,8 +78,8 @@ open class TorusUtils: AbstractTorusUtils {
             let result = try await session.data(for: allowHostRequest)
             let responseData = try JSONDecoder().decode(AllowSuccess.self, from: result.0)
             if (responseData.success == false ) {
-                let errorData = try JSONDecoder().decode(AllowRejected.self, from: result.0)
-                throw "code: \(errorData.code), error: \(errorData.error)"
+                let _ = try JSONDecoder().decode(AllowRejected.self, from: result.0)
+                // throw "code: \(errorData.code), error: \(errorData.error)"
             }
         } catch {
             os_log("retrieveShares: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
