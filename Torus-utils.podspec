@@ -12,4 +12,5 @@ Pod::Spec.new do |spec|
   spec.source_files = "Sources/TorusUtils/*.{swift,json}","Sources/TorusUtils/**/*.{swift,json}"
   spec.dependency 'Torus-fetchNodeDetails', '~> 5.2.0'
   spec.dependency 'curvelib.swift', '~> 1.0.0'
+  spec.dependency 'AnyCodable-FlightSchool', '~> 0.6.0'
 end
