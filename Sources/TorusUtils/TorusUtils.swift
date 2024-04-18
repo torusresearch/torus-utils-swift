@@ -1,5 +1,7 @@
 import BigInt
-import CommonSources
+#if canImport(CommonSources)
+    import CommonSources
+#endif
 import FetchNodeDetails
 import Foundation
 import OSLog

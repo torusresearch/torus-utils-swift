@@ -1,5 +1,7 @@
 import BigInt
-import CommonSources
+#if canImport(CommonSources)
+    import CommonSources
+#endif
 import Foundation
 
 enum TORUS_SAPPHIRE_NETWORK_TYPE {
