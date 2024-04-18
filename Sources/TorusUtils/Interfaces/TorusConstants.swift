@@ -1,4 +1,5 @@
 import BigInt
+import FetchNodeDetails
 #if canImport(CommonSources)
     import CommonSources
 #endif
