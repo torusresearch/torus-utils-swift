@@ -1,12 +1,7 @@
 import Foundation
-#if canImport(curveSecp256k1)
-    import curveSecp256k1
-#endif
+import curveSecp256k1
 import AnyCodable
 import BigInt
-#if canImport(CommonSources)
-    import CommonSources
-#endif
 import CryptoKit
 import FetchNodeDetails
 import OSLog

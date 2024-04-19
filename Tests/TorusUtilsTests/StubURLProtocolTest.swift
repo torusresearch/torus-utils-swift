@@ -4,10 +4,6 @@ import OSLog
 import TorusUtils
 import XCTest
 
-#if canImport(CommonSources)
-    import CommonSources
-#endif
-
 final class StubURLProtocolTests: XCTestCase {}
 
 public class StubMockTorusUtils: TorusUtils {

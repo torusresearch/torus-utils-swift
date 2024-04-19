@@ -1,6 +1,3 @@
-#if canImport(CommonSources)
-    import CommonSources
-#endif
 import BigInt
 import FetchNodeDetails
 import Foundation

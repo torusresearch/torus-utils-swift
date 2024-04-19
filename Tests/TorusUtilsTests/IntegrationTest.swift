@@ -3,10 +3,6 @@ import FetchNodeDetails
 import JWTKit
 import XCTest
 
-#if canImport(CommonSources)
-    import CommonSources
-#endif
-
 @testable import TorusUtils
 
 class IntegrationTests: XCTestCase {
