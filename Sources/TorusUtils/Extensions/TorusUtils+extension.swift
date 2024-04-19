@@ -1,10 +1,7 @@
 import Foundation
-#if canImport(curveSecp256k1)
-    import curveSecp256k1
-#endif
+import curveSecp256k1
 import AnyCodable
 import BigInt
-import CommonSources
 import CryptoKit
 import FetchNodeDetails
 import OSLog
@@ -1204,7 +1201,7 @@ extension TorusUtils {
     internal func getPublicKeyPointFromPubkeyString(pubKey: String) throws -> (String, String) {
         let publicKeyHashData = Data(hex: pubKey.strip04Prefix())
         if !(publicKeyHashData.count == 64) {
-            throw "Invalid address,"
+            throw TorusUtilError.invalidKeySize
         }
 
         let xCoordinateData = publicKeyHashData.prefix(32).toHexString()

@@ -1,5 +1,5 @@
 import BigInt
-import CommonSources
+import FetchNodeDetails
 import Foundation
 
 enum TORUS_SAPPHIRE_NETWORK_TYPE {

@@ -3,7 +3,6 @@ import FetchNodeDetails
 import JWTKit
 import XCTest
 import curveSecp256k1
-import CommonSources
 
 @testable import TorusUtils
 
