@@ -25,17 +25,15 @@ open class TorusUtils: AbstractTorusUtils {
                 urlSession: URLSession = URLSession(configuration: .default),
                 enableOneKey: Bool = false,
                 serverTimeOffset: TimeInterval = 0,
-                signerHost: String = "https://signer.tor.us/api/sign",
-                allowHost: String = "https://signer.tor.us/api/allow",
-                network: TorusNetwork = TorusNetwork.legacy(.MAINNET),
+                network: TorusNetwork,
                 clientId: String,
                 legacyMetadataHost: String = "https://metadata.tor.us"
     ) {
         self.urlSession = urlSession
         utilsLogType = loglevel
         self.enableOneKey = enableOneKey
-        self.signerHost = signerHost // TODO: remove signer host read it from fetch node details same as web sdk.
-        self.allowHost = allowHost
+        self.allowHost = network.signerMap + "/api/allow"
+        self.signerHost = network.signerMap + "/api/sign"
         self.network = network
         self.serverTimeOffset = serverTimeOffset
         self.clientId = clientId
@@ -66,8 +64,7 @@ open class TorusUtils: AbstractTorusUtils {
         allowHostRequest.addValue("torus-default", forHTTPHeaderField: "x-api-key")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "origin")
         allowHostRequest.addValue(verifier, forHTTPHeaderField: "verifier")
-        allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifier_id")
-        allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifierId")
+        allowHostRequest.addValue(verifierParams.verifier_id, forHTTPHeaderField: "verifierid")
         allowHostRequest.addValue(clientId, forHTTPHeaderField: "clientid")
         allowHostRequest.addValue(network.name, forHTTPHeaderField: "network")
         allowHostRequest.addValue("true", forHTTPHeaderField: "enablegating")
@@ -75,8 +72,8 @@ open class TorusUtils: AbstractTorusUtils {
             let result = try await session.data(for: allowHostRequest)
             let responseData = try JSONDecoder().decode(AllowSuccess.self, from: result.0)
             if (responseData.success == false ) {
-                let _ = try JSONDecoder().decode(AllowRejected.self, from: result.0)
-                // throw "code: \(errorData.code), error: \(errorData.error)"
+                let errorData = try JSONDecoder().decode(AllowRejected.self, from: result.0)
+                throw TorusUtilError.gatingError("code: \(errorData.code), error: \(errorData.error)")
             }
         } catch {
             os_log("retrieveShares: signer allow: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)

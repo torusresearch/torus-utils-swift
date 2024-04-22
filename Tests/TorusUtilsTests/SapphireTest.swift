@@ -22,9 +22,6 @@ final class SapphireTest: XCTestCase {
     let TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com"
     let HashEnabledVerifier = "torus-test-verifierid-hash"
 
-    var signerHost = "https://signer.tor.us/api/sign"
-    var allowHost = "https://signer.tor.us/api/allow"
-
     var fnd: NodeDetailManager!
     var torus: TorusUtils!
 
@@ -348,10 +345,8 @@ final class SapphireTest: XCTestCase {
                 idToken: token
             )
             XCTAssert(false, "Should not pass")
-        }catch {
-            if (!error.localizedDescription.contains("code: 1001")) {
-                XCTAssert(false, "Should fail with signer allow gating error")
-            }
+        } catch {
+            XCTAssertEqual(error.localizedDescription.errorDescription!,"code: 1001, error: Invalid Web3Auth client id, obtain a client ID at https://dashboard.web3auth.io")
         }
 
     }

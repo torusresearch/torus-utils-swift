@@ -21,6 +21,7 @@ public enum TorusUtilError: Error, Equatable {
     case runtime(_ msg: String)
     case retrieveOrImportShareError
     case metadataNonceMissing
+    case gatingError(_ msg: String? = nil)
     case empty
 }
 
@@ -69,6 +70,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "retrieve or import share failed"
         case .metadataNonceMissing:
             return "Unable to fetch metadata nonce"
+        case let .gatingError(msg):
+            return "could not process request \(msg ?? "")"
         }
     }
 
@@ -115,6 +118,8 @@ extension TorusUtilError: LocalizedError {
             return "Invalid key size. Expected 32 bytes"
         case let .encodingFailed(msg):
             return "Could not encode data \(msg ?? "")"
+        case let .gatingError(msg):
+            return "\(msg ?? "")"
         default:
             return "default Error msg"
         }
