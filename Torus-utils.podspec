@@ -10,7 +10,7 @@ Pod::Spec.new do |spec|
   spec.module_name = "TorusUtils"
   spec.source       = { :git => "https://github.com/torusresearch/torus-utils-swift.git", :tag => spec.version }
   spec.source_files = "Sources/TorusUtils/*.{swift,json}","Sources/TorusUtils/**/*.{swift,json}"
-  spec.dependency 'Torus-fetchNodeDetails', '~> 6.0.1'
+  spec.dependency 'Torus-fetchNodeDetails', '~> 6.0.2'
   spec.dependency 'curvelib.swift', '~> 1.0.1'
   spec.dependency 'AnyCodable-FlightSchool', '~> 0.6.0'
 end
