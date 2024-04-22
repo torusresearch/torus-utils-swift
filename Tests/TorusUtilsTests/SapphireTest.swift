@@ -345,10 +345,8 @@ final class SapphireTest: XCTestCase {
                 idToken: token
             )
             XCTAssert(false, "Should not pass")
-        }catch {
-            if (error != gatingError("code: 1001, error: Invalid client id")) {
-                XCTAssert(false, "Should fail with signer allow gating error")
-            }
+        } catch {
+            XCTAssertEqual(error.localizedDescription.errorDescription!,"code: 1001, error: Invalid Web3Auth client id, obtain a client ID at https://dashboard.web3auth.io")
         }
 
     }
