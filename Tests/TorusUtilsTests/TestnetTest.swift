@@ -12,8 +12,6 @@ class TestnetTest: XCTestCase {
     var TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
     var fnd: NodeDetailManager!
     var tu: TorusUtils!
-    var signerHost = "https://signer-polygon.tor.us/api/sign"
-    var allowHost = "https://signer-polygon.tor.us/api/allow"
 
     override func setUp() {
         super.setUp()
@@ -22,7 +20,7 @@ class TestnetTest: XCTestCase {
 
     func getFNDAndTUData(verifer: String, veriferID: String, enableOneKey: Bool = false) async throws -> AllNodeDetailsModel {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
-        tu = TorusUtils(enableOneKey: enableOneKey, signerHost: signerHost, allowHost: allowHost, network: .legacy(.TESTNET), clientId: "YOUR_CLIENT_ID")
+        tu = TorusUtils(enableOneKey: enableOneKey, network: .legacy(.TESTNET), clientId: "YOUR_CLIENT_ID")
         return nodeDetails
     }
 

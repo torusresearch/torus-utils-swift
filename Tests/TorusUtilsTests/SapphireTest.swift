@@ -22,9 +22,6 @@ final class SapphireTest: XCTestCase {
     let TORUS_EXTENDED_VERIFIER_EMAIL = "testextenderverifierid@example.com"
     let HashEnabledVerifier = "torus-test-verifierid-hash"
 
-    var signerHost = "https://signer.tor.us/api/sign"
-    var allowHost = "https://signer.tor.us/api/allow"
-
     var fnd: NodeDetailManager!
     var torus: TorusUtils!
 
@@ -349,7 +346,7 @@ final class SapphireTest: XCTestCase {
             )
             XCTAssert(false, "Should not pass")
         }catch {
-            if (!error.localizedDescription.contains("code: 1001")) {
+            if (error != gatingError("code: 1001, error: Invalid client id")) {
                 XCTAssert(false, "Should fail with signer allow gating error")
             }
         }

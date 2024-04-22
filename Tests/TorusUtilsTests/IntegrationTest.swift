@@ -16,8 +16,6 @@ class IntegrationTests: XCTestCase {
     let TORUS_TEST_VERIFIER = "torus-test-health"
     let TORUS_TEST_AGGREGATE_VERIFIER = "torus-test-health-aggregate"
     let TORUS_TEST_EMAIL = "hello@tor.us"
-    var signerHost = "https://signer.tor.us/api/sign"
-    var allowHost = "https://signer.tor.us/api/allow"
 
     // Fake data
     let TORUS_TEST_VERIFIER_FAKE = "google-lrc-fakes"
