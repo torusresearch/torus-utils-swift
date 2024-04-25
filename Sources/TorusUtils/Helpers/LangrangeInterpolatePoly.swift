@@ -172,7 +172,7 @@ func generateRandomPolynomial(degree: Int, secret: BigInt? = nil, deterministicS
         while points[shareIndex.description.padding(toLength: 64, withPad: "0", startingAt: 0)] != nil {
             shareIndex = try generatePrivateExcludingIndexes(shareIndexes: [BigInt(0)])
         }
-        points[String(shareIndex, radix: 16).addLeading0sForLength64()] = Point(x: shareIndex, y: BigInt(Data(hex:try SecretKey().serialize().addLeading0sForLength64())))
+        points[String(shareIndex, radix: 16).addLeading0sForLength64()] = Point(x: shareIndex, y: BigInt(Data(hex: try SecretKey().serialize().addLeading0sForLength64())))
     }
 
     points["0"] = Point(x: BigInt(0), y: actualS!)

@@ -1,16 +1,12 @@
-import Foundation
-import curveSecp256k1
 import AnyCodable
 import BigInt
 import CryptoKit
+import curveSecp256k1
 import FetchNodeDetails
+import Foundation
 import OSLog
 
-
-
 extension TorusUtils {
-
-
     internal func combinations<T>(elements: ArraySlice<T>, k: Int) -> [[T]] {
         if k == 0 {
             return [[]]
@@ -163,13 +159,9 @@ extension TorusUtils {
                               "params": AnyCodable(params),
         ] as [String: AnyCodable]
 
-        // do {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
         rpcdata = try encoder.encode(dataForRequest)
-        // } catch {
-        //    os_log("get share or key assign - error: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error, error.localizedDescription)
-        // }
 
         // Create Array of URLRequest Promises
         var requestArray = [URLRequest]()
@@ -238,8 +230,7 @@ extension TorusUtils {
         // Hash the token from OAuth login
         let timestamp = String(Int(getTimestamp()))
         let hashedToken = keccak256Data(idToken.data(using: .utf8) ?? Data()).toHexString()
-        
-        
+
         let nodeSigs = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
         os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, nodeSigs)
         var promiseArrRequest = [URLRequest]()
@@ -698,10 +689,10 @@ extension TorusUtils {
             else {
                 throw TorusUtilError.decryptionFailed
             }
-            
+
             let ecies: ECIES = .init(iv: el.value.iv, ephemPublicKey: el.value.ephemPublicKey, ciphertext: share, mac: el.value.mac)
             result[nodeIndex] = try decrypt(privateKey: privateKey, opts: ecies).toHexString()
-            
+
             if shares.count == result.count {
                 return result
             }
@@ -711,7 +702,7 @@ extension TorusUtils {
 
     // MARK: - Lagrange interpolation
 
-    internal func thresholdLagrangeInterpolation(data filteredData: [Int: String], endpoints: [String], lookupPubkeyX: String, lookupPubkeyY: String) throws -> (String, String, String) {
+    internal func thresholdLagrangeInterpolation(data filteredData: [Int: String], endpoints: [String], xCoordinate: String, yCoordinate: String) throws -> (String, String, String) {
         // all possible combinations of share indexes to interpolate
         let shareCombinations = combinations(elements: Array(filteredData.keys), k: Int(endpoints.count / 2) + 1)
         for shareIndexSet in shareCombinations {
@@ -727,7 +718,7 @@ extension TorusUtils {
                 os_log("retrieveDecryptAndReconstuct: private key rebuild %@ %@ %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .debug), type: .debug, data, pubKeyX, pubKeyY)
 
                 // Verify
-                if pubKeyX == lookupPubkeyX && pubKeyY == lookupPubkeyY {
+                if pubKeyX == xCoordinate && pubKeyY == yCoordinate {
                     return (pubKeyX, pubKeyY, data)
                 } else {
                     os_log("retrieveDecryptAndReconstuct: verification failed", log: getTorusLogger(log: TorusUtilsLogger.core, type: .error), type: .error)

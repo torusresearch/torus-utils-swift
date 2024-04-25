@@ -1,8 +1,8 @@
+import AnyCodable
 import BigInt
 import FetchNodeDetails
 import Foundation
 import OSLog
-import AnyCodable
 #if canImport(curveSecp256k1)
     import curveSecp256k1
 #endif
@@ -32,8 +32,8 @@ open class TorusUtils: AbstractTorusUtils {
         self.urlSession = urlSession
         utilsLogType = loglevel
         self.enableOneKey = enableOneKey
-        self.allowHost = network.signerMap + "/api/allow"
-        self.signerHost = network.signerMap + "/api/sign"
+        allowHost = network.signerMap + "/api/allow"
+        signerHost = network.signerMap + "/api/sign"
         self.network = network
         self.serverTimeOffset = serverTimeOffset
         self.clientId = clientId
@@ -71,7 +71,7 @@ open class TorusUtils: AbstractTorusUtils {
         do {
             let result = try await session.data(for: allowHostRequest)
             let responseData = try JSONDecoder().decode(AllowSuccess.self, from: result.0)
-            if (responseData.success == false ) {
+            if responseData.success == false {
                 let errorData = try JSONDecoder().decode(AllowRejected.self, from: result.0)
                 throw TorusUtilError.gatingError("code: \(errorData.code), error: \(errorData.error)")
             }
@@ -244,26 +244,15 @@ open class TorusUtils: AbstractTorusUtils {
 
         let timestamp = String(Int(getTimestamp()))
 
-        let hashedToken = keccak256Data(idToken.data(using: .utf8)  ?? Data()).toHexString()
-        var lookupPubkeyX: String = ""
-        var lookupPubkeyY: String = ""
+        let hashedToken = keccak256Data(idToken.data(using: .utf8) ?? Data()).toHexString()
         do {
-            let getPublicAddressData = try await getPublicAddress(endpoints: endpoints, torusNodePubs: torusNodePubs, verifier: verifier, verifierId: verifierId)
-            guard (getPublicAddressData.finalKeyData?.evmAddress) != nil
-            else {
-                throw TorusUtilError.runtime("Unable to provide evmAddress")
-            }
-            let localPubkeyX = getPublicAddressData.finalKeyData!.X.addLeading0sForLength64()
-            let localPubkeyY = getPublicAddressData.finalKeyData!.Y.addLeading0sForLength64()
-            lookupPubkeyX = localPubkeyX
-            lookupPubkeyY = localPubkeyY
             let commitmentRequestData = try await commitmentRequest(endpoints: endpoints, verifier: verifier, pubKeyX: pubKeyX, pubKeyY: pubKeyY, timestamp: timestamp, tokenCommitment: hashedToken)
             os_log("retrieveShares - data after commitment request: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, commitmentRequestData)
 
             let (oAuthKeyX, oAuthKeyY, oAuthKey) = try await retrieveDecryptAndReconstruct(
                 endpoints: endpoints,
                 indexes: indexes,
-                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, lookupPubkeyX: lookupPubkeyX, lookupPubkeyY: lookupPubkeyY, privateKey: privateKey.serialize().addLeading0sForLength64())
+                extraParams: extraParams, verifier: verifier, tokenCommitment: idToken, nodeSignatures: commitmentRequestData, verifierId: verifierId, xCoordinate: pubKeyX, yCoordinate: pubKeyY, privateKey: privateKey.serialize().addLeading0sForLength64())
 
             var metadataNonce: BigUInt
             var typeOfUser: UserType = .v1
@@ -285,9 +274,9 @@ open class TorusUtils: AbstractTorusUtils {
                     metadataNonce = try await getMetadata(dictionary: ["pub_key_X": oAuthKeyX, "pub_key_Y": oAuthKeyY])
                     var privateKeyWithNonce = BigInt(metadataNonce) + BigInt(oAuthKey, radix: 16)!
                     privateKeyWithNonce = privateKeyWithNonce.modulus(modulusValue)
-                    let serializedKey =  privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
+                    let serializedKey = privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
                     let finalPrivateKey = try
-                    SecretKey(hex: serializedKey)
+                        SecretKey(hex: serializedKey)
                     finalPubKey = try finalPrivateKey.toPublic().serialize(compressed: false)
                 }
             } else {
@@ -356,7 +345,7 @@ open class TorusUtils: AbstractTorusUtils {
 
     private func retrieveDecryptAndReconstruct(endpoints: [String],
                                                indexes: [BigUInt],
-                                               extraParams: [String: Codable], verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, lookupPubkeyX: String, lookupPubkeyY: String, privateKey: String) async throws -> (String, String, String) {
+                                               extraParams: [String: Codable], verifier: String, tokenCommitment: String, nodeSignatures: [CommitmentRequestResponse], verifierId: String, xCoordinate: String, yCoordinate: String, privateKey: String) async throws -> (String, String, String) {
         // Rebuild extraParams
         let session = createURLSession()
         let threshold = Int(endpoints.count / 2) + 1
@@ -423,8 +412,8 @@ open class TorusUtils: AbstractTorusUtils {
                             throw TorusUtilError.decodingFailed(decoded.error?.data)
                         }
                         os_log("retrieveDecryptAndReconstuct: %@", log: getTorusLogger(log: TorusUtilsLogger.core, type: .info), type: .info, "\(decoded)")
-                        var X = lookupPubkeyX.addLeading0sForLength64()
-                        var Y = lookupPubkeyY.addLeading0sForLength64()
+                        var X = xCoordinate.addLeading0sForLength64()
+                        var Y = yCoordinate.addLeading0sForLength64()
                         if let decodedResult = decoded.result as? LegacyLookupResponse {
                             // case non migration
                             let keyObj = decodedResult.keys
@@ -442,8 +431,8 @@ open class TorusUtils: AbstractTorusUtils {
                                 let pointHex = PointHex(from: .init(x: first.publicKey.X, y: first.publicKey.Y))
                                 shareResponses.append(pointHex)
                                 let metadata = first.metadata
-                                X = pointHex.x
-                                Y = pointHex.y
+                                X = pointHex.x.addLeading0sForLength64()
+                                Y = pointHex.y.addLeading0sForLength64()
                                 let model = RetrieveDecryptAndReconstuctResponseModel(iv: metadata.iv, ephemPublicKey: metadata.ephemPublicKey, share: first.share, pubKeyX: pointHex.x, pubKeyY: pointHex.y, mac: metadata.mac)
                                 resultArray[i] = model
                             }
@@ -452,7 +441,6 @@ open class TorusUtils: AbstractTorusUtils {
                         }
 
                         // Due to multiple keyAssign
-
                         let lookupShares = shareResponses.filter { $0 != nil } // Nonnil elements
 
                         // Comparing dictionaries, so the order of keys doesn't matter
@@ -468,7 +456,7 @@ open class TorusUtils: AbstractTorusUtils {
                         let filteredData = data.filter { $0.value != TorusUtilError.decodingFailed(nil).debugDescription }
 
                         if filteredData.count < threshold { throw TorusUtilError.thresholdError }
-                        let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, lookupPubkeyX: X.addLeading0sForLength64(), lookupPubkeyY: Y.addLeading0sForLength64())
+                        let thresholdLagrangeInterpolationData = try thresholdLagrangeInterpolation(data: filteredData, endpoints: endpoints, xCoordinate: X.addLeading0sForLength64(), yCoordinate: Y.addLeading0sForLength64())
                         session.invalidateAndCancel()
                         return thresholdLagrangeInterpolationData
                     case let .failure(error):
