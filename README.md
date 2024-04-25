@@ -14,8 +14,15 @@ You can install the SingleFactorAuth Swift using Swift Package Manager.
 ...
 dependencies: [
     ...
-    .package(url: "https://github.com/torusresearch/torus-utils-swift", from: "8.0.1")
+    .package(url: "https://github.com/torusresearch/torus-utils-swift", from: "8.1")
 ],
+targets: [
+    .target( name: "",
+            dependencies: [
+                .product(name: "TorusUtils", package: "torus-utils-swift")
+                ]
+    ) ],
+]
 ...
 ```
 

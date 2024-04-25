@@ -37,9 +37,6 @@ public class Point: Decodable {
             let xData = Data(hex: x.description)
             let yData = Data(hex: y.description)
             return prefix + xData + yData
-//        case "elliptic-compressed":
-//            let publicKey = try getCompressedPublicKey()
-//            return publicKey
         default:
             throw PointError.encodingNotSupported
         }
