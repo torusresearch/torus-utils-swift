@@ -8,16 +8,16 @@ This utility library allows for early exits in optimistic scenarios, while handl
 The general approach is to evaluate predicates against a list of (potentially incomplete) results, and exit when the predicate passes.
 
 ## 🔗 Installation
-You can install the SingleFactorAuth Swift using Swift Package Manager.
+You can install the TorusUtils using Swift Package Manager:
 
 ```
 ...
 dependencies: [
     ...
-    .package(url: "https://github.com/torusresearch/torus-utils-swift", from: "8.1")
+    .package(url: "https://github.com/torusresearch/torus-utils-swift", from: "9.0.0")
 ],
 targets: [
-    .target( name: "",
+    .target( name: "<INSERT_TARGET_NAME>",
             dependencies: [
                 .product(name: "TorusUtils", package: "torus-utils-swift")
                 ]
@@ -26,15 +26,19 @@ targets: [
 ...
 ```
 
+Or CocoaPods:
+
+```
+...
+    pod 'Torus-utils', '~> 9.0.0'
+...
+```
+
 ## Getting Started
-Initialize the `TorusUtils` class by passing `TorusNetwork`, `enableOneKey`, and your `clientId`. `enableOneKey` if true, adds the nonce value to the key, to make it compaitible with v2 users. The package supports both legacy and sapphire networks.  
+Initialize the `TorusUtils` class by passing `TorusOptions` as params. Params includes `TorusNetwork`, `enableOneKey`, and your `clientId`. `enableOneKey` if true, adds the nonce value to the key, to make it compatible with v2 users. The package supports both legacy and sapphire networks.  
 
 ```swift
-  let torus = TorusUtils(
-        enableOneKey: true,
-        network: .sapphire(.SAPPHIRE_DEVNET),
-        clientId: "YOUR_CLIENT_ID"
-        )
+   let torusUtils = TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .sapphire(.SAPPHIRE_MAINNET), enableOneKey: true))
 ```
 
 
@@ -46,22 +50,17 @@ Use the `getNodeDetails` function to retrive the node details for specific `veri
  do {
     let fnd = NodeDetailManager(network: .sapphire(.SAPPHIRE_DEVNET))
 
-    let nodeDetails = try await fnd.getNodeDetails(verifier: verifer, verifierID: veriferID)
+    let nodeDetails = try await fnd.getNodeDetails(verifier: verifier, verifierID: verifierID)
 
-    let publicAddressResponse = try await torus.getPublicAddress(
-        endpoints: nodeDetails.getTorusNodeEndpoints(),
-        torusNodePubs: nodeDetails.torusNodePub, 
-        verifier: TORUS_TEST_VERIFIER,
-        verifierId: TORUS_TEST_EMAIL
-        )
-
-    print(publicAddressResponse.oAuthKeyData!.evmAddress)
+    let publicDetails = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID)
+    
+    print(publicDetails.oAuthKeyData!.evmAddress)
  } catch let error {
     // Handle error
  }   
 ```
 
-Use `retriveShares` function to login a user, and get the login data such as `sessionData`, `privKey`, `evmAddress`, `metaData` for user. Along with node detals, it also takes verifier, `verifierParams`, and `idToken`(JWT token).
+Use `retrieveShares` function to login a user, and get the login data such as `sessionData`, `privKey`, `evmAddress`, `metaData` for user. Along with node details, it also takes `verifier`, `verifierParams`, and `idToken`(JWT token).
 
 ```swift
 // verifier_id takes the value, for instance email, sub, or custom. 
@@ -69,16 +68,11 @@ let verifierParams = VerifierParams(verifier_id: "verifier_id_value")
 
 do {
  // Use nodeDetails from above step
- let data = try await torus.retrieveShares(
-    endpoints: nodeDetails.getTorusNodeEndpoints(),
-    torusNodePubs: nodeDetails.getTorusNodePub(),
-    indexes: nodeDetails.getTorusIndexes(),
-    verifier: TORUS_TEST_VERIFIER,
-    verifierParams: verifierParams,
-    idToken: token
-    )
+ 
+ let verifierParams = VerifierParams(verifier_id: verifierID)
+         
+ let data = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeSSSEndpoints(), indexes: nodeDetails.getTorusIndexes(), verifier: verifier, verifierParams: verifierParams, idToken: token)
 
- let privateKey = data.finalKeyData!.privKey
  let evmAddress = data.finalKeyData!.evmAddress
 } catch let error {
     // Handle error

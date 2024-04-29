@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "9F2D8848-AB66-4789-A38F-C7E010657904",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testRepetitionMode" : "retryOnFailure"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "TorusUtilsTests",
+        "name" : "TorusUtilsTests"
+      }
+    }
+  ],
+  "version" : 1
+}

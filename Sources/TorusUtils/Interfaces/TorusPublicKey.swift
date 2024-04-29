@@ -1,51 +1,64 @@
 import BigInt
 import Foundation
 
-public enum UserType: String {
-    case v1
-    case v2
-}
-
-public struct TorusPublicKey {
-    public struct FinalKeyData {
+public class TorusPublicKey: Codable {
+    public class OAuthKeyData: Codable {
         public let evmAddress: String
         public let X: String
         public let Y: String
+
+        internal init(evmAddress: String, X: String, Y: String) {
+            self.evmAddress = evmAddress
+            self.X = X
+            self.Y = Y
+        }
     }
 
-    public struct OAuthKeyData {
+    public class FinalKeyData: Codable {
         public let evmAddress: String
         public let X: String
         public let Y: String
+
+        internal init(evmAddress: String, X: String, Y: String) {
+            self.evmAddress = evmAddress
+            self.X = X
+            self.Y = Y
+        }
     }
 
-    public struct Metadata {
+    public class Metadata: Codable {
         public let pubNonce: PubNonce?
         public let nonce: BigUInt?
         public let typeOfUser: UserType
         public let upgraded: Bool?
+        public let serverTimeOffset: Int
+
+        internal init(pubNonce: PubNonce?, nonce: BigUInt?, typeOfUser: UserType, upgraded: Bool?, serverTimeOffset: Int) {
+            self.pubNonce = pubNonce
+            self.nonce = nonce
+            self.typeOfUser = typeOfUser
+            self.upgraded = upgraded
+            self.serverTimeOffset = serverTimeOffset
+        }
     }
 
-    public struct NodesData {
+    public class NodesData: Codable {
         public let nodeIndexes: [Int]
+
+        internal init(nodeIndexes: [Int]) {
+            self.nodeIndexes = nodeIndexes
+        }
     }
 
-    public init(finalKeyData: FinalKeyData?, oAuthKeyData: OAuthKeyData?, metadata: Metadata?, nodesData: NodesData?) {
+    internal init(oAuthKeyData: OAuthKeyData?, finalKeyData: FinalKeyData?, metadata: Metadata?, nodesData: NodesData?) {
         self.finalKeyData = finalKeyData
         self.oAuthKeyData = oAuthKeyData
         self.metadata = metadata
         self.nodesData = nodesData
     }
 
-    public let finalKeyData: FinalKeyData?
     public let oAuthKeyData: OAuthKeyData?
+    public let finalKeyData: FinalKeyData?
     public let metadata: Metadata?
     public let nodesData: NodesData?
-}
-
-public typealias V2NonceResultType = GetOrSetNonceResult
-
-struct V1NonceResultType {
-    let typeOfUser: UserType
-    let nonce: String?
 }
