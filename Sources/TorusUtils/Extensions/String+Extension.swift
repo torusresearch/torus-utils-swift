@@ -25,7 +25,7 @@ extension String {
     }
 
     func add04Prefix(targetLength: Int = 128) -> String {
-        if !hasPrefix("04") && self.count == targetLength{
+        if self.count == targetLength{
             return "04" + self
         }
         return self
