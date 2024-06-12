@@ -201,8 +201,6 @@ final class SapphireDevnetTest: XCTestCase {
         XCTAssertNotNil(val.nodesData)
     }
 
-    /*
-     TODO: Re-enable this test once regression has been found, currently this is broken in dev accross the board
     func test_should_be_able_to_login_when_verifier_is_hash_enabled() async throws {
         let verifier = HASH_ENABLED_VERIFIER
         let verifierID = TORUS_TEST_EMAIL
@@ -231,7 +229,6 @@ final class SapphireDevnetTest: XCTestCase {
         XCTAssertEqual(val.metadata.typeOfUser, .v2)
         XCTAssertNotNil(val.nodesData)
     }
-     */
 
     func test_should_be_able_to_login() async throws {
         let verifier = TORUS_TEST_VERIFIER
