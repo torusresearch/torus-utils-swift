@@ -1,15 +1,6 @@
 {
   "pins" : [
     {
-      "identity" : "anycodable",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Flight-School/AnyCodable",
-      "state" : {
-        "revision" : "862808b2070cd908cb04f9aafe7de83d35f81b05",
-        "version" : "0.6.7"
-      }
-    },
-    {
       "identity" : "bigint",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/attaswift/BigInt",
@@ -32,8 +23,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/torusresearch/fetch-node-details-swift.git",
       "state" : {
-        "revision" : "f085d3d85a4f36b57cfef8f0871ac8df1dd4f6f1",
-        "version" : "6.0.1"
+        "revision" : "22bfadf7491d77a0bc1953af002cadbd61383e7d",
+        "version" : "6.0.2"
       }
     },
     {

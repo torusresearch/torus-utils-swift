@@ -1,20 +1,17 @@
 PODS:
-  - AnyCodable-FlightSchool (0.6.7)
   - BigInt (5.2.0)
   - curvelib.swift (1.0.1)
-  - Torus-fetchNodeDetails (6.0.0):
+  - Torus-fetchNodeDetails (6.0.2):
     - BigInt (~> 5.2.0)
-  - Torus-utils (8.0.3):
-    - AnyCodable-FlightSchool (~> 0.6.0)
+  - Torus-utils (9.0.0):
     - curvelib.swift (~> 1.0.1)
-    - Torus-fetchNodeDetails (~> 6.0.0)
+    - Torus-fetchNodeDetails (~> 6.0.2)
 
 DEPENDENCIES:
   - Torus-utils (from `../`)
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
-    - AnyCodable-FlightSchool
     - BigInt
     - curvelib.swift
     - Torus-fetchNodeDetails
@@ -24,11 +21,10 @@ EXTERNAL SOURCES:
     :path: "../"
 
 SPEC CHECKSUMS:
-  AnyCodable-FlightSchool: 261cbe76757802b17d471b9059b21e6fa5edf57b
   BigInt: f668a80089607f521586bbe29513d708491ef2f7
   curvelib.swift: d0746ae82bee34016c06da3567a97e493b3c979f
-  Torus-fetchNodeDetails: e27940bc2151f80b76e3732987a52ea802eb34be
-  Torus-utils: ce29be461bc6ae9a946d23188d1d3a50bfa4c667
+  Torus-fetchNodeDetails: 48996680351bc41bd84690e6689fe85c0d458ba3
+  Torus-utils: ca3ee1cf3433b413c57613f6e65dba0789fbf4e3
 
 PODFILE CHECKSUM: 2d35466879f2d32f53c6ccbca958796c381f0e62
 
