@@ -24,15 +24,15 @@ extension String {
         return hasPrefix("04")
     }
 
-    func add04Prefix() -> String {
-        if !hasPrefix("04") {
+    func add04Prefix(targetLength: Int = 128) -> String {
+        if self.count == targetLength{
             return "04" + self
         }
         return self
     }
 
-    func strip04Prefix() -> String {
-        if hasPrefix("04") {
+    func strip04Prefix(targetLength: Int = 130) -> String {
+        if hasPrefix("04") && self.count == targetLength {
             let indexStart = index(startIndex, offsetBy: 2)
             return String(self[indexStart...])
         }
