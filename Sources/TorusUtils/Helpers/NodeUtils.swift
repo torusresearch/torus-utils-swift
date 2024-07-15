@@ -80,7 +80,7 @@ internal class NodeUtils {
                     }
                 }
             }
-            
+
             if nonceResult == nil {
                 let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y)
                 nonceResult = metadataNonce
@@ -375,10 +375,15 @@ internal class NodeUtils {
         let serverOffsetTimes = serverTimeOffsets.map({ Int($0) ?? 0 })
 
         let serverTimeOffsetResponse: Int = serverTimeOffset ?? calculateMedian(arr: serverOffsetTimes)
-        
+
         if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
-                let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, serverTimeOffset: serverTimeOffsetResponse, getOnly: false)
-                thresholdNonceData = metadataNonce
+            let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, serverTimeOffset: serverTimeOffsetResponse, getOnly: false)
+            thresholdNonceData = metadataNonce
+            if thresholdNonceData != nil {
+                if thresholdNonceData!.nonce != nil {
+                    thresholdNonceData!.nonce = nil
+                }
+            }
         }
 
         let thresholdReqCount = (importedShares != nil && importedShares!.count > 0) ? endpoints.count : threshold
@@ -494,7 +499,7 @@ internal class NodeUtils {
 
         let thresholdIsNewKey: String? = try thresholdSame(arr: isNewKeys, threshold: threshold)
 
-        let oAuthKey = privateKey!.addLeading0sForLength64()
+        let oAuthKey = privateKey!
         let oAuthPublicKey = try SecretKey(hex: oAuthKey).toPublic().serialize(compressed: false)
         let (oAuthPublicKeyX, oAuthPublicKeyY) = try KeyUtils.getPublicKeyCoords(pubKey: oAuthPublicKey)
         var metadataNonce = BigInt(thresholdNonceData?.nonce?.addLeading0sForLength64() ?? "0", radix: 16) ?? BigInt(0)
@@ -506,7 +511,7 @@ internal class NodeUtils {
             finalPubKey = oAuthPublicKey
         } else if TorusUtils.isLegacyNetworkRouteMap(network: network) {
             if enableOneKey {
-                let isNewKey = !(thresholdIsNewKey == "true");
+                let isNewKey = !(thresholdIsNewKey == "true")
                 let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: oAuthPublicKeyX, Y: oAuthPublicKeyY, privateKey: oAuthKey, getOnly: isNewKey)
                 metadataNonce = BigInt(nonce.nonce?.addLeading0sForLength64() ?? "0", radix: 16) ?? BigInt(0)
                 typeOfUser = UserType(rawValue: nonce.typeOfUser?.lowercased() ?? "v1")!
@@ -517,13 +522,13 @@ internal class NodeUtils {
                 } else {
                     typeOfUser = .v1
                     metadataNonce = BigInt(try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, dictionary: ["pub_key_X": oAuthPublicKeyX, "pub_key_Y": oAuthPublicKeyY]))
-                    let privateKeyWithNonce = (BigInt(oAuthKey, radix: 16)! + BigInt(metadataNonce)).modulus(KeyUtils.getOrderOfCurve())
+                    let privateKeyWithNonce = (BigInt(oAuthKey.addLeading0sForLength64(), radix: 16)! + BigInt(metadataNonce)).modulus(KeyUtils.getOrderOfCurve())
                     finalPubKey = try SecretKey(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()).toPublic().serialize(compressed: false)
                 }
             } else {
                 typeOfUser = .v1
                 metadataNonce = BigInt(try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, dictionary: ["pub_key_X": oAuthPublicKeyX, "pub_key_Y": oAuthPublicKeyY]))
-                let privateKeyWithNonce = (BigInt(oAuthKey, radix: 16)! + BigInt(metadataNonce)).modulus(KeyUtils.getOrderOfCurve())
+                let privateKeyWithNonce = (BigInt(oAuthKey.addLeading0sForLength64(), radix: 16)! + BigInt(metadataNonce)).modulus(KeyUtils.getOrderOfCurve())
                 finalPubKey = try SecretKey(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()).toPublic().serialize(compressed: false)
             }
         } else {
@@ -545,7 +550,7 @@ internal class NodeUtils {
 
         var finalPrivKey = ""
         if typeOfUser == .v1 || (typeOfUser == .v2 && metadataNonce > BigInt(0)) {
-            let privateKeyWithNonce = ((BigInt(oAuthKey, radix: 16) ?? BigInt(0)) + metadataNonce).modulus(KeyUtils.getOrderOfCurve())
+            let privateKeyWithNonce = ((BigInt(oAuthKey.addLeading0sForLength64(), radix: 16) ?? BigInt(0)) + metadataNonce).modulus(KeyUtils.getOrderOfCurve())
             finalPrivKey = privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
         }
 

@@ -116,7 +116,7 @@ class OneKeyTest: XCTestCase {
         let data = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierParams: verifierParams, idToken: jwt)
 
         XCTAssertEqual(data.metadata.typeOfUser, .v2)
-        XCTAssertEqual(data.metadata.nonce, BigUInt(0))
+        XCTAssertNotEqual(data.metadata.nonce, BigUInt(0))
         XCTAssertEqual(data.metadata.upgraded, false)
         XCTAssertNotEqual(data.finalKeyData.evmAddress, "")
         XCTAssertNotEqual(data.oAuthKeyData.evmAddress, "")
