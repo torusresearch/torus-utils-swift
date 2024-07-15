@@ -80,6 +80,11 @@ internal class NodeUtils {
                     }
                 }
             }
+            
+            if nonceResult == nil {
+                let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y, serverTimeOffset: nil, getOnly: false)
+                nonceResult = metadataNonce
+            }
         }
 
         var serverTimeOffsets: [Int] = []
@@ -102,15 +107,6 @@ internal class NodeUtils {
         }
 
         let serverTimeOffset = (keyResult != nil) ? calculateMedian(arr: serverTimeOffsets) : 0
-
-        if case .sapphire = network {
-            let X: BigInt = BigInt(nonceResult?.pubNonce?.x ?? "0", radix: 16) ?? BigInt(0)
-            let Y: BigInt = BigInt(nonceResult?.pubNonce?.x ?? "0", radix: 16) ?? BigInt(0)
-            if nonceResult == nil || (X == BigInt(0) && Y == BigInt(0)) {
-                let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y, serverTimeOffset: serverTimeOffset, getOnly: false)
-                nonceResult = metadataNonce
-            }
-        }
 
         return KeyLookupResult(
             keyResult: keyResult,
@@ -379,17 +375,10 @@ internal class NodeUtils {
         let serverOffsetTimes = serverTimeOffsets.map({ Int($0) ?? 0 })
 
         let serverTimeOffsetResponse: Int = serverTimeOffset ?? calculateMedian(arr: serverOffsetTimes)
-
-        let nX: BigInt = BigInt(thresholdNonceData?.pubNonce?.x ?? "0", radix: 16) ?? BigInt(0)
-        let nY: BigInt = BigInt(thresholdNonceData?.pubNonce?.x ?? "0", radix: 16) ?? BigInt(0)
-
-        if (thresholdNonceData == nil || (nX == BigInt(0) && nY == BigInt(0))) && verifierParams.extended_verifier_id == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
-            if case .sapphire = network {
+        
+        if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
                 let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, serverTimeOffset: serverTimeOffsetResponse, getOnly: false)
                 thresholdNonceData = metadataNonce
-            } else {
-                throw TorusUtilError.runtime("invalid metadata result from nodes, nonce metadata is empty")
-            }
         }
 
         let thresholdReqCount = (importedShares != nil && importedShares!.count > 0) ? endpoints.count : threshold
@@ -503,7 +492,7 @@ internal class NodeUtils {
             throw TorusUtilError.privateKeyDeriveFailed
         }
 
-        let thresholdIsNewKey = try thresholdSame(arr: isNewKeys, threshold: threshold)
+        let thresholdIsNewKey: String? = try thresholdSame(arr: isNewKeys, threshold: threshold)
 
         let oAuthKey = privateKey!.addLeading0sForLength64()
         let oAuthPublicKey = try SecretKey(hex: oAuthKey).toPublic().serialize(compressed: false)
@@ -517,7 +506,8 @@ internal class NodeUtils {
             finalPubKey = oAuthPublicKey
         } else if TorusUtils.isLegacyNetworkRouteMap(network: network) {
             if enableOneKey {
-                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: oAuthPublicKeyX, Y: oAuthPublicKeyY, getOnly: !(Bool(thresholdIsNewKey ?? "true")!))
+                let isNewKey = thresholdIsNewKey == "true";
+                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: oAuthPublicKeyX, Y: oAuthPublicKeyY, getOnly: !isNewKey)
                 metadataNonce = BigInt(nonce.nonce?.addLeading0sForLength64() ?? "0", radix: 16) ?? BigInt(0)
                 typeOfUser = UserType(rawValue: nonce.typeOfUser?.lowercased() ?? "v1")!
                 if typeOfUser == .v2 {
@@ -559,7 +549,7 @@ internal class NodeUtils {
             finalPrivKey = privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
         }
 
-        var isUpgraded: Bool?
+        var isUpgraded: Bool? = nil
         if typeOfUser == .v2 {
             isUpgraded = metadataNonce == BigInt(0)
         }

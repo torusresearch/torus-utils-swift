@@ -6,9 +6,9 @@ public class TorusKey: Codable {
         public let evmAddress: String
         public let X: String
         public let Y: String
-        public let privKey: String?
+        public let privKey: String
 
-        internal init(evmAddress: String, X: String, Y: String, privKey: String?) {
+        internal init(evmAddress: String, X: String, Y: String, privKey: String) {
             self.evmAddress = evmAddress
             self.X = X
             self.Y = Y

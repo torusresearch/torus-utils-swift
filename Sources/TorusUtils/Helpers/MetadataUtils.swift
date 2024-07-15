@@ -101,9 +101,9 @@ internal class MetadataUtils {
         return decoded
     }
 
-    public static func getOrSetSapphireMetadataNonce(legacyMetadataHost: String, network: TorusNetwork, X: String, Y: String, serverTimeOffset: Int, privateKey: String? = nil, getOnly: Bool = false) async throws -> GetOrSetNonceResult {
+    public static func getOrSetSapphireMetadataNonce(legacyMetadataHost: String, network: TorusNetwork, X: String, Y: String, serverTimeOffset: Int? = nil, privateKey: String? = nil, getOnly: Bool = false) async throws -> GetOrSetNonceResult {
         if case .sapphire = network {
-            return try await getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset, X: X, Y: Y, privateKey: privateKey, getOnly: getOnly)
+            return try await getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? Int(trunc(Double((0) + Int(Date().timeIntervalSince1970)))), X: X, Y: Y, privateKey: privateKey, getOnly: getOnly)
         } else {
             throw TorusUtilError.metadataNonceMissing
         }

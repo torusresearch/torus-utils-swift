@@ -103,9 +103,7 @@ public class TorusUtils {
     /// - Returns: `String`
     public static func getPostboxKey(torusKey: TorusKey) -> String {
         if torusKey.metadata.typeOfUser == .v1 {
-            if let privKey: String = torusKey.finalKeyData.privKey {
-                return privKey
-            }
+            return torusKey.finalKeyData.privKey
         }
         return torusKey.oAuthKeyData.privKey
     }
