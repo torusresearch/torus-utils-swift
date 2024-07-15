@@ -59,7 +59,11 @@ public class KeyUtils {
     }
 
     public static func getPublicKeyCoords(pubKey: String) throws -> (String, String) {
-        let publicKeyUnprefixed = pubKey.strip04Prefix()
+        var publicKeyUnprefixed = pubKey
+        if publicKeyUnprefixed.count > 128 {
+            publicKeyUnprefixed = publicKeyUnprefixed.strip04Prefix()
+        }
+        
         if !(publicKeyUnprefixed.count == 128) {
             throw TorusUtilError.invalidPubKeySize
         }
@@ -143,7 +147,7 @@ public class KeyUtils {
         if keyType != TorusKeyType.secp256k1 {
             throw TorusUtilError.runtime("Unsupported key type")
         }
-        
+
         let keyData = try generateKeyData(privateKey: privateKey)
 
         let threshold = Int(trunc(Double((nodePubKeys.count / 2) + 1)))

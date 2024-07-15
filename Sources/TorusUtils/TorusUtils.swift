@@ -243,7 +243,8 @@ public class TorusUtils {
             return try await formatLegacyPublicKeyData(finalKeyResult: legacyResult, enableOneKey: enableOneKey, isNewKey: keyAssignResult.keyResult!.is_new_key, serverTimeOffset: finalServerTimeOffset)
         } else {
             let pubNonceResult = keyAssignResult.nonceResult!.pubNonce!
-            oAuthPubKey = pubKey
+            let (X, Y) = try KeyUtils.getPublicKeyCoords(pubKey: pubKey)
+            oAuthPubKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: X, pubKeyY: Y)
             let pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceResult.x, pubKeyY: pubNonceResult.y)
             finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey!, pubNonceKey])
             pubNonce = pubNonceResult
