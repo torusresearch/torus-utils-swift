@@ -45,7 +45,7 @@ internal class MetadataUtils {
         return rq
     }
 
-    public static func generateMetadataParams(serverTimeOffset: Int, message: String, privateKey: String) throws -> MetadataParams {
+    public static func generateMetadataParams(serverTimeOffset: Int, message: String, privateKey: String, keyType: TorusKeyType? = nil) throws -> MetadataParams {
         let privKey = try SecretKey(hex: privateKey)
         let publicKey = try privKey.toPublic().serialize(compressed: false)
 
@@ -60,7 +60,7 @@ internal class MetadataUtils {
         let sigData = try ECDSA.signRecoverable(key: privKey, hash: hash).serialize()
         _ = try ECDSA.recover(signature: Signature(hex: sigData), hash: hash)
         let (X, Y) = try KeyUtils.getPublicKeyCoords(pubKey: publicKey)
-        return .init(pub_key_X: X, pub_key_Y: Y, setData: setData, signature: Data(hex: sigData).base64EncodedString())
+        return .init(pub_key_X: X, pub_key_Y: Y, setData: setData, signature: Data(hex: sigData).base64EncodedString(), keyType: keyType)
     }
 
     public static func getMetadata(legacyMetadataHost: String, dictionary: [String: String]) async throws -> BigUInt {
@@ -81,29 +81,30 @@ internal class MetadataUtils {
         return ret
     }
 
-    public static func getOrSetNonce(legacyMetadataHost: String, serverTimeOffset: Int, X: String, Y: String, privateKey: String? = nil, getOnly: Bool = false) async throws -> GetOrSetNonceResult {
+    public static func getOrSetNonce(legacyMetadataHost: String, serverTimeOffset: Int, X: String, Y: String, privateKey: String? = nil, getOnly: Bool = false, keyType: TorusKeyType? = nil) async throws -> GetOrSetNonceResult {
         var data: Data
         let msg = getOnly ? "getNonce" : "getOrSetNonce"
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
         if privateKey != nil {
             let val = try generateMetadataParams(serverTimeOffset: serverTimeOffset, message: msg, privateKey: privateKey!)
-            let encoder = JSONEncoder()
-            encoder.outputFormatting = .sortedKeys
             data = try encoder.encode(val)
         } else {
-            let dict: [String: Any] = ["pub_key_X": X, "pub_key_Y": Y, "set_data": ["data": msg]]
-            data = try JSONSerialization.data(withJSONObject: dict, options: .sortedKeys)
+            let val = GetNonceParams(pub_key_X: X, pub_key_Y: Y, set_data: GetNonceSetDataParams(data: msg))
+            data = try encoder.encode(val)
         }
         var request = try makeUrlRequest(url: "\(legacyMetadataHost)/get_or_set_nonce")
         request.httpBody = data
         let urlSession = URLSession(configuration: .default)
         let val = try await urlSession.data(for: request)
+        
         let decoded = try JSONDecoder().decode(GetOrSetNonceResult.self, from: val.0)
         return decoded
     }
 
-    public static func getOrSetSapphireMetadataNonce(legacyMetadataHost: String, network: TorusNetwork, X: String, Y: String, serverTimeOffset: Int? = nil, privateKey: String? = nil, getOnly: Bool = false) async throws -> GetOrSetNonceResult {
+    public static func getOrSetSapphireMetadataNonce(legacyMetadataHost: String, network: TorusNetwork, X: String, Y: String, serverTimeOffset: Int? = nil, privateKey: String? = nil, getOnly: Bool = false, keyType: TorusKeyType = .secp256k1) async throws -> GetOrSetNonceResult {
         if case .sapphire = network {
-            return try await getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? Int(trunc(Double((0) + Int(Date().timeIntervalSince1970)))), X: X, Y: Y, privateKey: privateKey, getOnly: getOnly)
+            return try await getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? Int(trunc(Double((0) + Int(Date().timeIntervalSince1970)))), X: X, Y: Y, privateKey: privateKey, getOnly: getOnly, keyType: keyType)
         } else {
             throw TorusUtilError.metadataNonceMissing
         }

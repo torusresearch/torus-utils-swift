@@ -82,7 +82,7 @@ internal class NodeUtils {
             }
             
             if nonceResult == nil {
-                let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y, serverTimeOffset: nil, getOnly: false)
+                let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y)
                 nonceResult = metadataNonce
             }
         }
@@ -506,8 +506,8 @@ internal class NodeUtils {
             finalPubKey = oAuthPublicKey
         } else if TorusUtils.isLegacyNetworkRouteMap(network: network) {
             if enableOneKey {
-                let isNewKey = thresholdIsNewKey == "true";
-                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: oAuthPublicKeyX, Y: oAuthPublicKeyY, getOnly: !isNewKey)
+                let isNewKey = !(thresholdIsNewKey == "true");
+                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: oAuthPublicKeyX, Y: oAuthPublicKeyY, privateKey: oAuthKey, getOnly: isNewKey)
                 metadataNonce = BigInt(nonce.nonce?.addLeading0sForLength64() ?? "0", radix: 16) ?? BigInt(0)
                 typeOfUser = UserType(rawValue: nonce.typeOfUser?.lowercased() ?? "v1")!
                 if typeOfUser == .v2 {

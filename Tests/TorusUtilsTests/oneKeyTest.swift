@@ -61,7 +61,7 @@ class OneKeyTest: XCTestCase {
         XCTAssertEqual(data.metadata.pubNonce!.x, "8e8c399d8ba00ff88e6c42eb40c10661f822868ba2ad8fe12a8830e996b1e25d")
         XCTAssertEqual(data.metadata.pubNonce!.y, "554b12253694bf9eb98485441bba7ba220b78cb78ee21664e96f934d10b1494d")
         XCTAssertEqual(data.metadata.nonce, BigUInt("22d160abe5320fe2be52a57c7aca8fe5d7e5eff104ff4d2b32767e3344e040bf", radix: 16))
-        XCTAssertEqual(data.metadata.typeOfUser, .v1)
+        XCTAssertEqual(data.metadata.typeOfUser, .v2)
         XCTAssertEqual(data.metadata.upgraded, false)
         XCTAssertNotNil(data.nodesData)
     }
@@ -88,7 +88,7 @@ class OneKeyTest: XCTestCase {
         XCTAssertEqual(data.metadata.pubNonce!.x, "376c0ac5e15686633061cf5833dd040365f91377686d7ab5338c5202bd963a2f")
         XCTAssertEqual(data.metadata.pubNonce!.y, "794d7edb6a5ec0307dd40789274b377f37f293b0410a6cbd303db309536099b7")
         XCTAssertEqual(data.metadata.nonce, BigUInt("d3d455dcab49dc700319244e9e187f443596f2acbce238cff1c215d8809fa1f9", radix: 16))
-        XCTAssertEqual(data.metadata.typeOfUser, .v1)
+        XCTAssertEqual(data.metadata.typeOfUser, .v2)
         XCTAssertEqual(data.metadata.upgraded, false)
         XCTAssertNotNil(data.nodesData)
     }
