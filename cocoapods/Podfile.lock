@@ -1,7 +1,7 @@
 PODS:
   - BigInt (5.2.0)
   - curvelib.swift (1.0.1)
-  - Torus-fetchNodeDetails (6.0.2):
+  - Torus-fetchNodeDetails (6.0.3):
     - BigInt (~> 5.2.0)
   - Torus-utils (9.0.0):
     - curvelib.swift (~> 1.0.1)
@@ -23,7 +23,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   BigInt: f668a80089607f521586bbe29513d708491ef2f7
   curvelib.swift: d0746ae82bee34016c06da3567a97e493b3c979f
-  Torus-fetchNodeDetails: 48996680351bc41bd84690e6689fe85c0d458ba3
+  Torus-fetchNodeDetails: 6c349f47cbca36a4b3f276fe26d03c1b39b20949
   Torus-utils: ca3ee1cf3433b413c57613f6e65dba0789fbf4e3
 
 PODFILE CHECKSUM: 2d35466879f2d32f53c6ccbca958796c381f0e62
