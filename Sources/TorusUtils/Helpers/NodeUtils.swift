@@ -534,12 +534,14 @@ internal class NodeUtils {
         } else {
             typeOfUser = .v2
             let oAuthPubKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: oAuthPublicKeyX, pubKeyY: oAuthPublicKeyY)
+            finalPubKey = oAuthPubKey
             if thresholdNonceData!.pubNonce != nil {
-                let publicNonce = KeyUtils.getPublicKeyFromCoords(pubKeyX: thresholdNonceData!.pubNonce!.x, pubKeyY: thresholdNonceData!.pubNonce!.y)
-                finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, publicNonce])
-                pubNonce = PubNonce(x: thresholdNonceData!.pubNonce!.x, y: thresholdNonceData!.pubNonce!.y)
-            } else {
-                finalPubKey = oAuthPubKey
+                let pubNonceKey = thresholdNonceData!.pubNonce!
+                if !(pubNonceKey.x.isEmpty || pubNonceKey.y.isEmpty) {
+                    let publicNonce = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceKey.x, pubKeyY: pubNonceKey.y)
+                    finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, publicNonce])
+                    pubNonce = PubNonce(x: thresholdNonceData!.pubNonce!.x, y: thresholdNonceData!.pubNonce!.y)
+                }
             }
         }
 

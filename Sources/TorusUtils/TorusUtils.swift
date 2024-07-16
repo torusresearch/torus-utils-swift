@@ -242,12 +242,17 @@ public class TorusUtils {
             let legacyResult = LegacyVerifierLookupResponse(keys: legacyKeysResult, serverTimeOffset: String(finalServerTimeOffset))
             return try await formatLegacyPublicKeyData(finalKeyResult: legacyResult, enableOneKey: enableOneKey, isNewKey: keyAssignResult.keyResult!.is_new_key, serverTimeOffset: finalServerTimeOffset)
         } else {
-            let pubNonceResult = keyAssignResult.nonceResult!.pubNonce!
             let (X, Y) = try KeyUtils.getPublicKeyCoords(pubKey: pubKey)
             oAuthPubKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: X, pubKeyY: Y)
-            let pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceResult.x, pubKeyY: pubNonceResult.y)
-            finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey!, pubNonceKey])
-            pubNonce = pubNonceResult
+            finalPubKey = oAuthPubKey!
+            if keyAssignResult.nonceResult!.pubNonce != nil {
+                let pubNonceResult = keyAssignResult.nonceResult!.pubNonce!
+                if !(pubNonceResult.x.isEmpty || pubNonceResult.y.isEmpty) {
+                    let pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceResult.x, pubKeyY: pubNonceResult.y)
+                    finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey!, pubNonceKey])
+                    pubNonce = pubNonceResult
+                }
+            }
         }
 
         if oAuthPubKey == nil || finalPubKey == nil {
