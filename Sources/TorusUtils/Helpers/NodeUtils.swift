@@ -533,10 +533,14 @@ internal class NodeUtils {
             }
         } else {
             typeOfUser = .v2
-            let publicNonce = KeyUtils.getPublicKeyFromCoords(pubKeyX: thresholdNonceData!.pubNonce!.x, pubKeyY: thresholdNonceData!.pubNonce!.y)
             let oAuthPubKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: oAuthPublicKeyX, pubKeyY: oAuthPublicKeyY)
-            finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, publicNonce])
-            pubNonce = PubNonce(x: thresholdNonceData!.pubNonce!.x, y: thresholdNonceData!.pubNonce!.y)
+            if thresholdNonceData!.pubNonce != nil {
+                let publicNonce = KeyUtils.getPublicKeyFromCoords(pubKeyX: thresholdNonceData!.pubNonce!.x, pubKeyY: thresholdNonceData!.pubNonce!.y)
+                finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, publicNonce])
+                pubNonce = PubNonce(x: thresholdNonceData!.pubNonce!.x, y: thresholdNonceData!.pubNonce!.y)
+            } else {
+                finalPubKey = oAuthPubKey
+            }
         }
 
         if finalPubKey == nil {
@@ -554,7 +558,7 @@ internal class NodeUtils {
             finalPrivKey = privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
         }
 
-        var isUpgraded: Bool? = nil
+        var isUpgraded: Bool?
         if typeOfUser == .v2 {
             isUpgraded = metadataNonce == BigInt(0)
         }
