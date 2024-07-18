@@ -35,14 +35,20 @@ extension String {
 
     public func hexEncodedToString() -> String {
         var finalString = ""
-        let chars = Array(self)
+        var chars = Array(self)
 
+        if (chars.count % 2) != 0 { // odd number of characters in hex, pad with single zero.
+            chars.insert("0", at: 0)
+        }
+        
         for count in stride(from: 0, to: chars.count - 1, by: 2) {
             let firstDigit = Int("\(chars[count])", radix: 16) ?? 0
             let lastDigit = Int("\(chars[count + 1])", radix: 16) ?? 0
             let decimal = firstDigit * 16 + lastDigit
             let decimalString = String(format: "%c", decimal) as String
-            finalString.append(Character(decimalString))
+            if !(decimalString.isEmpty) { // lossy conversion
+                finalString.append(Character(decimalString))
+            }
         }
         return finalString
     }

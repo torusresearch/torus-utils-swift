@@ -82,7 +82,7 @@ internal class NodeUtils {
             }
 
             if nonceResult == nil {
-                let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y)
+                let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(metadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y)
                 nonceResult = metadataNonce
             }
         }
@@ -377,7 +377,7 @@ internal class NodeUtils {
         let serverTimeOffsetResponse: Int = serverTimeOffset ?? calculateMedian(arr: serverOffsetTimes)
 
         if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
-            let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(legacyMetadataHost: legacyMetadataHost, network: network, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, serverTimeOffset: serverTimeOffsetResponse, getOnly: false)
+            let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(metadataHost: legacyMetadataHost, network: network, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, serverTimeOffset: serverTimeOffsetResponse, getOnly: false)
             thresholdNonceData = metadataNonce
             if thresholdNonceData != nil {
                 if thresholdNonceData!.nonce != nil {
