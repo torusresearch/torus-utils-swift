@@ -2,6 +2,9 @@ import Foundation
 
 extension String {
     func addHexPrefix() -> String {
+        if hasPrefix("0x") {
+            return self
+        }
         return "0x" + self
     }
 
