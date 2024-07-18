@@ -45,9 +45,8 @@ internal class MetadataUtils {
         return rq
     }
 
-    public static func generateMetadataParams(serverTimeOffset: Int, message: String, privateKey: String, keyType: TorusKeyType? = nil) throws -> MetadataParams {
+    public static func generateMetadataParams(serverTimeOffset: Int, message: String, privateKey: String, X: String, Y: String, keyType: TorusKeyType? = nil) throws -> MetadataParams {
         let privKey = try SecretKey(hex: privateKey)
-        let publicKey = try privKey.toPublic().serialize(compressed: false)
 
         let timeStamp = String(BigUInt(TimeInterval(serverTimeOffset) + Date().timeIntervalSince1970), radix: 16)
         let setData: MetadataParams.SetData = .init(data: message, timestamp: timeStamp)
@@ -59,7 +58,6 @@ internal class MetadataUtils {
         let hash = try KeyUtils.keccak256Data(encodedData).toHexString()
         let sigData = try ECDSA.signRecoverable(key: privKey, hash: hash).serialize()
         _ = try ECDSA.recover(signature: Signature(hex: sigData), hash: hash)
-        let (X, Y) = try KeyUtils.getPublicKeyCoords(pubKey: publicKey)
         return .init(pub_key_X: X, pub_key_Y: Y, setData: setData, signature: Data(hex: sigData).base64EncodedString(), keyType: keyType)
     }
 
@@ -87,7 +85,7 @@ internal class MetadataUtils {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
         if privateKey != nil {
-            let val = try generateMetadataParams(serverTimeOffset: serverTimeOffset, message: msg, privateKey: privateKey!)
+            let val = try generateMetadataParams(serverTimeOffset: serverTimeOffset, message: msg, privateKey: privateKey!, X: X, Y: Y)
             data = try encoder.encode(val)
         } else {
             let val = GetNonceParams(pub_key_X: X, pub_key_Y: Y, set_data: GetNonceSetDataParams(data: msg))

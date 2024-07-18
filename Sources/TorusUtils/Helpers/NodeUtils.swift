@@ -512,7 +512,7 @@ internal class NodeUtils {
         } else if TorusUtils.isLegacyNetworkRouteMap(network: network) {
             if enableOneKey {
                 let isNewKey = !(thresholdIsNewKey == "true")
-                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: oAuthPublicKeyX, Y: oAuthPublicKeyY, privateKey: oAuthKey, getOnly: isNewKey)
+                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, privateKey: oAuthKey, getOnly: isNewKey)
                 metadataNonce = BigInt(nonce.nonce?.addLeading0sForLength64() ?? "0", radix: 16) ?? BigInt(0)
                 typeOfUser = UserType(rawValue: nonce.typeOfUser?.lowercased() ?? "v1")!
                 if typeOfUser == .v2 {
