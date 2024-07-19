@@ -29,10 +29,7 @@ internal class NodeUtils {
         var nonceResult: GetOrSetNonceResult?
         var nodeIndexes: [Int] = []
 
-        let minRequired = Int(trunc(Double(endpoints.count * 3 / 4) + 1))
-
-        let lookupResults: [JRPCResponse<VerifierLookupResponse>?] = try await withThrowingTaskGroup(of: JRPCResponse?.self, returning: [JRPCResponse<VerifierLookupResponse>?].self) { group -> [JRPCResponse?] in
-            var received: Int = 0
+        let (keyResult, lookupResults, errorResult): (KeyLookupResult.KeyResult?, [JRPCResponse<VerifierLookupResponse>?], ErrorMessage?) = try await withThrowingTaskGroup(of: JRPCResponse?.self, returning: (KeyLookupResult.KeyResult?, [JRPCResponse<VerifierLookupResponse>?], ErrorMessage?).self) { group -> (KeyLookupResult.KeyResult?, [JRPCResponse<VerifierLookupResponse>?], ErrorMessage?) in
             for endpoint in endpoints {
                 group.addTask {
                     do {
@@ -47,25 +44,26 @@ internal class NodeUtils {
                 }
             }
             var collected = [JRPCResponse<VerifierLookupResponse>?]()
+            var errorResult: ErrorMessage?
+            var lookupPubKeys = [JRPCResponse<VerifierLookupResponse>?]()
+            var keyResult: KeyLookupResult.KeyResult?
             for try await value in group {
                 collected.append(value)
-                if value != nil && value?.error == nil {
-                    received += 1
-                    if received >= minRequired {
-                        group.cancelAll()
-                    }
+
+                lookupPubKeys = collected.filter({ $0 != nil && $0?.error == nil })
+
+                errorResult = try thresholdSame(arr: collected.filter({ $0?.error != nil }).map { $0?.error }, threshold: threshold) as? ErrorMessage
+
+                let normalizedKeyResults = lookupPubKeys.map({ normalizeKeysResult(result: ($0!.result)!) })
+
+                keyResult = try thresholdSame(arr: normalizedKeyResults, threshold: threshold)
+
+                if keyResult != nil {
+                    group.cancelAll()
                 }
             }
-            return collected
+            return (keyResult, lookupPubKeys, errorResult)
         }
-
-        let lookupPubKeys = lookupResults.filter({ $0 != nil && $0?.error == nil })
-
-        let errorResult = try thresholdSame(arr: lookupResults.filter({ $0?.error != nil }).map { $0?.error }, threshold: threshold)
-
-        let normalizedKeyResults = lookupPubKeys.map({ normalizeKeysResult(result: ($0!.result)!) })
-
-        let keyResult = try thresholdSame(arr: normalizedKeyResults, threshold: threshold)
 
         if keyResult != nil && nonceResult == nil && extendedVerifierId == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
             for i in 0 ..< lookupResults.count {
@@ -84,6 +82,9 @@ internal class NodeUtils {
             if nonceResult == nil {
                 let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(metadataHost: legacyMetadataHost, network: network, X: keyResult!.keys[0].pub_key_X, Y: keyResult!.keys[0].pub_key_Y)
                 nonceResult = metadataNonce
+                if nonceResult!.nonce != nil {
+                    nonceResult!.nonce = nil
+                }
             }
         }
 
@@ -113,7 +114,7 @@ internal class NodeUtils {
             nodeIndexes: nodeIndexes,
             serverTimeOffset: serverTimeOffset,
             nonceResult: nonceResult,
-            errorResult: errorResult == nil ? nil : errorResult as? ErrorMessage)
+            errorResult: errorResult)
     }
 
     public static func retrieveOrImportShare(
@@ -175,9 +176,8 @@ internal class NodeUtils {
         encoder.outputFormatting = .sortedKeys
         let rpcdata = try encoder.encode(jsonRPCRequest)
 
-        let minRequired = Int(trunc(Double(endpoints.count * 3 / 4) + 1))
-
-        let commitmentRequestResults: [JRPCResponse<CommitmentRequestResult>?] = try await withThrowingTaskGroup(of: JRPCResponse?.self, returning: [JRPCResponse<CommitmentRequestResult>?].self) { group -> [JRPCResponse?] in
+        let nodeSigs: [CommitmentRequestResult] = try await withThrowingTaskGroup(of: JRPCResponse?.self, returning: [CommitmentRequestResult].self) { group -> [CommitmentRequestResult] in
+            let minRequiredCommitmments = Int(trunc(Double(endpoints.count * 3 / 4) + 1))
             var received: Int = 0
             for endpoint in endpoints {
                 group.addTask {
@@ -192,16 +192,18 @@ internal class NodeUtils {
                     }
                 }
             }
-            var collected = [JRPCResponse<CommitmentRequestResult>?]()
+            var collected = [CommitmentRequestResult]()
             for try await value in group {
-                collected.append(value)
-                if !isImportShareReq && value != nil && value?.error == nil {
+                if (value != nil && value?.error == nil) {
+                    collected.append(value!.result!)
                     received += 1
-                    if received >= minRequired {
-                        group.cancelAll()
+                    if !isImportShareReq {
+                        if received >= minRequiredCommitmments {
+                            group.cancelAll()
+                        }
                     }
-                } else if isImportShareReq {
-                    if value == nil || value?.error != nil {
+                } else {
+                    if isImportShareReq {
                         // cannot continue, all must pass for import
                         group.cancelAll()
                     }
@@ -210,13 +212,9 @@ internal class NodeUtils {
             return collected
         }
 
-        let completedCommitmentRequests = commitmentRequestResults.filter({ $0 != nil && $0?.error == nil })
-
-        if importedShareCount > 0 && !(commitmentRequestResults.count == endpoints.count) {
+        if importedShareCount > 0 && !(nodeSigs.count == endpoints.count) {
             throw TorusUtilError.commitmentRequestFailed
         }
-
-        let nodeSigs = completedCommitmentRequests.filter({ $0?.error == nil }).map({ $0!.result })
 
         var thresholdNonceData: GetOrSetNonceResult?
 
@@ -224,7 +222,8 @@ internal class NodeUtils {
 
         var shareImportSuccess = false
 
-        var shareRequestResults: [ShareRequestResult?] = []
+        var shareResponses = [ShareRequestResult]()
+        var thresholdPublicKey: KeyAssignment.PublicKey?
 
         if isImportShareReq {
             var importedItems: [ShareRequestParams.ShareRequestItem] = []
@@ -279,21 +278,15 @@ internal class NodeUtils {
                 throw TorusUtilError.importShareFailed
             }
 
-            shareRequestResults = decoded.result!
+            shareResponses = decoded.result!
 
+            let pubkeys = shareResponses.filter({ $0.keys.count > 0 }).map { $0.keys[0].publicKey }
+
+            thresholdPublicKey = try thresholdSame(arr: pubkeys, threshold: threshold)
         } else {
-            let shareResults: [JRPCResponse<ShareRequestResult>?] = try await withThrowingTaskGroup(of: JRPCResponse?.self, returning: [JRPCResponse<ShareRequestResult>?].self) {
-                group -> [JRPCResponse<ShareRequestResult>?] in
-                var received = 0
-
+            (shareResponses, thresholdPublicKey) = try await withThrowingTaskGroup(of: JRPCResponse?.self, returning: ([ShareRequestResult], KeyAssignment.PublicKey?).self) {
+                group -> ([ShareRequestResult], KeyAssignment.PublicKey?) in
                 for i in 0 ..< endpoints.count {
-                    if !nodeSigs.indices.contains(i) {
-                        if isImportShareReq {
-                            throw TorusUtilError.importShareFailed
-                        }
-                        continue
-                    }
-
                     group.addTask {
                         do {
                             let shareRequestItem = ShareRequestParams.ShareRequestItem(
@@ -330,28 +323,25 @@ internal class NodeUtils {
                 }
 
                 var collected = [JRPCResponse<ShareRequestResult>?]()
+                var shareResponses = [ShareRequestResult]()
+                var thresholdPublicKey: KeyAssignment.PublicKey?
                 for try await value in group {
                     collected.append(value)
-                    if !isImportShareReq {
-                        if value != nil && value?.error == nil {
-                            received += 1
-                            if received >= minRequired {
-                                group.cancelAll()
-                            }
-                        }
+
+                    shareResponses = collected.filter({ $0 != nil && $0!.result != nil }).map({ $0!.result! })
+
+                    let pubkeys = shareResponses.filter({ $0.keys.count > 0 }).map { $0.keys[0].publicKey }
+
+                    thresholdPublicKey = try thresholdSame(arr: pubkeys, threshold: threshold)
+
+                    if thresholdPublicKey != nil {
+                        group.cancelAll()
                     }
                 }
 
-                return collected
+                return (shareResponses, thresholdPublicKey)
             }
-            shareRequestResults = shareResults.map({ $0?.result })
         }
-
-        let shareResponses: [ShareRequestResult] = shareRequestResults.filter({ $0 != nil }).map({ $0! })
-
-        let pubkeys = shareResponses.filter({ $0.keys.count > 0 }).map { $0.keys[0].publicKey }
-
-        let thresholdPublicKey = try thresholdSame(arr: pubkeys, threshold: threshold)
 
         if thresholdPublicKey == nil {
             throw TorusUtilError.retrieveOrImportShareError
@@ -379,11 +369,6 @@ internal class NodeUtils {
         if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
             let metadataNonce = try await MetadataUtils.getOrSetSapphireMetadataNonce(metadataHost: legacyMetadataHost, network: network, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, serverTimeOffset: serverTimeOffsetResponse, getOnly: false)
             thresholdNonceData = metadataNonce
-            if thresholdNonceData != nil {
-                if thresholdNonceData!.nonce != nil {
-                    thresholdNonceData!.nonce = nil
-                }
-            }
         }
 
         let thresholdReqCount = (importedShares != nil && importedShares!.count > 0) ? endpoints.count : threshold

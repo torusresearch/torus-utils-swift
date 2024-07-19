@@ -21,7 +21,11 @@ internal class MetadataUtils {
 
     public static func decrypt(privateKey: String, opts: ECIES) throws -> Data {
         let secret = try SecretKey(hex: privateKey)
-        let msg = try EncryptedMessage(cipherText: opts.ciphertext, ephemeralPublicKey: PublicKey(hex: opts.ephemPublicKey), iv: opts.iv, mac: opts.mac)
+        var publicKey = opts.ephemPublicKey
+        if opts.ephemPublicKey.count == 128 { // missing 04 prefix
+            publicKey = "04" + publicKey
+        }
+        let msg = try EncryptedMessage(cipherText: opts.ciphertext, ephemeralPublicKey: PublicKey(hex: publicKey), iv: opts.iv, mac: opts.mac)
         let result = try Encryption.decrypt(sk: secret, encrypted: msg)
         return result
     }
