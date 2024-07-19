@@ -9,7 +9,7 @@ class HexEndodedTest: XCTestCase {
         let extra_zero_padded = "06576656E".hexEncodedToString()
         let double_padded = "00006576656E".hexEncodedToString()
         let unpadded = "56E".hexEncodedToString()
-        
+
         XCTAssertEqual(odd, "odd") // 6F 64 64
         XCTAssertEqual(even, "even") // 65 76 65 6E
         XCTAssertEqual(extra_zero_padded, "even") // 00 65 76 65 6E

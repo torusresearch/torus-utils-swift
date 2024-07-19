@@ -194,7 +194,7 @@ internal class NodeUtils {
             }
             var collected = [CommitmentRequestResult]()
             for try await value in group {
-                if (value != nil && value?.error == nil) {
+                if value != nil && value?.error == nil {
                     collected.append(value!.result!)
                     received += 1
                     if !isImportShareReq {
@@ -506,13 +506,13 @@ internal class NodeUtils {
                     finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPublicKey, publicNonce])
                 } else {
                     typeOfUser = .v1
-                    metadataNonce = BigInt(try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, dictionary: ["pub_key_X": oAuthPublicKeyX, "pub_key_Y": oAuthPublicKeyY]))
+                    metadataNonce = BigInt(try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, params: GetMetadataParams(pub_key_X: oAuthPublicKeyX, pub_key_Y: oAuthPublicKeyY)))
                     let privateKeyWithNonce = (BigInt(oAuthKey.addLeading0sForLength64(), radix: 16)! + BigInt(metadataNonce)).modulus(KeyUtils.getOrderOfCurve())
                     finalPubKey = try SecretKey(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()).toPublic().serialize(compressed: false)
                 }
             } else {
                 typeOfUser = .v1
-                metadataNonce = BigInt(try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, dictionary: ["pub_key_X": oAuthPublicKeyX, "pub_key_Y": oAuthPublicKeyY]))
+                metadataNonce = BigInt(try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, params: GetMetadataParams(pub_key_X: oAuthPublicKeyX, pub_key_Y: oAuthPublicKeyY)))
                 let privateKeyWithNonce = (BigInt(oAuthKey.addLeading0sForLength64(), radix: 16)! + BigInt(metadataNonce)).modulus(KeyUtils.getOrderOfCurve())
                 finalPubKey = try SecretKey(hex: privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()).toPublic().serialize(compressed: false)
             }

@@ -1,5 +1,15 @@
 import Foundation
 
+internal struct GetMetadataParams: Codable {
+    public var pub_key_X: String
+    public var pub_key_Y: String
+
+    public init(pub_key_X: String, pub_key_Y: String) {
+        self.pub_key_X = pub_key_X
+        self.pub_key_Y = pub_key_Y
+    }
+}
+
 internal struct MetadataParams: Codable {
     public struct SetData: Codable {
         public var data: String // "getNonce" || "getOrSetNonce" || String

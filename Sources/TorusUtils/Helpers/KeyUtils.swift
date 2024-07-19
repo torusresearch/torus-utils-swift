@@ -75,7 +75,7 @@ public class KeyUtils {
         let X = pubKeyX.addLeading0sForLength64()
         let Y = pubKeyY.addLeading0sForLength64()
 
-        return prefixed ? "04" + X + Y : X + Y
+        return prefixed ? (X + Y).add04PrefixUnchecked() : X + Y
     }
 
     internal static func combinePublicKeys(keys: [String], compressed: Bool = false) throws -> String {

@@ -23,7 +23,7 @@ internal class MetadataUtils {
         let secret = try SecretKey(hex: privateKey)
         var publicKey = opts.ephemPublicKey
         if opts.ephemPublicKey.count == 128 { // missing 04 prefix
-            publicKey = "04" + publicKey
+            publicKey = publicKey.add04PrefixUnchecked()
         }
         let msg = try EncryptedMessage(cipherText: opts.ciphertext, ephemeralPublicKey: PublicKey(hex: publicKey), iv: opts.iv, mac: opts.mac)
         let result = try Encryption.decrypt(sk: secret, encrypted: msg)
@@ -65,21 +65,16 @@ internal class MetadataUtils {
         return .init(pub_key_X: X, pub_key_Y: Y, setData: setData, signature: Data(hex: sigData).base64EncodedString(), keyType: keyType)
     }
 
-    public static func getMetadata(legacyMetadataHost: String, dictionary: [String: String]) async throws -> BigUInt {
-        let encoded = try JSONSerialization.data(withJSONObject: dictionary, options: [.sortedKeys])
-
+    public static func getMetadata(legacyMetadataHost: String, params: GetMetadataParams) async throws -> BigUInt {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .sortedKeys
         var request = try makeUrlRequest(url: "\(legacyMetadataHost)/get")
-        request.httpBody = encoded
+        request.httpBody = try encoder.encode(params)
         let urlSession = URLSession(configuration: .default)
         let val = try await urlSession.data(for: request)
-        let data = try JSONSerialization.jsonObject(with: val.0) as? [String: Any] ?? [:]
-        os_log("getMetadata: %@", log: getTorusLogger(log: TorusUtilsLogger.network, type: .info), type: .info, data)
-        guard
-            let msg: String = data["message"] as? String,
-            let ret = BigUInt(msg, radix: 16)
-        else {
-            throw TorusUtilError.decodingFailed("Message value not correct or nil in \(data)")
-        }
+        let data: GetMetadataResponse = try JSONDecoder().decode(GetMetadataResponse.self, from: val.0)
+        let msg: String = data.message
+        let ret = BigUInt(msg, radix: 16)!
         return ret
     }
 
@@ -99,14 +94,14 @@ internal class MetadataUtils {
         request.httpBody = data
         let urlSession = URLSession(configuration: .default)
         let val = try await urlSession.data(for: request)
-        
+
         let decoded = try JSONDecoder().decode(GetOrSetNonceResult.self, from: val.0)
         return decoded
     }
 
     public static func getOrSetSapphireMetadataNonce(metadataHost: String, network: TorusNetwork, X: String, Y: String, serverTimeOffset: Int? = nil, privateKey: String? = nil, getOnly: Bool = false, keyType: TorusKeyType = .secp256k1) async throws -> GetOrSetNonceResult {
         if case .sapphire = network {
-            return try await getOrSetNonce(legacyMetadataHost: metadataHost, serverTimeOffset: serverTimeOffset ?? Int(trunc(Double((0) + Int(Date().timeIntervalSince1970)))), X: X, Y: Y, privateKey: privateKey, getOnly: getOnly, keyType: keyType)
+            return try await getOrSetNonce(legacyMetadataHost: metadataHost, serverTimeOffset: serverTimeOffset ?? Int(trunc(Double(0 + Int(Date().timeIntervalSince1970)))), X: X, Y: Y, privateKey: privateKey, getOnly: getOnly, keyType: keyType)
         } else {
             throw TorusUtilError.metadataNonceMissing
         }

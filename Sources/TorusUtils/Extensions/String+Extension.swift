@@ -7,6 +7,10 @@ extension String {
         }
         return "0x" + self
     }
+    
+    func add04PrefixUnchecked() -> String {
+        return "04" + self
+    }
 
     func stripHexPrefix() -> String {
         if hasPrefix("0x") {

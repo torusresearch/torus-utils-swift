@@ -311,7 +311,7 @@ public class TorusUtils {
 
             if typeOfUser == .v1 {
                 finalPubKey = oAuthPubKey
-                nonce = try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, dictionary: ["pub_key_X": X, "pub_key_Y": Y])
+                nonce = try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, params: GetMetadataParams(pub_key_X: X, pub_key_Y: Y))
 
                 if nonce! > BigUInt(0) {
                     let noncePrivateKey = try SecretKey(hex: nonce!.magnitude.serialize().hexString.addLeading0sForLength64())
@@ -328,7 +328,7 @@ public class TorusUtils {
         } else {
             typeOfUser = .v1
             finalPubKey = oAuthPubKey
-            nonce = try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, dictionary: ["pub_key_X": X, "pub_key_Y": Y])
+            nonce = try await MetadataUtils.getMetadata(legacyMetadataHost: legacyMetadataHost, params: GetMetadataParams(pub_key_X: X, pub_key_Y: Y))
 
             if nonce! > BigUInt(0) {
                 let noncePrivateKey = try SecretKey(hex: nonce!.magnitude.serialize().hexString.addLeading0sForLength64())
