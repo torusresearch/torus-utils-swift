@@ -124,13 +124,14 @@ public class TorusUtils {
         endpoints: [String],
         verifier: String,
         verifierParams: VerifierParams,
-        idToken: String
+        idToken: String,
+        extraParams: TorusUtilsExtraParams = TorusUtilsExtraParams()
     ) async throws -> TorusKey {
-        // This has to be done here as retrieveOrImport share does not have a reference to self
-        var params: [String: Codable] = [:]
-        params.updateValue(sessionTime, forKey: "session_token_exp_second")
+        if extraParams.session_token_exp_second == nil {
+            extraParams.session_token_exp_second = sessionTime
+        }
 
-        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: [], apiKey: apiKey, extraParams: params)
+        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: [], apiKey: apiKey, extraParams: extraParams)
     }
 
     /// Retrieves user information, defaulting the user type to .v2
@@ -170,7 +171,8 @@ public class TorusUtils {
         verifier: String,
         verifierParams: VerifierParams,
         idToken: String,
-        newPrivateKey: String
+        newPrivateKey: String,
+        extraParams: TorusUtilsExtraParams = TorusUtilsExtraParams()
     ) async throws -> TorusKey {
         let nodePubs = TorusNodePubModelToINodePub(nodes: nodePubKeys)
         if endpoints.count != nodeIndexes.count {
@@ -179,7 +181,11 @@ public class TorusUtils {
 
         let sharesData = try KeyUtils.generateShares(serverTimeOffset: serverTimeOffset ?? 0, nodeIndexes: nodeIndexes, nodePubKeys: nodePubs, privateKey: newPrivateKey)
 
-        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? 0, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: sharesData)
+        if extraParams.session_token_exp_second == nil {
+            extraParams.session_token_exp_second = sessionTime
+        }
+        
+        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? 0, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: sharesData, extraParams: extraParams)
     }
 
     /// Retrieves user information

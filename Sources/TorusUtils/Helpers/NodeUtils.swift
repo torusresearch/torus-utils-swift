@@ -130,7 +130,7 @@ internal class NodeUtils {
         idToken: String,
         importedShares: [ImportedShare]?,
         apiKey: String = "torus-default",
-        extraParams: [String: Codable] = [:]
+        extraParams: TorusUtilsExtraParams
     ) async throws -> TorusKey {
         let threshold = Int(trunc(Double((endpoints.count / 2) + 1)))
 
@@ -218,7 +218,7 @@ internal class NodeUtils {
 
         var thresholdNonceData: GetOrSetNonceResult?
 
-        let sessionExpiry: Int? = extraParams["session_token_exp_second"] as? Int
+        let sessionExpiry = extraParams.session_token_exp_second
 
         var shareImportSuccess = false
 
@@ -246,11 +246,39 @@ internal class NodeUtils {
                     key_type: importShare.key_type,
                     nonce_data: importShare.nonce_data,
                     nonce_signature: importShare.nonce_signature,
-                    // extra_params: extraData
                     sub_verifier_ids: verifierParams.sub_verifier_ids,
                     session_token_exp_second: sessionExpiry,
                     verify_params: verifierParams.verify_params,
-                    sss_endpoint: endpoints[j]
+                    sss_endpoint: endpoints[j],
+                    
+                    enable_verifier_id_hash: extraParams.enable_verifier_id_hash,
+                    app_s: extraParams.app_s,
+                    app_id: extraParams.app_id,
+                    domain: extraParams.domain,
+                    nonce: extraParams.nonce,
+                    message: extraParams.message,
+                    signature: extraParams.signature,
+                    clientDataJson: extraParams.clientDataJson,
+                    authenticatorData: extraParams.authenticatorData,
+                    publicKey: extraParams.publicKey,
+                    challenge: extraParams.challenge,
+                    rpOrigin: extraParams.rpOrigin,
+                    rpId: extraParams.rpId,
+                    jwk_endpoint: extraParams.jwk_endpoint,
+                    default_node_set: extraParams.default_node_set,
+                    jwt_verifier_id_field: extraParams.jwt_verifier_id_field,
+                    jwt_verifier_id_case_sensitive: extraParams.jwt_verifier_id_case_sensitive,
+                    jwk_keys: extraParams.jwk_keys,
+                    jwt_validation_fields: extraParams.jwt_validation_fields,
+                    jwt_validation_values: extraParams.jwt_validation_values,
+                    index: extraParams.index,
+                    email: extraParams.email,
+                    id: extraParams.id,
+                    correct_id_token: extraParams.correct_id_token,
+                    verify_param: extraParams.verify_param,
+                    threshold: extraParams.threshold,
+                    pub_k_x: extraParams.pub_k_x,
+                    pub_k_y: extraParams.pub_k_y
                 )
 
                 importedItems.append(shareRequestItem)
@@ -295,10 +323,38 @@ internal class NodeUtils {
                                 extended_verifier_id: verifierParams.extended_verifier_id,
                                 idtoken: idToken,
                                 nodesignatures: nodeSigs,
-                                // extra_params: extraData
                                 sub_verifier_ids: verifierParams.sub_verifier_ids,
                                 session_token_exp_second: sessionExpiry,
-                                verify_params: verifierParams.verify_params
+                                verify_params: verifierParams.verify_params,
+                                
+                                enable_verifier_id_hash: extraParams.enable_verifier_id_hash,
+                                app_s: extraParams.app_s,
+                                app_id: extraParams.app_id,
+                                domain: extraParams.domain,
+                                nonce: extraParams.nonce,
+                                message: extraParams.message,
+                                signature: extraParams.signature,
+                                clientDataJson: extraParams.clientDataJson,
+                                authenticatorData: extraParams.authenticatorData,
+                                publicKey: extraParams.publicKey,
+                                challenge: extraParams.challenge,
+                                rpOrigin: extraParams.rpOrigin,
+                                rpId: extraParams.rpId,
+                                jwk_endpoint: extraParams.jwk_endpoint,
+                                default_node_set: extraParams.default_node_set,
+                                jwt_verifier_id_field: extraParams.jwt_verifier_id_field,
+                                jwt_verifier_id_case_sensitive: extraParams.jwt_verifier_id_case_sensitive,
+                                jwk_keys: extraParams.jwk_keys,
+                                jwt_validation_fields: extraParams.jwt_validation_fields,
+                                jwt_validation_values: extraParams.jwt_validation_values,
+                                index: extraParams.index,
+                                email: extraParams.email,
+                                id: extraParams.id,
+                                correct_id_token: extraParams.correct_id_token,
+                                verify_param: extraParams.verify_param,
+                                threshold: extraParams.threshold,
+                                pub_k_x: extraParams.pub_k_x,
+                                pub_k_y: extraParams.pub_k_y
                             )
 
                             let params = ShareRequestParams(encrypted: "yes", item: [shareRequestItem], client_time: String(Int(trunc(Double((serverTimeOffset ?? 0) + Int(Date().timeIntervalSince1970))))))
