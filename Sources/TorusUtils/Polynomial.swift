@@ -22,7 +22,7 @@ internal struct Polynomial {
         for i in 1 ..< polynomial.count {
             let tmp = (xi * polynomial[i])
             sum = (sum + tmp).modulus(KeyUtils.getOrderOfCurve())
-            xi = (x * tmpX).modulus(KeyUtils.getOrderOfCurve())
+            xi = (xi * tmpX).modulus(KeyUtils.getOrderOfCurve())
         }
         return sum
     }

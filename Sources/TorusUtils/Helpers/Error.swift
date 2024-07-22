@@ -14,6 +14,7 @@ public enum TorusUtilError: Error, Equatable {
     case runtime(_ msg: String)
     case retrieveOrImportShareError
     case metadataNonceMissing
+    case pubNonceMissing
     case gatingError(_ msg: String = "")
     case invalidInput
 }
@@ -51,6 +52,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Unable to fetch metadata nonce"
         case let .gatingError(msg):
             return "could not process request" + msg
+        case .pubNonceMissing:
+            return "Public nonce is missing"
         }
     }
 

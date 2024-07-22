@@ -520,13 +520,14 @@ internal class NodeUtils {
             typeOfUser = .v2
             let oAuthPubKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: oAuthPublicKeyX, pubKeyY: oAuthPublicKeyY)
             finalPubKey = oAuthPubKey
-            if thresholdNonceData!.pubNonce != nil {
+            if thresholdNonceData!.pubNonce != nil && !(thresholdNonceData!.pubNonce!.x.isEmpty || thresholdNonceData!.pubNonce!.y.isEmpty) {
                 let pubNonceKey = thresholdNonceData!.pubNonce!
-                if !(pubNonceKey.x.isEmpty || pubNonceKey.y.isEmpty) {
-                    let publicNonce = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceKey.x, pubKeyY: pubNonceKey.y)
-                    finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, publicNonce])
-                    pubNonce = PubNonce(x: thresholdNonceData!.pubNonce!.x, y: thresholdNonceData!.pubNonce!.y)
-                }
+
+                let publicNonce = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceKey.x, pubKeyY: pubNonceKey.y)
+                finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, publicNonce])
+                pubNonce = PubNonce(x: thresholdNonceData!.pubNonce!.x, y: thresholdNonceData!.pubNonce!.y)
+            } else {
+                throw TorusUtilError.pubNonceMissing
             }
         }
 

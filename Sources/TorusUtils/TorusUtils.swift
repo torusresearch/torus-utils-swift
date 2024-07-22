@@ -218,7 +218,7 @@ public class TorusUtils {
             throw TorusUtilError.runtime("node results do not match at final lookup")
         }
 
-        if keyAssignResult.nonceResult == nil && extendedVerifierId != nil && TorusUtils.isLegacyNetworkRouteMap(network: network) {
+        if keyAssignResult.nonceResult == nil && extendedVerifierId == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
             throw TorusUtilError.runtime("metadata nonce is missing in share response")
         }
 
@@ -245,13 +245,13 @@ public class TorusUtils {
             let (X, Y) = try KeyUtils.getPublicKeyCoords(pubKey: pubKey)
             oAuthPubKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: X, pubKeyY: Y)
             finalPubKey = oAuthPubKey!
-            if keyAssignResult.nonceResult!.pubNonce != nil {
+            if keyAssignResult.nonceResult!.pubNonce != nil && !(keyAssignResult.nonceResult!.pubNonce!.x.isEmpty || keyAssignResult.nonceResult!.pubNonce!.y.isEmpty) {
                 let pubNonceResult = keyAssignResult.nonceResult!.pubNonce!
-                if !(pubNonceResult.x.isEmpty || pubNonceResult.y.isEmpty) {
-                    let pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceResult.x, pubKeyY: pubNonceResult.y)
-                    finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey!, pubNonceKey])
-                    pubNonce = pubNonceResult
-                }
+                let pubNonceKey = KeyUtils.getPublicKeyFromCoords(pubKeyX: pubNonceResult.x, pubKeyY: pubNonceResult.y)
+                finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey!, pubNonceKey])
+                pubNonce = pubNonceResult
+            } else {
+                throw TorusUtilError.pubNonceMissing
             }
         }
 
