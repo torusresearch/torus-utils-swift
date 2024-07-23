@@ -251,10 +251,6 @@ internal class NodeUtils {
                     verify_params: verifierParams.verify_params,
                     sss_endpoint: endpoints[j],
                     
-                    enable_verifier_id_hash: extraParams.enable_verifier_id_hash,
-                    app_s: extraParams.app_s,
-                    app_id: extraParams.app_id,
-                    domain: extraParams.domain,
                     nonce: extraParams.nonce,
                     message: extraParams.message,
                     signature: extraParams.signature,
@@ -263,22 +259,7 @@ internal class NodeUtils {
                     publicKey: extraParams.publicKey,
                     challenge: extraParams.challenge,
                     rpOrigin: extraParams.rpOrigin,
-                    rpId: extraParams.rpId,
-                    jwk_endpoint: extraParams.jwk_endpoint,
-                    default_node_set: extraParams.default_node_set,
-                    jwt_verifier_id_field: extraParams.jwt_verifier_id_field,
-                    jwt_verifier_id_case_sensitive: extraParams.jwt_verifier_id_case_sensitive,
-                    jwk_keys: extraParams.jwk_keys,
-                    jwt_validation_fields: extraParams.jwt_validation_fields,
-                    jwt_validation_values: extraParams.jwt_validation_values,
-                    index: extraParams.index,
-                    email: extraParams.email,
-                    id: extraParams.id,
-                    correct_id_token: extraParams.correct_id_token,
-                    verify_param: extraParams.verify_param,
-                    threshold: extraParams.threshold,
-                    pub_k_x: extraParams.pub_k_x,
-                    pub_k_y: extraParams.pub_k_y
+                    rpId: extraParams.rpId
                 )
 
                 importedItems.append(shareRequestItem)
@@ -327,10 +308,6 @@ internal class NodeUtils {
                                 session_token_exp_second: sessionExpiry,
                                 verify_params: verifierParams.verify_params,
                                 
-                                enable_verifier_id_hash: extraParams.enable_verifier_id_hash,
-                                app_s: extraParams.app_s,
-                                app_id: extraParams.app_id,
-                                domain: extraParams.domain,
                                 nonce: extraParams.nonce,
                                 message: extraParams.message,
                                 signature: extraParams.signature,
@@ -339,22 +316,7 @@ internal class NodeUtils {
                                 publicKey: extraParams.publicKey,
                                 challenge: extraParams.challenge,
                                 rpOrigin: extraParams.rpOrigin,
-                                rpId: extraParams.rpId,
-                                jwk_endpoint: extraParams.jwk_endpoint,
-                                default_node_set: extraParams.default_node_set,
-                                jwt_verifier_id_field: extraParams.jwt_verifier_id_field,
-                                jwt_verifier_id_case_sensitive: extraParams.jwt_verifier_id_case_sensitive,
-                                jwk_keys: extraParams.jwk_keys,
-                                jwt_validation_fields: extraParams.jwt_validation_fields,
-                                jwt_validation_values: extraParams.jwt_validation_values,
-                                index: extraParams.index,
-                                email: extraParams.email,
-                                id: extraParams.id,
-                                correct_id_token: extraParams.correct_id_token,
-                                verify_param: extraParams.verify_param,
-                                threshold: extraParams.threshold,
-                                pub_k_x: extraParams.pub_k_x,
-                                pub_k_y: extraParams.pub_k_y
+                                rpId: extraParams.rpId
                             )
 
                             let params = ShareRequestParams(encrypted: "yes", item: [shareRequestItem], client_time: String(Int(trunc(Double((serverTimeOffset ?? 0) + Int(Date().timeIntervalSince1970))))))
