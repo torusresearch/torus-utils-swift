@@ -1,14 +1,31 @@
 import BigInt
 import Foundation
 import Security
+#if canImport(curveSecp256k1)
+    import curveSecp256k1
+#endif
 
-public class Point: Decodable {
+enum PointError: Error {
+    case encodingNotSupported
+    case compressedPublicKeyGenerationFailed
+}
+
+internal struct Point: Codable {
     let x: BigInt
     let y: BigInt
 
-    init(x: String, y: String) {
-        self.x = BigInt(x, radix: 16)!
-        self.y = BigInt(y, radix: 16)!
+    init(x: String, y: String) throws {
+        if let xCoord = BigInt(x, radix: 16) {
+            self.x = xCoord
+        } else {
+            throw TorusUtilError.invalidInput
+        }
+
+        if let yCoord = BigInt(y, radix: 16) {
+            self.y = yCoord
+        } else {
+            throw TorusUtilError.invalidInput
+        }
     }
 
     init(x: BigInt, y: BigInt) {
@@ -16,12 +33,12 @@ public class Point: Decodable {
         self.y = y
     }
 
-    public enum CodingKeys: CodingKey {
+    enum CodingKeys: CodingKey {
         case X
         case Y
     }
 
-    public required init(from decoder: Decoder) throws {
+    init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let hexX = try container.decode(String.self, forKey: .X)
         let hexY = try container.decode(String.self, forKey: .Y)
@@ -33,20 +50,24 @@ public class Point: Decodable {
     func encode(enc: String) throws -> Data {
         switch enc {
         case "arr":
-            let prefix = Data(hex: String().add04Prefix())
-            let xData = Data(hex: x.description)
-            let yData = Data(hex: y.description)
-            return prefix + xData + yData
-//        case "elliptic-compressed":
-//            let publicKey = try getCompressedPublicKey()
-//            return publicKey
+            return Data(hex: KeyUtils.getPublicKeyFromCoords(pubKeyX: x.magnitude.serialize().hexString, pubKeyY: y.magnitude.serialize().hexString))
+        case "elliptic-compressed":
+            let keyData = KeyUtils.getPublicKeyFromCoords(pubKeyX: x.magnitude.serialize().hexString, pubKeyY: y.magnitude.serialize().hexString)
+            let pubKey = try PublicKey(hex: keyData)
+            return Data(hex: try pubKey.serialize(compressed: true))
         default:
             throw PointError.encodingNotSupported
         }
     }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(x.magnitude.serialize().hexString.addLeading0sForLength64(), forKey: .X)
+        try container.encode(y.magnitude.serialize().hexString.addLeading0sForLength64(), forKey: .Y)
+    }
 }
 
-public struct PointHex: Decodable, Hashable, Equatable {
+internal struct PointHex: Decodable, Hashable, Equatable {
     let x: String
     let y: String
 
@@ -54,9 +75,4 @@ public struct PointHex: Decodable, Hashable, Equatable {
         x = String(from.x, radix: 16)
         y = String(from.y, radix: 16)
     }
-}
-
-enum PointError: Error {
-    case encodingNotSupported
-    case compressedPublicKeyGenerationFailed
 }
