@@ -259,7 +259,8 @@ internal class NodeUtils {
                     publicKey: extraParams.publicKey,
                     challenge: extraParams.challenge,
                     rpOrigin: extraParams.rpOrigin,
-                    rpId: extraParams.rpId
+                    rpId: extraParams.rpId,
+                    timestamp: extraParams.timestamp
                 )
 
                 importedItems.append(shareRequestItem)
