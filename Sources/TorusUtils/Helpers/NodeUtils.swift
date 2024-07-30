@@ -463,9 +463,9 @@ internal class NodeUtils {
                 sessionTokenDatas.append(nil)
             } else {
                 if Data(hexString: item!) != nil {
-                    sessionTokenDatas.append(SessionToken(token: Data(hexString: item!)!.base64EncodedString(), signature: sessionTokenSigs[i]!.data(using: .utf8)!.hexString, node_pubx: shareResponses[i].nodePubX, node_puby: shareResponses[i].nodePubY))
+                    sessionTokenDatas.append(SessionToken(token: Data(hexString: item!)!.base64EncodedString(), signature: sessionTokenSigs[i]!, node_pubx: shareResponses[i].nodePubX, node_puby: shareResponses[i].nodePubY))
                 } else {
-                    sessionTokenDatas.append(SessionToken(token: item!, signature: sessionTokenSigs[i]!.data(using: .utf8)!.hexString, node_pubx: shareResponses[i].nodePubX, node_puby: shareResponses[i].nodePubY))
+                    sessionTokenDatas.append(SessionToken(token: item!, signature: sessionTokenSigs[i]!, node_pubx: shareResponses[i].nodePubX, node_puby: shareResponses[i].nodePubY))
                 }
             }
         }
