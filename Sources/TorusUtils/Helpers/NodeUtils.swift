@@ -462,7 +462,11 @@ internal class NodeUtils {
             if item == nil {
                 sessionTokenDatas.append(nil)
             } else {
-                sessionTokenDatas.append(SessionToken(token: Data(hexString: item!)!.base64EncodedString(), signature: sessionTokenSigs[i]!.data(using: .utf8)!.hexString, node_pubx: shareResponses[i].nodePubX, node_puby: shareResponses[i].nodePubY))
+                if Data(hexString: item!) != nil {
+                    sessionTokenDatas.append(SessionToken(token: Data(hexString: item!)!.base64EncodedString(), signature: sessionTokenSigs[i]!.data(using: .utf8)!.hexString, node_pubx: shareResponses[i].nodePubX, node_puby: shareResponses[i].nodePubY))
+                } else {
+                    sessionTokenDatas.append(SessionToken(token: item!, signature: sessionTokenSigs[i]!.data(using: .utf8)!.hexString, node_pubx: shareResponses[i].nodePubX, node_puby: shareResponses[i].nodePubY))
+                }
             }
         }
 

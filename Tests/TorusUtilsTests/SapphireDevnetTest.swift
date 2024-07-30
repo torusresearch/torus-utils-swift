@@ -291,12 +291,12 @@ final class SapphireDevnetTest: XCTestCase {
         let signatures = data.sessionData.sessionTokenData.map({ $0!.token })
         let parsedSignatures = signatures.map({
             let data = Data(base64Encoded: $0.data(using: .utf8)!)!
-            let hexString = String(data: data, encoding: .utf8)!
-            let json = hexString.hexEncodedToString()
+            let json = String(data: data, encoding: .utf8)!
             return json
         })
         let now = Int(Date().timeIntervalSince1970)
         for item in parsedSignatures {
+            
             let json = try JSONSerialization.jsonObject(with: item.data(using: .utf8)!) as? [String: Any]
             let exp = json!["exp"] as! Int
             let sessionTime = exp - now
