@@ -64,7 +64,10 @@ public class KeyUtils {
             publicKeyUnprefixed = publicKeyUnprefixed.strip04Prefix()
         }
         
-        if !(publicKeyUnprefixed.count == 128) {
+
+        if (publicKeyUnprefixed.count <= 128) {
+            publicKeyUnprefixed = publicKeyUnprefixed.addLeading0sForLength128()
+        } else {
             throw TorusUtilError.invalidPubKeySize
         }
 

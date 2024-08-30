@@ -130,6 +130,7 @@ internal class NodeUtils {
         idToken: String,
         importedShares: [ImportedShare]?,
         apiKey: String = "torus-default",
+        newPrivateKey: String?,
         extraParams: TorusUtilsExtraParams
     ) async throws -> TorusKey {
         let threshold = Int(trunc(Double((endpoints.count / 2) + 1)))
@@ -569,6 +570,15 @@ internal class NodeUtils {
             finalPrivKey = privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
         }
 
+        // This is a sanity check to make doubly sure we are returning the correct private key after importing a share
+        if isImportShareReq {
+            if newPrivateKey == nil {
+                throw TorusUtilError.importShareFailed
+            } else if (!(finalPrivKey == newPrivateKey!.addLeading0sForLength64())) {
+                throw TorusUtilError.importShareFailed
+            }
+        }
+        
         var isUpgraded: Bool?
         if typeOfUser == .v2 {
             isUpgraded = metadataNonce == BigInt(0)

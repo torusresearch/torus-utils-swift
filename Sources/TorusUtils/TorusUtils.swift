@@ -131,7 +131,7 @@ public class TorusUtils {
             extraParams.session_token_exp_second = sessionTime
         }
 
-        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: [], apiKey: apiKey, extraParams: extraParams)
+        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: [], apiKey: apiKey, newPrivateKey: nil, extraParams: extraParams)
     }
 
     /// Retrieves user information, defaulting the user type to .v2
@@ -185,7 +185,7 @@ public class TorusUtils {
             extraParams.session_token_exp_second = sessionTime
         }
         
-        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? 0, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: sharesData, extraParams: extraParams)
+        return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? 0, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: sharesData, newPrivateKey: newPrivateKey, extraParams: extraParams)
     }
 
     /// Retrieves user information
