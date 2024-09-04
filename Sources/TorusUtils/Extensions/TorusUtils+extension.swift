@@ -155,6 +155,7 @@ extension TorusUtils {
                       "use_temp": true,
                       "one_key_flow": true,
                       "item": AnyCodable([finalItem]),
+                      "distributed_metadata": true,
         ] as [String: AnyCodable]
 
         let dataForRequest = ["jsonrpc": "2.0",
@@ -265,9 +266,11 @@ extension TorusUtils {
                     }
                 }
             }
-
+            
+            var counter = 0
             for try await val in group {
                 do {
+                    counter += 1;
                     switch val {
                     case let .success(model):
                         let data = model.data
@@ -310,7 +313,9 @@ extension TorusUtils {
                             }
 
                             if thresholdNonceData == nil && verifierParams.extended_verifier_id == nil && !isLegacyNetwork() {
-                                throw TorusUtilError.metadataNonceMissing
+                                if ( counter ==  promiseArrRequest.count ) {
+                                    throw TorusUtilError.metadataNonceMissing
+                                }
                             }
                             return
                         }
