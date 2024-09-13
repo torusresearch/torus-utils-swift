@@ -130,6 +130,7 @@ internal class NodeUtils {
         idToken: String,
         importedShares: [ImportedShare]?,
         apiKey: String = "torus-default",
+        newPrivateKey: String?,
         extraParams: TorusUtilsExtraParams
     ) async throws -> TorusKey {
         let threshold = Int(trunc(Double((endpoints.count / 2) + 1)))
@@ -402,10 +403,10 @@ internal class NodeUtils {
         var sessionTokens: [String?] = []
         var nodeIndexes: [Int?] = []
         var sessionTokenDatas: [SessionToken?] = []
-        var isNewKeys: [String] = []
+        var isNewKeys: [IsNewKeyResponse] = []
 
         for item in shareResponses {
-            isNewKeys.append(item.isNewKey)
+            isNewKeys.append(IsNewKeyResponse(isNewKey: item.isNewKey == "true", publicKeyX: item.keys.first?.publicKey.X ?? ""))
 
             if !item.sessionTokenSigs.isEmpty {
                 if !item.sessionTokenSigMetadata.isEmpty {
@@ -505,7 +506,12 @@ internal class NodeUtils {
             throw TorusUtilError.privateKeyDeriveFailed
         }
 
-        let thresholdIsNewKey: String? = try thresholdSame(arr: isNewKeys, threshold: threshold)
+        var isNewKey = false;
+        for item in isNewKeys {
+            if (item.isNewKey && item.publicKeyX.lowercased() == thresholdPublicKey!.X.lowercased()) {
+                isNewKey = true
+            }
+        }
 
         let oAuthKey = privateKey!
         let oAuthPublicKey = try SecretKey(hex: oAuthKey).toPublic().serialize(compressed: false)
@@ -519,8 +525,7 @@ internal class NodeUtils {
             finalPubKey = oAuthPublicKey
         } else if TorusUtils.isLegacyNetworkRouteMap(network: network) {
             if enableOneKey {
-                let isNewKey = !(thresholdIsNewKey == "true")
-                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, privateKey: oAuthKey, getOnly: isNewKey)
+                let nonce = try await MetadataUtils.getOrSetNonce(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffsetResponse, X: thresholdPublicKey!.X, Y: thresholdPublicKey!.Y, privateKey: oAuthKey, getOnly: !isNewKey)
                 metadataNonce = BigInt(nonce.nonce?.addLeading0sForLength64() ?? "0", radix: 16) ?? BigInt(0)
                 typeOfUser = UserType(rawValue: nonce.typeOfUser?.lowercased() ?? "v1")!
                 if typeOfUser == .v2 {
@@ -569,6 +574,15 @@ internal class NodeUtils {
             finalPrivKey = privateKeyWithNonce.magnitude.serialize().hexString.addLeading0sForLength64()
         }
 
+        // This is a sanity check to make doubly sure we are returning the correct private key after importing a share
+        if isImportShareReq {
+            if newPrivateKey == nil {
+                throw TorusUtilError.importShareFailed
+            } else if (!(finalPrivKey == newPrivateKey!.addLeading0sForLength64())) {
+                throw TorusUtilError.importShareFailed
+            }
+        }
+        
         var isUpgraded: Bool?
         if typeOfUser == .v2 {
             isUpgraded = metadataNonce == BigInt(0)

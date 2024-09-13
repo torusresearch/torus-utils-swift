@@ -36,6 +36,15 @@ extension String {
             return self
         }
     }
+    
+    public func addLeading0sForLength128() -> String {
+        if count < 128 {
+            let toAdd = String(repeating: "0", count: 128 - count)
+            return toAdd + self
+        } else {
+            return self
+        }
+    }
 
     public func hexEncodedToString() -> String {
         var finalString = ""
