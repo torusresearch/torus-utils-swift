@@ -602,7 +602,7 @@ internal class NodeUtils {
             isUpgraded = metadataNonce == BigInt(0)
         }
         
-        SentryUtils.logInformation(clientId: TorusUtils.getClientId(), finalEvmAddress: finalEvmAddress, finalPrivKey: finalPrivKey, platform: "torus-utils-swift")
+        SentryUtils.logInformation(clientId: TorusUtils.getClientId(), finalEvmAddress: finalEvmAddress, platform: "torus-utils-swift")
         
         return TorusKey(
             finalKeyData: TorusKey.FinalKeyData(

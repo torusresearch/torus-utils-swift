@@ -32,11 +32,10 @@ class SentryUtils {
     }
 
     // Static method to log information by setting tags
-    static func logInformation(clientId: String, finalEvmAddress: String, finalPrivKey: String, platform: String) {
+    static func logInformation(clientId: String, finalEvmAddress: String, platform: String) {
         SentrySDK.configureScope { scope in
             scope.setTag(value: clientId, key: "clientId")
             scope.setTag(value: finalEvmAddress, key: "finalEvmAddress")
-            scope.setTag(value: finalPrivKey, key: "finalPrivKey")
             scope.setTag(value: platform, key: "platform")
         }
     }
