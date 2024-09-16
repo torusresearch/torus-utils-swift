@@ -18,12 +18,14 @@ internal struct Point: Codable {
         if let xCoord = BigInt(x, radix: 16) {
             self.x = xCoord
         } else {
+            SentryUtils.captureException("\(TorusUtilError.invalidInput) for client id: \(TorusUtils.getClientId())")
             throw TorusUtilError.invalidInput
         }
 
         if let yCoord = BigInt(y, radix: 16) {
             self.y = yCoord
         } else {
+            SentryUtils.captureException("\(TorusUtilError.invalidInput) for client id: \(TorusUtils.getClientId())")
             throw TorusUtilError.invalidInput
         }
     }

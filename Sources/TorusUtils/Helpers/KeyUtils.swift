@@ -10,7 +10,10 @@ enum TorusKeyType: String, Equatable, Hashable, Codable {
 
 public class KeyUtils {
     public static func keccak256Data(_ input: String) throws -> String {
-        guard let data = input.data(using: .utf8) else { throw TorusUtilError.invalidInput }
+        guard let data = input.data(using: .utf8) else {
+            SentryUtils.captureException("\(TorusUtilError.invalidInput) for client id: \(TorusUtils.getClientId())")
+            throw TorusUtilError.invalidInput
+        }
         return try keccak256(data: data).toHexString()
     }
 
@@ -68,6 +71,7 @@ public class KeyUtils {
         if (publicKeyUnprefixed.count <= 128) {
             publicKeyUnprefixed = publicKeyUnprefixed.addLeading0sForLength128()
         } else {
+            SentryUtils.captureException("\(TorusUtilError.invalidPubKeySize) for client id: \(TorusUtils.getClientId())")
             throw TorusUtilError.invalidPubKeySize
         }
 
@@ -148,6 +152,7 @@ public class KeyUtils {
 
     internal static func generateShares(keyType: TorusKeyType = .secp256k1, serverTimeOffset: Int, nodeIndexes: [BigUInt], nodePubKeys: [INodePub], privateKey: String) throws -> [ImportedShare] {
         if keyType != TorusKeyType.secp256k1 {
+            SentryUtils.captureException("Unsupported key type for client id: \(TorusUtils.getClientId())")
             throw TorusUtilError.runtime("Unsupported key type")
         }
 
