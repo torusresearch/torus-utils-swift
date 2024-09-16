@@ -47,7 +47,6 @@ class SentryUtils {
         }
     }
 
-    // Static method to close Sentry (typically used during app termination)
     static func close() {
         SentrySDK.close()
     }

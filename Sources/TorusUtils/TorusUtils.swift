@@ -41,6 +41,7 @@ public class TorusUtils {
     /// - Throws: `TorusUtilError.invalidInput`
     public init(params: TorusOptions, loglevel: OSLogType = .default) throws {
         SentryUtils.initSentry()
+        TorusUtils.clientId = params.clientId
         var defaultHost = ""
         if params.legacyMetadataHost == nil {
             if case let .legacy(urlHost) = params.network {
@@ -70,8 +71,6 @@ public class TorusUtils {
         enableOneKey = params.enableOneKey
         legacyMetadataHost = defaultHost
         signerHost = params.network.signerMap + "/api/sign"
-        
-        TorusUtils.clientId = params.clientId
     }
 
     internal static func isLegacyNetworkRouteMap(network: TorusNetwork) -> Bool {
