@@ -55,7 +55,7 @@ internal func thresholdSame<T: Encodable>(arr: [T], threshold: Int) throws -> T?
     jsonEncoder.outputFormatting = .sortedKeys
     for (_, value) in arr.enumerated() {
         guard let jsonString = String(data: try jsonEncoder.encode(value), encoding: .utf8) else { 
-            SentryUtils.captureException("thresholdSame for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("thresholdSame")
             throw TorusUtilError.encodingFailed("thresholdSame")
         }
         if let _ = hashmap[jsonString] {

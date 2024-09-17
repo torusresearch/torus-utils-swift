@@ -160,7 +160,7 @@ internal class NodeUtils {
         var importedShareCount = 0
         if importedShares != nil && importedShares!.count > 0 {
             if importedShares!.count != endpoints.count {
-                SentryUtils.captureException("\(TorusUtilError.importShareFailed) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.importShareFailed)")
                 throw TorusUtilError.importShareFailed
             }
             isImportShareReq = true
@@ -215,7 +215,7 @@ internal class NodeUtils {
         }
 
         if importedShareCount > 0 && !(nodeSigs.count == endpoints.count) {
-            SentryUtils.captureException("\(TorusUtilError.commitmentRequestFailed) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.commitmentRequestFailed)")
             throw TorusUtilError.commitmentRequestFailed
         }
 
@@ -288,7 +288,7 @@ internal class NodeUtils {
             }
 
             if isImportShareReq && !shareImportSuccess {
-                SentryUtils.captureException("\(TorusUtilError.importShareFailed) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.importShareFailed)")
                 throw TorusUtilError.importShareFailed
             }
 
@@ -367,7 +367,7 @@ internal class NodeUtils {
         }
 
         if thresholdPublicKey == nil {
-            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError)")
             throw TorusUtilError.retrieveOrImportShareError
         }
 
@@ -399,7 +399,7 @@ internal class NodeUtils {
 
         // Invert comparision to return error early
         if !(shareResponses.count >= thresholdReqCount && thresholdPublicKey != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil || TorusUtils.isLegacyNetworkRouteMap(network: network))) {
-            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError)")
             throw TorusUtilError.retrieveOrImportShareError
         }
 
@@ -439,11 +439,11 @@ internal class NodeUtils {
                 let latestKey = item.keys[0]
                 nodeIndexes.append(latestKey.nodeIndex)
                 guard let cipherData = Data(base64Encoded: latestKey.share) else {
-                    SentryUtils.captureException("cipher is not base64 encoded for client id: \(TorusUtils.getClientId())")
+                    SentryUtils.captureException("cipher is not base64 encoded")
                     throw TorusUtilError.decodingFailed("cipher is not base64 encoded")
                 }
                 guard let cipherTextHex = String(data: cipherData, encoding: .utf8) else {
-                    SentryUtils.captureException("cipher is not base64 encoded for client id: \(TorusUtils.getClientId())")
+                    SentryUtils.captureException("cipher is not base64 encoded")
                     throw TorusUtilError.decodingFailed("cipherData is not utf8")
                 }
                 let decrypted = try MetadataUtils.decryptNodeData(eciesData: latestKey.shareMetadata, ciphertextHex: cipherTextHex, privKey: sessionAuthKeySerialized)
@@ -457,14 +457,14 @@ internal class NodeUtils {
         let validSigs = sessionTokenSigs.filter({ $0 != nil }).map({ $0! })
 
         if verifierParams.extended_verifier_id == nil && validSigs.count < threshold {
-            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError)")
             throw TorusUtilError.retrieveOrImportShareError
         }
 
         let validTokens = sessionTokens.filter({ $0 != nil }).map({ $0! })
 
         if verifierParams.extended_verifier_id == nil && validTokens.count < threshold {
-            SentryUtils.captureException("Insufficient number of signatures from nodes for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("Insufficient number of signatures from nodes")
             throw TorusUtilError.runtime("Insufficient number of signatures from nodes")
         }
 
@@ -512,7 +512,7 @@ internal class NodeUtils {
         }
 
         if privateKey == nil {
-            SentryUtils.captureException("\(TorusUtilError.privateKeyDeriveFailed) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.privateKeyDeriveFailed)")
             throw TorusUtilError.privateKeyDeriveFailed
         }
 
@@ -565,13 +565,13 @@ internal class NodeUtils {
                 finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, publicNonce])
                 pubNonce = PubNonce(x: thresholdNonceData!.pubNonce!.x, y: thresholdNonceData!.pubNonce!.y)
             } else {
-                SentryUtils.captureException("\(TorusUtilError.pubNonceMissing) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.pubNonceMissing)")
                 throw TorusUtilError.pubNonceMissing
             }
         }
 
         if finalPubKey == nil {
-            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.retrieveOrImportShareError)")
             throw TorusUtilError.retrieveOrImportShareError
         }
 
@@ -589,10 +589,10 @@ internal class NodeUtils {
         // This is a sanity check to make doubly sure we are returning the correct private key after importing a share
         if isImportShareReq {
             if newPrivateKey == nil {
-                SentryUtils.captureException("\(TorusUtilError.importShareFailed) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.importShareFailed)")
                 throw TorusUtilError.importShareFailed
             } else if (!(finalPrivKey == newPrivateKey!.addLeading0sForLength64())) {
-                SentryUtils.captureException("\(TorusUtilError.importShareFailed) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.importShareFailed)")
                 throw TorusUtilError.importShareFailed
             }
         }
@@ -602,7 +602,7 @@ internal class NodeUtils {
             isUpgraded = metadataNonce == BigInt(0)
         }
         
-        SentryUtils.logInformation(clientId: TorusUtils.getClientId(), finalEvmAddress: finalEvmAddress, platform: "torus-utils-swift")
+        SentryUtils.logInformation(clientId: clientId, finalEvmAddress: finalEvmAddress, platform: "torus-utils-swift")
         
         return TorusKey(
             finalKeyData: TorusKey.FinalKeyData(

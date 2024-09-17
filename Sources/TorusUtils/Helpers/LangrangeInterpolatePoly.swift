@@ -89,7 +89,7 @@ internal class Lagrange {
         let indexList: [BigInt] = nodeIndex.map({ BigInt($0) })
 
         if sharesList.count != indexList.count {
-            SentryUtils.captureException("sharesList not equal to indexList length in lagrangeInterpolation for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("sharesList not equal to indexList length in lagrangeInterpolation")
             throw TorusUtilError.runtime("sharesList not equal to indexList length in lagrangeInterpolation")
         }
 
@@ -113,7 +113,7 @@ internal class Lagrange {
             guard
                 let inv = lower.inverse(KeyUtils.getOrderOfCurve())
             else {
-                SentryUtils.captureException("\(TorusUtilError.decryptionFailed) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.decryptionFailed)")
                 throw TorusUtilError.decryptionFailed
             }
             var delta = (upper * inv).modulus(KeyUtils.getOrderOfCurve())
@@ -123,7 +123,7 @@ internal class Lagrange {
         }
 
         if secret == BigUInt(0) {
-            SentryUtils.captureException("\(TorusUtilError.interpolationFailed) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.interpolationFailed)")
             throw TorusUtilError.interpolationFailed
         }
 
@@ -131,7 +131,7 @@ internal class Lagrange {
         if sharesDecrypt == sharesList.count {
             return secretString
         } else {
-            SentryUtils.captureException("\(TorusUtilError.interpolationFailed) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.interpolationFailed)")
             throw TorusUtilError.interpolationFailed
         }
     }

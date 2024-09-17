@@ -27,8 +27,6 @@ public class TorusUtils {
     var legacyMetadataHost: String
 
     var apiKey: String = "torus-default"
-    
-    public static var clientId: String = ""
 
     /// Initializes TorusUtils with the provided options
     ///
@@ -41,7 +39,6 @@ public class TorusUtils {
     /// - Throws: `TorusUtilError.invalidInput`
     public init(params: TorusOptions, loglevel: OSLogType = .default) throws {
         SentryUtils.initSentry()
-        TorusUtils.clientId = params.clientId
         var defaultHost = ""
         if params.legacyMetadataHost == nil {
             if case let .legacy(urlHost) = params.network {
@@ -55,7 +52,7 @@ public class TorusUtils {
                         defaultHost = "https://node-1.dev-node.web3auth.io/metadata"
                     }
                 } else {
-                    SentryUtils.captureException("\(TorusUtilError.invalidInput) for client id: \(TorusUtils.getClientId())")
+                    SentryUtils.captureException("\(TorusUtilError.invalidInput)")
                     throw TorusUtilError.invalidInput
                 }
             }
@@ -78,10 +75,6 @@ public class TorusUtils {
             return true
         }
         return false
-    }
-    
-    public static func getClientId() -> String {
-        return clientId
     }
 
     /// Sets the apiKey
@@ -186,7 +179,7 @@ public class TorusUtils {
     ) async throws -> TorusKey {
         let nodePubs = TorusNodePubModelToINodePub(nodes: nodePubKeys)
         if endpoints.count != nodeIndexes.count {
-            SentryUtils.captureException("Length of endpoints must be the same as length of nodeIndexes for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("Length of endpoints must be the same as length of nodeIndexes")
             throw TorusUtilError.runtime("Length of endpoints must be the same as length of nodeIndexes")
         }
 
@@ -225,7 +218,7 @@ public class TorusUtils {
         if keyAssignResult.errorResult != nil {
             let error = keyAssignResult.errorResult!.message
             if error.lowercased().contains("verifier not supported") {
-                SentryUtils.captureException("Verifier not supported. Check if you: 1. Are on the right network (Torus testnet/mainnet) 2. Have setup a verifier on dashboard.web3auth.io? for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("Verifier not supported. Check if you: 1. Are on the right network (Torus testnet/mainnet) 2. Have setup a verifier on dashboard.web3auth.io?")
                 throw TorusUtilError.runtime("Verifier not supported. Check if you: 1. Are on the right network (Torus testnet/mainnet) 2. Have setup a verifier on dashboard.web3auth.io?")
             } else {
                 SentryUtils.captureException(error)
@@ -234,12 +227,12 @@ public class TorusUtils {
         }
 
         if keyAssignResult.keyResult == nil || keyAssignResult.keyResult?.keys.count == 0 {
-            SentryUtils.captureException("node results do not match at final lookup for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("node results do not match at final lookup")
             throw TorusUtilError.runtime("node results do not match at final lookup")
         }
 
         if keyAssignResult.nonceResult == nil && extendedVerifierId == nil && !TorusUtils.isLegacyNetworkRouteMap(network: network) {
-            SentryUtils.captureException("metadata nonce is missing in share response for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("metadata nonce is missing in share response")
             throw TorusUtilError.runtime("metadata nonce is missing in share response")
         }
 
@@ -272,13 +265,13 @@ public class TorusUtils {
                 finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey!, pubNonceKey])
                 pubNonce = pubNonceResult
             } else {
-                SentryUtils.captureException("\(TorusUtilError.pubNonceMissing) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.pubNonceMissing)")
                 throw TorusUtilError.pubNonceMissing
             }
         }
 
         if oAuthPubKey == nil || finalPubKey == nil {
-            SentryUtils.captureException("\(TorusUtilError.privateKeyDeriveFailed) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.privateKeyDeriveFailed)")
             throw TorusUtilError.privateKeyDeriveFailed
         }
 
@@ -346,7 +339,7 @@ public class TorusUtils {
                 finalPubKey = try KeyUtils.combinePublicKeys(keys: [oAuthPubKey, pubNonceKey])
                 pubNonce = nonceResult!.pubNonce!
             } else {
-                SentryUtils.captureException("\(TorusUtilError.metadataNonceMissing) for client id: \(TorusUtils.getClientId())")
+                SentryUtils.captureException("\(TorusUtilError.metadataNonceMissing)")
                 throw TorusUtilError.metadataNonceMissing
             }
         } else {
@@ -364,7 +357,7 @@ public class TorusUtils {
         let oAuthAddress = try KeyUtils.generateAddressFromPubKey(publicKeyX: X, publicKeyY: Y)
 
         if typeOfUser == .v2 && finalPubKey == nil {
-            SentryUtils.captureException("\(TorusUtilError.privateKeyDeriveFailed) for client id: \(TorusUtils.getClientId())")
+            SentryUtils.captureException("\(TorusUtilError.privateKeyDeriveFailed)")
             throw TorusUtilError.privateKeyDeriveFailed
         }
 
