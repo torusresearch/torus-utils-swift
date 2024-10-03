@@ -6,10 +6,10 @@ import TorusUtils
 import XCTest
 
 class SapphireMainnetTests: XCTestCase {
-    static var fetchNodeDetails: AllNodeDetailsModel?
+    static var fetchNodeDetails: NodeDetails?
     static var utils: TorusUtils?
     static var endpoints: [String] = []
-    static var nodePubKeys: [TorusNodePubModel] = []
+    static var nodePubKeys: [TorusNodePub] = []
     static var privKey: String = ""
 
     let TORUS_TEST_EMAIL = "hello@tor.us"
@@ -23,8 +23,8 @@ class SapphireMainnetTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .sapphire(.SAPPHIRE_MAINNET))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .sapphire(.SAPPHIRE_MAINNET), enableOneKey: true))
+        fnd = NodeDetailManager(network: .SAPPHIRE_MAINNET)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .SAPPHIRE_MAINNET, enableOneKey: true))
     }
 
     func test_should_fetch_public_address() async throws {

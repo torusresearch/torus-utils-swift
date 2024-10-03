@@ -15,7 +15,7 @@ public class TorusUtils {
 
     var serverTimeOffset: Int?
 
-    var network: TorusNetwork
+    var network: Web3AuthNetwork
 
     var clientId: String
 
@@ -39,18 +39,14 @@ public class TorusUtils {
     public init(params: TorusOptions, loglevel: OSLogType = .default) throws {
         var defaultHost = ""
         if params.legacyMetadataHost == nil {
-            if case let .legacy(urlHost) = params.network {
-                defaultHost = urlHost.metadataMap
+            if TorusUtils.isLegacyNetworkRouteMap(network: params.network) {
+                defaultHost = params.network.metadataMap
             } else {
                 // TODO: Move this into fetchNodeDetails metadataMap
-                if case let .sapphire(sapphireNetwork) = params.network {
-                    if sapphireNetwork == .SAPPHIRE_MAINNET {
-                        defaultHost = "https://node-1.node.web3auth.io/metadata"
-                    } else {
-                        defaultHost = "https://node-1.dev-node.web3auth.io/metadata"
-                    }
+                if params.network == .SAPPHIRE_MAINNET {
+                    defaultHost = "https://node-1.node.web3auth.io/metadata"
                 } else {
-                    throw TorusUtilError.invalidInput
+                    defaultHost = "https://node-1.dev-node.web3auth.io/metadata"
                 }
             }
         } else {
@@ -67,11 +63,11 @@ public class TorusUtils {
         signerHost = params.network.signerMap + "/api/sign"
     }
 
-    internal static func isLegacyNetworkRouteMap(network: TorusNetwork) -> Bool {
-        if case .legacy = network {
-            return true
+    internal static func isLegacyNetworkRouteMap(network: Web3AuthNetwork) -> Bool {
+        if network == .SAPPHIRE_DEVNET || network == .SAPPHIRE_MAINNET {
+            return false
         }
-        return false
+        return true
     }
 
     /// Sets the apiKey
@@ -167,24 +163,23 @@ public class TorusUtils {
     public func importPrivateKey(
         endpoints: [String],
         nodeIndexes: [BigUInt],
-        nodePubKeys: [TorusNodePubModel],
+        nodePubKeys: [TorusNodePub],
         verifier: String,
         verifierParams: VerifierParams,
         idToken: String,
         newPrivateKey: String,
         extraParams: TorusUtilsExtraParams = TorusUtilsExtraParams()
     ) async throws -> TorusKey {
-        let nodePubs = TorusNodePubModelToINodePub(nodes: nodePubKeys)
         if endpoints.count != nodeIndexes.count {
             throw TorusUtilError.runtime("Length of endpoints must be the same as length of nodeIndexes")
         }
 
-        let sharesData = try KeyUtils.generateShares(serverTimeOffset: serverTimeOffset ?? 0, nodeIndexes: nodeIndexes, nodePubKeys: nodePubs, privateKey: newPrivateKey)
+        let sharesData = try KeyUtils.generateShares(serverTimeOffset: serverTimeOffset ?? 0, nodeIndexes: nodeIndexes, nodePubKeys: nodePubKeys, privateKey: newPrivateKey)
 
         if extraParams.session_token_exp_second == nil {
             extraParams.session_token_exp_second = sessionTime
         }
-        
+
         return try await NodeUtils.retrieveOrImportShare(legacyMetadataHost: legacyMetadataHost, serverTimeOffset: serverTimeOffset ?? 0, enableOneKey: enableOneKey, allowHost: allowHost, network: network, clientId: clientId, endpoints: endpoints, verifier: verifier, verifierParams: verifierParams, idToken: idToken, importedShares: sharesData, newPrivateKey: newPrivateKey, extraParams: extraParams)
     }
 

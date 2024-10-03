@@ -5,10 +5,10 @@ import TorusUtils
 import XCTest
 
 class MainnetTests: XCTestCase {
-    static var fetchNodeDetails: AllNodeDetailsModel?
+    static var fetchNodeDetails: NodeDetails?
     static var utils: TorusUtils?
     static var endpoints: [String] = []
-    static var nodePubKeys: [TorusNodePubModel] = []
+    static var nodePubKeys: [TorusNodePub] = []
     static var privKey: String = ""
 
     let TORUS_TEST_VERIFIER = "torus-test-health"
@@ -20,8 +20,8 @@ class MainnetTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.MAINNET))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.MAINNET)))
+        fnd = NodeDetailManager(network: .MAINNET)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .MAINNET))
     }
 
     func test_should_fetch_public_address() async throws {

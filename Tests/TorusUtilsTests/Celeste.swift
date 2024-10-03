@@ -13,8 +13,8 @@ class CelesteTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.CELESTE))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.CELESTE)))
+        fnd = NodeDetailManager(network: .CELESTE)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .CELESTE))
     }
 
     func test_should_fetch_public_address() async throws {

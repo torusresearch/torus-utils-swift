@@ -1,5 +1,6 @@
 import BigInt
 import Foundation
+import FetchNodeDetails
 #if canImport(curveSecp256k1)
     import curveSecp256k1
 #endif
@@ -146,7 +147,7 @@ public class KeyUtils {
         return .init(pub_key_X: pubKeyX, pub_key_Y: pubKeyY, setData: setData, encodedData: encodedData.base64EncodedString(), signature: Data(hex: sigData).base64EncodedString())
     }
 
-    internal static func generateShares(keyType: TorusKeyType = .secp256k1, serverTimeOffset: Int, nodeIndexes: [BigUInt], nodePubKeys: [INodePub], privateKey: String) throws -> [ImportedShare] {
+    internal static func generateShares(keyType: TorusKeyType = .secp256k1, serverTimeOffset: Int, nodeIndexes: [BigUInt], nodePubKeys: [TorusNodePub], privateKey: String) throws -> [ImportedShare] {
         if keyType != TorusKeyType.secp256k1 {
             throw TorusUtilError.runtime("Unsupported key type")
         }

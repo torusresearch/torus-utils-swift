@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name         = "Torus-utils"
-  spec.version      = "9.0.1"
+  spec.version      = "10.0.0"
   spec.ios.deployment_target  = "13.0"
   spec.summary      = "Retrieve user shares"
   spec.homepage     = "https://github.com/torusresearch/torus-utils-swift"
@@ -10,6 +10,6 @@ Pod::Spec.new do |spec|
   spec.module_name = "TorusUtils"
   spec.source       = { :git => "https://github.com/torusresearch/torus-utils-swift.git", :tag => spec.version }
   spec.source_files = "Sources/TorusUtils/*.{swift,json}","Sources/TorusUtils/**/*.{swift,json}"
-  spec.dependency 'Torus-fetchNodeDetails', '~> 6.0.3'
+  spec.dependency 'Torus-fetchNodeDetails', '~> 7.0.0'
   spec.dependency 'curvelib.swift', '~> 1.0.1'
 end

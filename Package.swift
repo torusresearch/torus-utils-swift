@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/tkey/curvelib.swift", from: "1.0.1"),
-        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from: "6.0.3"),
+        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", branch: "change_network_type_web3authnetwork"),
         // NB: jwt-kit may only be a dependency in tests or it will break cocoapod support
         .package(url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
     ],

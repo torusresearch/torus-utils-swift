@@ -21,10 +21,10 @@
     {
       "identity" : "fetch-node-details-swift",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/torusresearch/fetch-node-details-swift.git",
+      "location" : "https://github.com/torusresearch/fetch-node-details-swift",
       "state" : {
-        "revision" : "4bd96c33ba8d02d9e27190c5c7cedf09cfdfd656",
-        "version" : "6.0.3"
+        "branch" : "change_network_type_web3authnetwork",
+        "revision" : "0bce11463db8449e2f603e5d417af0dabf8f2141"
       }
     },
     {

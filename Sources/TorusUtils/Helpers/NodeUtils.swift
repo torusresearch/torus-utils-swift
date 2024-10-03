@@ -9,7 +9,7 @@ import OSLog
 internal class NodeUtils {
     public static func getPubKeyOrKeyAssign(
         endpoints: [String],
-        network: TorusNetwork,
+        network: Web3AuthNetwork,
         verifier: String,
         verifierId: String,
         legacyMetadataHost: String,
@@ -122,7 +122,7 @@ internal class NodeUtils {
         serverTimeOffset: Int?,
         enableOneKey: Bool,
         allowHost: String,
-        network: TorusNetwork,
+        network: Web3AuthNetwork,
         clientId: String,
         endpoints: [String],
         verifier: String,

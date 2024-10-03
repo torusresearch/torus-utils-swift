@@ -1,4 +1,5 @@
 import BigInt
+import FetchNodeDetails
 import Foundation
 #if canImport(curveSecp256k1)
     import curveSecp256k1
