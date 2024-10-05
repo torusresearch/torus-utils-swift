@@ -13,8 +13,8 @@ class OneKeyTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.TESTNET))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.TESTNET), enableOneKey: true))
+        fnd = NodeDetailManager(network: .TESTNET)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .TESTNET, enableOneKey: true))
     }
 
     func test_should_still_fetch_v1_address_correctly() async throws {

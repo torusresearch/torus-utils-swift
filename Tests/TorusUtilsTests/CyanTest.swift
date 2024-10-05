@@ -13,8 +13,8 @@ class CyanTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.CYAN))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.CYAN)))
+        fnd = NodeDetailManager(network: .CYAN)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .CYAN))
     }
 
     func test_should_fetch_public_address() async throws {

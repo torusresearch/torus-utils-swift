@@ -15,7 +15,7 @@ public class TorusUtils {
 
     var serverTimeOffset: Int?
 
-    var network: TorusNetwork
+    var network: Web3AuthNetwork
 
     var clientId: String
 
@@ -39,20 +39,7 @@ public class TorusUtils {
     public init(params: TorusOptions, loglevel: OSLogType = .default) throws {
         var defaultHost = ""
         if params.legacyMetadataHost == nil {
-            if case let .legacy(urlHost) = params.network {
-                defaultHost = urlHost.metadataMap
-            } else {
-                // TODO: Move this into fetchNodeDetails metadataMap
-                if case let .sapphire(sapphireNetwork) = params.network {
-                    if sapphireNetwork == .SAPPHIRE_MAINNET {
-                        defaultHost = "https://node-1.node.web3auth.io/metadata"
-                    } else {
-                        defaultHost = "https://node-1.dev-node.web3auth.io/metadata"
-                    }
-                } else {
-                    throw TorusUtilError.invalidInput
-                }
-            }
+            defaultHost = try params.network.metadataMap
         } else {
             defaultHost = params.legacyMetadataHost!
         }
@@ -67,8 +54,8 @@ public class TorusUtils {
         signerHost = params.network.signerMap + "/api/sign"
     }
 
-    internal static func isLegacyNetworkRouteMap(network: TorusNetwork) -> Bool {
-        if case .legacy = network {
+    internal static func isLegacyNetworkRouteMap(network: Web3AuthNetwork) -> Bool {
+        if network.isLegacy {
             return true
         }
         return false
