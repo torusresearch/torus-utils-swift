@@ -20,8 +20,8 @@ final class SapphireDevnetTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .sapphire(.SAPPHIRE_DEVNET))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .sapphire(.SAPPHIRE_DEVNET)))
+        fnd = NodeDetailManager(network: .SAPPHIRE_DEVNET)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .SAPPHIRE_DEVNET))
     }
 
     func test_should_fetch_public_address() async throws {

@@ -13,15 +13,15 @@ class TestnetTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.TESTNET))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.TESTNET)))
+        fnd = NodeDetailManager(network: .TESTNET)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .TESTNET))
     }
 
     func test_should_fetch_public_address() async throws {
         let verifier = "google-lrc"
         let verifierID = TORUS_TEST_EMAIL
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifier, verifierID: verifierID)
-        let val = try await torus.getPublicAddress(endpoints: nodeDetails.torusNodeEndpoints, verifier: verifier, verifierId: verifierID)
+        let val = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID)
 
         XCTAssertEqual(val.finalKeyData!.evmAddress, "0x9bcBAde70546c0796c00323CD1b97fa0a425A506")
         XCTAssertLessThan(val.metadata!.serverTimeOffset, 20)
@@ -149,7 +149,7 @@ class TestnetTest: XCTestCase {
         let verifierParams = VerifierParams(verifier_id: verifierID,
                                             sub_verifier_ids: [TORUS_TEST_VERIFIER],
                                             verify_params: [VerifyParams(verifier_id: verifierID, idtoken: jwt)])
-        let data = try await torus.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken)
+        let data = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken)
 
         XCTAssertEqual(data.finalKeyData.evmAddress, "0x938a40E155d118BD31E439A9d92D67bd55317965")
         XCTAssertLessThan(data.metadata.serverTimeOffset, 20)

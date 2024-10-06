@@ -12,7 +12,7 @@ public enum TorusUtilError: Error, Equatable {
     case invalidKeySize
     case invalidPubKeySize
     case runtime(_ msg: String)
-    case retrieveOrImportShareError
+    case retrieveOrImportShareError(_ msg: String)
     case metadataNonceMissing
     case pubNonceMissing
     case gatingError(_ msg: String = "")
@@ -46,8 +46,8 @@ extension TorusUtilError: CustomDebugStringConvertible {
             return "Invalid key size. Expected 64 bytes"
         case let .encodingFailed(msg):
             return "Could not encode data" + msg
-        case .retrieveOrImportShareError:
-            return "retrieve or import share failed"
+        case let .retrieveOrImportShareError(msg):
+            return msg
         case .metadataNonceMissing:
             return "Unable to fetch metadata nonce"
         case let .gatingError(msg):

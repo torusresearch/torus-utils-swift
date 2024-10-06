@@ -13,15 +13,15 @@ class CelesteTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.CELESTE))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.CELESTE)))
+        fnd = NodeDetailManager(network: .CELESTE)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .CELESTE))
     }
 
     func test_should_fetch_public_address() async throws {
         let verifier = "tkey-google-celeste"
         let verifierID = TORUS_TEST_EMAIL
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifier, verifierID: verifierID)
-        let val = try await torus.getPublicAddress(endpoints: nodeDetails.torusNodeEndpoints, verifier: verifier, verifierId: verifierID)
+        let val = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID)
 
         XCTAssertEqual(val.finalKeyData!.evmAddress, "0xC3115b9d6FaB99739b23DA9dfcBA47A4Ec4Cd113")
         XCTAssertLessThan(val.metadata!.serverTimeOffset, 20)
@@ -148,7 +148,7 @@ class CelesteTest: XCTestCase {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifier, verifierID: verifierID)
 
         let verifierParams = VerifierParams(verifier_id: verifierID, sub_verifier_ids: [TORUS_TEST_VERIFIER], verify_params: [VerifyParams(verifier_id: verifierID, idtoken: jwt)])
-        let data = try await torus.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken)
+        let data = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken)
 
         XCTAssertEqual(data.finalKeyData.evmAddress, "0x535Eb1AefFAc6f699A2a1A5846482d7b5b2BD564")
         XCTAssertLessThan(data.metadata.serverTimeOffset, 20)

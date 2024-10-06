@@ -5,7 +5,7 @@ import Foundation
 public class TorusOptions {
     public var enableOneKey: Bool
     public var clientId: String
-    public var network: TorusNetwork
+    public var network: Web3AuthNetwork
     public var serverTimeOffset: Int
     public var legacyMetadataHost: String?
 
@@ -19,7 +19,7 @@ public class TorusOptions {
     ///   - enableOneKey: Use the oneKey flow.
     ///
     /// - Returns: `TorusOptions`
-    public init(clientId: String, network: TorusNetwork, legacyMetadataHost: String? = nil, serverTimeOffset: Int = 0, enableOneKey: Bool = false) {
+    public init(clientId: String, network: Web3AuthNetwork, legacyMetadataHost: String? = nil, serverTimeOffset: Int = 0, enableOneKey: Bool = false) {
         self.clientId = clientId
         self.enableOneKey = enableOneKey
         self.network = network

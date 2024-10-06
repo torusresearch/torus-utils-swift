@@ -9,7 +9,7 @@ import OSLog
 internal class NodeUtils {
     public static func getPubKeyOrKeyAssign(
         endpoints: [String],
-        network: TorusNetwork,
+        network: Web3AuthNetwork,
         verifier: String,
         verifierId: String,
         legacyMetadataHost: String,
@@ -122,7 +122,7 @@ internal class NodeUtils {
         serverTimeOffset: Int?,
         enableOneKey: Bool,
         allowHost: String,
-        network: TorusNetwork,
+        network: Web3AuthNetwork,
         clientId: String,
         endpoints: [String],
         verifier: String,
@@ -364,7 +364,7 @@ internal class NodeUtils {
         }
 
         if thresholdPublicKey == nil {
-            throw TorusUtilError.retrieveOrImportShareError
+            throw TorusUtilError.retrieveOrImportShareError("invalid result from nodes, threshold number of public key results are not matching, please check configuration")
         }
 
         for item in shareResponses {
@@ -395,7 +395,7 @@ internal class NodeUtils {
 
         // Invert comparision to return error early
         if !(shareResponses.count >= thresholdReqCount && thresholdPublicKey != nil && (thresholdNonceData != nil || verifierParams.extended_verifier_id != nil || TorusUtils.isLegacyNetworkRouteMap(network: network))) {
-            throw TorusUtilError.retrieveOrImportShareError
+            throw TorusUtilError.retrieveOrImportShareError("invalid result from nodes, threshold number of public key results are not matching")
         }
 
         var shares: [String?] = []
@@ -450,13 +450,13 @@ internal class NodeUtils {
         let validSigs = sessionTokenSigs.filter({ $0 != nil }).map({ $0! })
 
         if verifierParams.extended_verifier_id == nil && validSigs.count < threshold {
-            throw TorusUtilError.retrieveOrImportShareError
+            throw TorusUtilError.retrieveOrImportShareError("Insufficient number of signatures from nodes")
         }
 
         let validTokens = sessionTokens.filter({ $0 != nil }).map({ $0! })
 
         if verifierParams.extended_verifier_id == nil && validTokens.count < threshold {
-            throw TorusUtilError.runtime("Insufficient number of signatures from nodes")
+            throw TorusUtilError.retrieveOrImportShareError("Insufficient number of signatures from nodes")
         }
 
         for (i, item) in sessionTokens.enumerated() {
@@ -560,7 +560,7 @@ internal class NodeUtils {
         }
 
         if finalPubKey == nil {
-            throw TorusUtilError.retrieveOrImportShareError
+            throw TorusUtilError.retrieveOrImportShareError("Invalid public key, this might be a bug, please report this to web3auth team")
         }
 
         let oAuthKeyAddress = try KeyUtils.generateAddressFromPubKey(publicKeyX: oAuthPublicKeyX, publicKeyY: oAuthPublicKeyY)
