@@ -9,12 +9,14 @@ internal class Share: Codable {
         if let si = BigInt(shareIndex, radix: 16) {
             self.shareIndex = si
         } else {
+            SentryUtils.captureException("\(TorusUtilError.invalidInput)")
             throw TorusUtilError.invalidInput
         }
 
         if let s = BigInt(share, radix: 16) {
             self.share = s
         } else {
+            SentryUtils.captureException("\(TorusUtilError.invalidInput)")
             throw TorusUtilError.invalidInput
         }
     }

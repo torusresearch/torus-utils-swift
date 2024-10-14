@@ -23,6 +23,7 @@ internal class MetadataUtils {
         guard
             let url = URL(string: url)
         else {
+            SentryUtils.captureException("Invalid Url \(url)")
             throw TorusUtilError.runtime("Invalid Url \(url)")
         }
         var rq = URLRequest(url: url)
@@ -86,6 +87,7 @@ internal class MetadataUtils {
         if case .sapphire = network {
             return try await getOrSetNonce(legacyMetadataHost: metadataHost, serverTimeOffset: serverTimeOffset ?? Int(trunc(Double(0 + Int(Date().timeIntervalSince1970)))), X: X, Y: Y, privateKey: privateKey, getOnly: getOnly, keyType: keyType)
         } else {
+            SentryUtils.captureException("\(TorusUtilError.metadataNonceMissing)")
             throw TorusUtilError.metadataNonceMissing
         }
     }
