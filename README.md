@@ -14,7 +14,7 @@ You can install the TorusUtils using Swift Package Manager:
 ...
 dependencies: [
     ...
-    .package(url: "https://github.com/torusresearch/torus-utils-swift", from: "9.0.0")
+    .package(url: "https://github.com/torusresearch/torus-utils-swift", from: "10.0.0")
 ],
 targets: [
     .target( name: "<INSERT_TARGET_NAME>",
@@ -30,7 +30,7 @@ Or CocoaPods:
 
 ```
 ...
-    pod 'Torus-utils', '~> 9.0.0'
+    pod 'Torus-utils', '~> 10.0.0'
 ...
 ```
 
@@ -38,7 +38,7 @@ Or CocoaPods:
 Initialize the `TorusUtils` class by passing `TorusOptions` as params. Params includes `TorusNetwork`, `enableOneKey`, and your `clientId`. `enableOneKey` if true, adds the nonce value to the key, to make it compatible with v2 users. The package supports both legacy and sapphire networks.  
 
 ```swift
-   let torusUtils = TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .sapphire(.SAPPHIRE_MAINNET), enableOneKey: true))
+   let torusUtils = TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .SAPPHIRE_MAINNET, enableOneKey: true))
 ```
 
 
