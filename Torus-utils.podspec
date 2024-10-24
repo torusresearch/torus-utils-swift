@@ -6,7 +6,7 @@ Pod::Spec.new do |spec|
   spec.homepage     = "https://github.com/torusresearch/torus-utils-swift"
   spec.license      = { :type => 'BSD', :file => 'License.md' }
   spec.swift_version   = "5.0"
-  spec.author       = { "Torus Labs" => "rathishubham017@gmail.com" }
+  spec.author       = { "Torus Labs" => "hello@tor.us" }
   spec.module_name = "TorusUtils"
   spec.source       = { :git => "https://github.com/torusresearch/torus-utils-swift.git", :tag => spec.version }
   spec.source_files = "Sources/TorusUtils/*.{swift,json}","Sources/TorusUtils/**/*.{swift,json}"
