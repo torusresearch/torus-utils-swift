@@ -13,8 +13,8 @@ class AquaTest: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.AQUA))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.AQUA)))
+        fnd = NodeDetailManager(network: .AQUA)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .AQUA))
     }
 
     func test_should_fetch_public_address() async throws {

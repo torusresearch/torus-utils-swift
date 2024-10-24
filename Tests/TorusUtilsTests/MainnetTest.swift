@@ -20,15 +20,15 @@ class MainnetTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        fnd = NodeDetailManager(network: .legacy(.MAINNET))
-        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .legacy(.MAINNET)))
+        fnd = NodeDetailManager(network: .MAINNET)
+        torus = try! TorusUtils(params: TorusOptions(clientId: "YOUR_CLIENT_ID", network: .MAINNET))
     }
 
     func test_should_fetch_public_address() async throws {
         let verifier = "google"
         let verifierID = TORUS_TEST_EMAIL
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifier, verifierID: verifierID)
-        let val = try await torus.getPublicAddress(endpoints: nodeDetails.torusNodeEndpoints, verifier: verifier, verifierId: verifierID)
+        let val = try await torus.getPublicAddress(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierId: verifierID)
 
         XCTAssertEqual(val.finalKeyData!.evmAddress, "0x0C44AFBb5395a9e8d28DF18e1326aa0F16b9572A")
         XCTAssertLessThan(val.metadata!.serverTimeOffset, 20)
@@ -156,7 +156,7 @@ class MainnetTests: XCTestCase {
         let nodeDetails = try await fnd.getNodeDetails(verifier: verifier, verifierID: verifierID)
 
         let verifierParams = VerifierParams(verifier_id: verifierID, sub_verifier_ids: [TORUS_TEST_VERIFIER], verify_params: [VerifyParams(verifier_id: verifierID, idtoken: jwt)])
-        let data = try await torus.retrieveShares(endpoints: nodeDetails.torusNodeEndpoints, verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken)
+        let data = try await torus.retrieveShares(endpoints: nodeDetails.getTorusNodeEndpoints(), verifier: verifier, verifierParams: verifierParams, idToken: hashedIDToken)
 
         XCTAssertEqual(data.finalKeyData.evmAddress, "0x621a4d458cFd345dAE831D9E756F10cC40A50381")
         XCTAssertLessThan(data.metadata.serverTimeOffset, 20)

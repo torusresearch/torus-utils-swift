@@ -4,15 +4,15 @@
 import PackageDescription
 let package = Package(
     name: "TorusUtils",
-    platforms: [.iOS(.v13), .macOS(.v10_15)],
+    platforms: [.iOS(.v14), .macOS(.v10_15)],
     products: [
         .library(
             name: "TorusUtils",
             targets: ["TorusUtils"])
     ],
     dependencies: [
-        .package(url: "https://github.com/tkey/curvelib.swift", from: "1.0.1"),
-        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from: "6.0.3"),
+        .package(url: "https://github.com/tkey/curvelib.swift", from: "2.0.0"),
+        .package(url: "https://github.com/torusresearch/fetch-node-details-swift", from: "8.0.0"),
         // NB: jwt-kit may only be a dependency in tests or it will break cocoapod support
         .package(url: "https://github.com/vapor/jwt-kit.git", from: "4.0.0"),
     ],
