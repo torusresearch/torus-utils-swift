@@ -1,11 +1,11 @@
 PODS:
   - BigInt (5.2.0)
   - curvelib.swift (2.0.0)
-  - Torus-fetchNodeDetails (8.0.0):
+  - Torus-fetchNodeDetails (8.0.1):
     - BigInt (~> 5.2.0)
   - Torus-utils (10.0.0):
     - curvelib.swift (~> 2.0.0)
-    - Torus-fetchNodeDetails (~> 8.0.0)
+    - Torus-fetchNodeDetails (~> 8.0.1)
 
 DEPENDENCIES:
   - Torus-utils (from `../`)
