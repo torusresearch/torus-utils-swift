@@ -161,6 +161,10 @@ public class TorusUtils {
         newPrivateKey: String,
         extraParams: TorusUtilsExtraParams = TorusUtilsExtraParams()
     ) async throws -> TorusKey {
+        if network.isLegacy {
+            throw TorusUtilError.legacyImportUnsupported(network.name)
+        }
+            
         let nodePubs = TorusNodePubModelToINodePub(nodes: nodePubKeys)
         if endpoints.count != nodeIndexes.count {
             throw TorusUtilError.runtime("Length of endpoints must be the same as length of nodeIndexes")
